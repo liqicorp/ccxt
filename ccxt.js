@@ -126,6 +126,7 @@ const exchanges = {
     'kuna':                    require ('./js/kuna.js'),
     'latoken':                 require ('./js/latoken.js'),
     'lbank':                   require ('./js/lbank.js'),
+    'liqi':                    require ('./js/liqi.js'),
     'liquid':                  require ('./js/liquid.js'),
     'luno':                    require ('./js/luno.js'),
     'lykke':                   require ('./js/lykke.js'),
