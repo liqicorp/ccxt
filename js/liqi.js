@@ -145,6 +145,7 @@ module.exports = class liqi extends Exchange {
                     'get': {
                         'fetchMarkets': 20,
                         'fetchTickers': 20,
+                        'fetchTicker': 1,
                     },
                 },
                 'private': {
@@ -958,12 +959,10 @@ module.exports = class liqi extends Exchange {
     }
 
     async fetchTicker(symbol, params = {}) {
-        await this.loadMarkets();
-        const market = this.market(symbol);
         const request = {
-            'symbol': market['id'],
+            'symbol': symbol,
         };
-        let method = 'publicGetFetchTicher';
+        let method = 'publicGetFetchTicker';
         const response = await this[method](this.extend(request, params));
         return response;
     }
@@ -4020,7 +4019,6 @@ module.exports = class liqi extends Exchange {
     signEcdsa(request, secret, algorithm = 'ed25519') {
         const clientFromPriv = new EC(algorithm).keyFromPrivate(secret, 'hex');
         const signature = this.toDER(clientFromPriv.sign(request), 'hex');
-        console.log(JSON.stringify(signature));
         return signature;
     }
 
@@ -4082,8 +4080,7 @@ module.exports = class liqi extends Exchange {
         if (!(api in this.urls['api'])) {
             throw new NotSupported(this.id + ' does not have a testnet/sandbox URL for ' + api + ' endpoints');
         }
-        let url = this.urls['api'][api];
-        url += '/' + path;
+        let url = this.urls['api'][api] + '/' + this.implodeParams(path, this.encode(params));
         if (api === 'private') {
             this.checkRequiredCredentials();
             let query = undefined;
@@ -4094,7 +4091,6 @@ module.exports = class liqi extends Exchange {
                 'recvWindow': recvWindow,
             }, params);
             query = this.urlencode(extendedParams);
-            console.log(query);
             const hash = this.hash(query, 'sha256', 'hex');
             const signature = this.signEcdsa(hash, this.secret, 'ed25519');
             headers = {
