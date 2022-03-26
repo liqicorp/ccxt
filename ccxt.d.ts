@@ -652,6 +652,7 @@ declare module 'ccxt' {
         | 'kuna'
         | 'latoken'
         | 'lbank'
+        | 'liqi'
         | 'liquid'
         | 'luno'
         | 'lykke'

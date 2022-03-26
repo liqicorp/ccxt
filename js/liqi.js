@@ -2,19 +2,22 @@
 
 //  ---------------------------------------------------------------------------
 
-const Exchange = require ('./base/Exchange');
-const { ExchangeError, ArgumentsRequired, ExchangeNotAvailable, InsufficientFunds, OrderNotFound, InvalidOrder, DDoSProtection, InvalidNonce, AuthenticationError, RateLimitExceeded, PermissionDenied, NotSupported, BadRequest, BadSymbol, AccountSuspended, OrderImmediatelyFillable, OnMaintenance, BadResponse, RequestTimeout, OrderNotFillable, MarginModeAlreadySet } = require ('./base/errors');
-const { TRUNCATE } = require ('./base/functions/number');
-const Precise = require ('./base/Precise');
+const Exchange = require('./base/Exchange');
+const { ExchangeError, ArgumentsRequired, ExchangeNotAvailable, InsufficientFunds, OrderNotFound, InvalidOrder, DDoSProtection, InvalidNonce, AuthenticationError, RateLimitExceeded, PermissionDenied, NotSupported, BadRequest, BadSymbol, AccountSuspended, OrderImmediatelyFillable, OnMaintenance, BadResponse, RequestTimeout, OrderNotFillable, MarginModeAlreadySet } = require('./base/errors');
+const { TRUNCATE } = require('./base/functions/number');
+const Precise = require('./base/Precise');
+const elliptic = require('./static_dependencies/elliptic/lib/elliptic')
+var utils = require('./static_dependencies/elliptic/lib/elliptic/utils');
+const EC = elliptic.ec
 
 //  ---------------------------------------------------------------------------
 
 module.exports = class liqi extends Exchange {
-    describe () {
-        return this.deepExtend (super.describe (), {
+    describe() {
+        return this.deepExtend(super.describe(), {
             'id': 'liqi',
             'name': 'Liqi',
-            'countries': [ 'JP', 'MT' ], // Japan, Malta
+            'countries': ['JP', 'MT'], // Japan, Malta
             'rateLimit': 50,
             'certified': true,
             'pro': true,
@@ -122,31 +125,31 @@ module.exports = class liqi extends Exchange {
             'urls': {
                 'logo': 'https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg',
                 'api': {
-                    'public': 'https://api.liqi.com/exchange/v1',
-                    'private': 'https://api.liqi.com/exchange/v1'
+                    'public': 'http://localhost:7775/exchange/v1',
+                    'private': 'http://localhost:7775/exchange/v1',
                 },
-                'www': 'https://www.liqi.com',
+                'www': 'https://www.liqi.com.br',
                 'referral': {
-                    'url': 'https://www.liqi.com/en/register?ref=D7YA7CLY',
+                    'url': 'https://www.liqi.com.br/en/register?ref=D7YA7CLY',
                     'discount': 0.1,
                 },
                 'doc': [
                     'https://liqi-docs.github.io/apidocs/spot/en',
                 ],
-                'api_management': 'https://www.liqi.com/en/usercenter/settings/api-management',
-                'fees': 'https://www.liqi.com/en/fee/schedule',
+                'api_management': 'https://www.liqi.com.br/en/usercenter/settings/api-management',
+                'fees': 'https://www.liqi.com.br/en/fee/schedule',
             },
             'depth': 1,
             'api': {
                 'public': {
                     'get': {
                         'fetchMarkets': 20,
-                    }
+                    },
                 },
                 'private': {
                     'get': {
                         'fetchBalance': 1,
-                    }
+                    },
                 },
             },
             'fees': {
@@ -154,8 +157,8 @@ module.exports = class liqi extends Exchange {
                     'feeSide': 'get',
                     'tierBased': false,
                     'percentage': true,
-                    'taker': this.parseNumber ('0.0035'),
-                    'maker': this.parseNumber ('0.0015'),
+                    'taker': this.parseNumber('0.0035'),
+                    'maker': this.parseNumber('0.0015'),
                 },
                 'option': {},
             },
@@ -174,7 +177,7 @@ module.exports = class liqi extends Exchange {
                 // not an error
                 // https://github.com/ccxt/ccxt/issues/11268
                 // https://github.com/ccxt/ccxt/pull/11624
-                // POST https://fapi.liqi.com/fapi/v1/marginType 400 Bad Request
+                // POST https://fapi.liqi.com.br/fapi/v1/marginType 400 Bad Request
                 // liqiusdm
                 'throwMarginModeAlreadySet': false,
                 'fetchPositions': 'positionRisk', // or 'account'
@@ -564,39 +567,39 @@ module.exports = class liqi extends Exchange {
         });
     }
 
-    costToPrecision (symbol, cost) {
-        return this.decimalToPrecision (cost, TRUNCATE, this.markets[symbol]['precision']['quote'], this.precisionMode, this.paddingMode);
+    costToPrecision(symbol, cost) {
+        return this.decimalToPrecision(cost, TRUNCATE, this.markets[symbol]['precision']['quote'], this.precisionMode, this.paddingMode);
     }
 
-    currencyToPrecision (currency, fee) {
+    currencyToPrecision(currency, fee) {
         // info is available in currencies only if the user has configured his api keys
-        if (this.safeValue (this.currencies[currency], 'precision') !== undefined) {
-            return this.decimalToPrecision (fee, TRUNCATE, this.currencies[currency]['precision'], this.precisionMode, this.paddingMode);
+        if (this.safeValue(this.currencies[currency], 'precision') !== undefined) {
+            return this.decimalToPrecision(fee, TRUNCATE, this.currencies[currency]['precision'], this.precisionMode, this.paddingMode);
         } else {
-            return this.numberToString (fee);
+            return this.numberToString(fee);
         }
     }
 
-    nonce () {
-        return this.milliseconds () - this.options['timeDifference'];
+    nonce() {
+        return this.milliseconds() - this.options['timeDifference'];
     }
 
-    async fetchTime (params = {}) {
-        const defaultType = this.safeString2 (this.options, 'fetchTime', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+    async fetchTime(params = {}) {
+        const defaultType = this.safeString2(this.options, 'fetchTime', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         let method = 'publicGetTime';
         if (type === 'future') {
             method = 'fapiPublicGetTime';
         } else if (type === 'delivery') {
             method = 'dapiPublicGetTime';
         }
-        const response = await this[method] (query);
-        return this.safeInteger (response, 'serverTime');
+        const response = await this[method](query);
+        return this.safeInteger(response, 'serverTime');
     }
 
-    async fetchCurrencies (params = {}) {
-        const fetchCurrenciesEnabled = this.safeValue (this.options, 'fetchCurrencies');
+    async fetchCurrencies(params = {}) {
+        const fetchCurrenciesEnabled = this.safeValue(this.options, 'fetchCurrencies');
         if (!fetchCurrenciesEnabled) {
             return undefined;
         }
@@ -604,15 +607,15 @@ module.exports = class liqi extends Exchange {
         // while fetchCurrencies is a public API method by design
         // therefore we check the keys here
         // and fallback to generating the currencies from the markets
-        if (!this.checkRequiredCredentials (false)) {
+        if (!this.checkRequiredCredentials(false)) {
             return undefined;
         }
         // sandbox/testnet does not support sapi endpoints
-        const apiBackup = this.safeString (this.urls, 'apiBackup');
+        const apiBackup = this.safeString(this.urls, 'apiBackup');
         if (apiBackup !== undefined) {
             return undefined;
         }
-        const response = await this.sapiGetCapitalConfigGetall (params);
+        const response = await this.sapiGetCapitalConfigGetall(params);
         const result = {};
         for (let i = 0; i < response.length; i++) {
             //
@@ -694,31 +697,31 @@ module.exports = class liqi extends Exchange {
             //     }
             //
             const entry = response[i];
-            const id = this.safeString (entry, 'coin');
-            const name = this.safeString (entry, 'name');
-            const code = this.safeCurrencyCode (id);
+            const id = this.safeString(entry, 'coin');
+            const name = this.safeString(entry, 'name');
+            const code = this.safeCurrencyCode(id);
             const precision = undefined;
             let isWithdrawEnabled = true;
             let isDepositEnabled = true;
-            const networkList = this.safeValue (entry, 'networkList', []);
+            const networkList = this.safeValue(entry, 'networkList', []);
             const fees = {};
             let fee = undefined;
             for (let j = 0; j < networkList.length; j++) {
                 const networkItem = networkList[j];
-                const network = this.safeString (networkItem, 'network');
+                const network = this.safeString(networkItem, 'network');
                 // const name = this.safeString (networkItem, 'name');
-                const withdrawFee = this.safeNumber (networkItem, 'withdrawFee');
-                const depositEnable = this.safeValue (networkItem, 'depositEnable');
-                const withdrawEnable = this.safeValue (networkItem, 'withdrawEnable');
+                const withdrawFee = this.safeNumber(networkItem, 'withdrawFee');
+                const depositEnable = this.safeValue(networkItem, 'depositEnable');
+                const withdrawEnable = this.safeValue(networkItem, 'withdrawEnable');
                 isDepositEnabled = isDepositEnabled || depositEnable;
                 isWithdrawEnabled = isWithdrawEnabled || withdrawEnable;
                 fees[network] = withdrawFee;
-                const isDefault = this.safeValue (networkItem, 'isDefault');
+                const isDefault = this.safeValue(networkItem, 'isDefault');
                 if (isDefault || fee === undefined) {
                     fee = withdrawFee;
                 }
             }
-            const trading = this.safeValue (entry, 'trading');
+            const trading = this.safeValue(entry, 'trading');
             const active = (isWithdrawEnabled && isDepositEnabled && trading);
             result[code] = {
                 'id': id,
@@ -738,37 +741,37 @@ module.exports = class liqi extends Exchange {
         return result;
     }
 
-    async fetchMarkets (params = {}) {
-        let method = 'publicGetFetchMarkets';        
-        const response = await this[method] ();        
+    async fetchMarkets(params = {}) {
+        const method = 'publicGetFetchMarkets';
+        const response = await this[method]();
         return response;
     }
 
-    parseBalance (response, type = undefined) {
+    parseBalance(response, type = undefined) {
         const result = {
             'info': response,
         };
         let timestamp = undefined;
         if ((type === 'spot') || (type === 'margin')) {
-            timestamp = this.safeInteger (response, 'updateTime');
-            const balances = this.safeValue2 (response, 'balances', 'userAssets', []);
+            timestamp = this.safeInteger(response, 'updateTime');
+            const balances = this.safeValue2(response, 'balances', 'userAssets', []);
             for (let i = 0; i < balances.length; i++) {
                 const balance = balances[i];
-                const currencyId = this.safeString (balance, 'asset');
-                const code = this.safeCurrencyCode (currencyId);
-                const account = this.account ();
-                account['free'] = this.safeString (balance, 'free');
-                account['used'] = this.safeString (balance, 'locked');
+                const currencyId = this.safeString(balance, 'asset');
+                const code = this.safeCurrencyCode(currencyId);
+                const account = this.account();
+                account['free'] = this.safeString(balance, 'free');
+                account['used'] = this.safeString(balance, 'locked');
                 result[code] = account;
             }
         } else if (type === 'savings') {
-            const positionAmountVos = this.safeValue (response, 'positionAmountVos');
+            const positionAmountVos = this.safeValue(response, 'positionAmountVos');
             for (let i = 0; i < positionAmountVos.length; i++) {
                 const entry = positionAmountVos[i];
-                const currencyId = this.safeString (entry, 'asset');
-                const code = this.safeCurrencyCode (currencyId);
-                const account = this.account ();
-                const usedAndTotal = this.safeString (entry, 'amount');
+                const currencyId = this.safeString(entry, 'asset');
+                const code = this.safeCurrencyCode(currencyId);
+                const account = this.account();
+                const usedAndTotal = this.safeString(entry, 'amount');
                 account['total'] = usedAndTotal;
                 account['used'] = usedAndTotal;
                 result[code] = account;
@@ -776,46 +779,46 @@ module.exports = class liqi extends Exchange {
         } else if (type === 'funding') {
             for (let i = 0; i < response.length; i++) {
                 const entry = response[i];
-                const account = this.account ();
-                const currencyId = this.safeString (entry, 'asset');
-                const code = this.safeCurrencyCode (currencyId);
-                account['free'] = this.safeString (entry, 'free');
-                const frozen = this.safeString (entry, 'freeze');
-                const withdrawing = this.safeString (entry, 'withdrawing');
-                const locked = this.safeString (entry, 'locked');
-                account['used'] = Precise.stringAdd (frozen, Precise.stringAdd (locked, withdrawing));
+                const account = this.account();
+                const currencyId = this.safeString(entry, 'asset');
+                const code = this.safeCurrencyCode(currencyId);
+                account['free'] = this.safeString(entry, 'free');
+                const frozen = this.safeString(entry, 'freeze');
+                const withdrawing = this.safeString(entry, 'withdrawing');
+                const locked = this.safeString(entry, 'locked');
+                account['used'] = Precise.stringAdd(frozen, Precise.stringAdd(locked, withdrawing));
                 result[code] = account;
             }
         } else {
             let balances = response;
-            if (!Array.isArray (response)) {
-                balances = this.safeValue (response, 'assets', []);
+            if (!Array.isArray(response)) {
+                balances = this.safeValue(response, 'assets', []);
             }
             for (let i = 0; i < balances.length; i++) {
                 const balance = balances[i];
-                const currencyId = this.safeString (balance, 'asset');
-                const code = this.safeCurrencyCode (currencyId);
-                const account = this.account ();
-                account['free'] = this.safeString (balance, 'availableBalance');
-                account['used'] = this.safeString (balance, 'initialMargin');
-                account['total'] = this.safeString2 (balance, 'marginBalance', 'balance');
+                const currencyId = this.safeString(balance, 'asset');
+                const code = this.safeCurrencyCode(currencyId);
+                const account = this.account();
+                account['free'] = this.safeString(balance, 'availableBalance');
+                account['used'] = this.safeString(balance, 'initialMargin');
+                account['total'] = this.safeString2(balance, 'marginBalance', 'balance');
                 result[code] = account;
             }
         }
         result['timestamp'] = timestamp;
-        result['datetime'] = this.iso8601 (timestamp);
-        return this.safeBalance (result);
+        result['datetime'] = this.iso8601(timestamp);
+        return this.safeBalance(result);
     }
 
-    async fetchBalance (params = {}) {
-        let method = 'privateGetFetchBalance';        
-        const response = await this[method] ();        
+    async fetchBalance(params = {}) {
+        const method = 'privateGetFetchBalance';
+        const response = await this[method]();
         return response;
     }
 
-    async fetchOrderBook (symbol, limit = undefined, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchOrderBook(symbol, limit = undefined, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
         };
@@ -828,7 +831,7 @@ module.exports = class liqi extends Exchange {
         } else if (market['inverse']) {
             method = 'dapiPublicGetDepth';
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         //
         // future
         //
@@ -847,13 +850,13 @@ module.exports = class liqi extends Exchange {
         //             ["2493.71","12.054"],
         //         ]
         //     }
-        const timestamp = this.safeInteger (response, 'T');
-        const orderbook = this.parseOrderBook (response, symbol, timestamp);
-        orderbook['nonce'] = this.safeInteger (response, 'lastUpdateId');
+        const timestamp = this.safeInteger(response, 'T');
+        const orderbook = this.parseOrderBook(response, symbol, timestamp);
+        orderbook['nonce'] = this.safeInteger(response, 'lastUpdateId');
         return orderbook;
     }
 
-    parseTicker (ticker, market = undefined) {
+    parseTicker(ticker, market = undefined) {
         //
         //     {
         //         symbol: 'ETHBTC',
@@ -900,37 +903,37 @@ module.exports = class liqi extends Exchange {
         //         weightedAvgPrice: '38215.08713747'
         //     }
         //
-        const timestamp = this.safeInteger (ticker, 'closeTime');
-        const marketId = this.safeString (ticker, 'symbol');
-        const symbol = this.safeSymbol (marketId, market);
-        const last = this.safeString (ticker, 'lastPrice');
+        const timestamp = this.safeInteger(ticker, 'closeTime');
+        const marketId = this.safeString(ticker, 'symbol');
+        const symbol = this.safeSymbol(marketId, market);
+        const last = this.safeString(ticker, 'lastPrice');
         const isCoinm = ('baseVolume' in ticker);
         let baseVolume = undefined;
         let quoteVolume = undefined;
         if (isCoinm) {
-            baseVolume = this.safeString (ticker, 'baseVolume');
-            quoteVolume = this.safeString (ticker, 'volume');
+            baseVolume = this.safeString(ticker, 'baseVolume');
+            quoteVolume = this.safeString(ticker, 'volume');
         } else {
-            baseVolume = this.safeString (ticker, 'volume');
-            quoteVolume = this.safeString (ticker, 'quoteVolume');
+            baseVolume = this.safeString(ticker, 'volume');
+            quoteVolume = this.safeString(ticker, 'quoteVolume');
         }
-        return this.safeTicker ({
+        return this.safeTicker({
             'symbol': symbol,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
-            'high': this.safeString (ticker, 'highPrice'),
-            'low': this.safeString (ticker, 'lowPrice'),
-            'bid': this.safeString (ticker, 'bidPrice'),
-            'bidVolume': this.safeString (ticker, 'bidQty'),
-            'ask': this.safeString (ticker, 'askPrice'),
-            'askVolume': this.safeString (ticker, 'askQty'),
-            'vwap': this.safeString (ticker, 'weightedAvgPrice'),
-            'open': this.safeString (ticker, 'openPrice'),
+            'datetime': this.iso8601(timestamp),
+            'high': this.safeString(ticker, 'highPrice'),
+            'low': this.safeString(ticker, 'lowPrice'),
+            'bid': this.safeString(ticker, 'bidPrice'),
+            'bidVolume': this.safeString(ticker, 'bidQty'),
+            'ask': this.safeString(ticker, 'askPrice'),
+            'askVolume': this.safeString(ticker, 'askQty'),
+            'vwap': this.safeString(ticker, 'weightedAvgPrice'),
+            'open': this.safeString(ticker, 'openPrice'),
             'close': last,
             'last': last,
-            'previousClose': this.safeString (ticker, 'prevClosePrice'), // previous day close
-            'change': this.safeString (ticker, 'priceChange'),
-            'percentage': this.safeString (ticker, 'priceChangePercent'),
+            'previousClose': this.safeString(ticker, 'prevClosePrice'), // previous day close
+            'change': this.safeString(ticker, 'priceChange'),
+            'percentage': this.safeString(ticker, 'priceChangePercent'),
             'average': undefined,
             'baseVolume': baseVolume,
             'quoteVolume': quoteVolume,
@@ -938,22 +941,22 @@ module.exports = class liqi extends Exchange {
         }, market, false);
     }
 
-    async fetchStatus (params = {}) {
-        const response = await this.sapiGetSystemStatus (params);
-        let status = this.safeString (response, 'status');
+    async fetchStatus(params = {}) {
+        const response = await this.sapiGetSystemStatus(params);
+        let status = this.safeString(response, 'status');
         if (status !== undefined) {
             status = (status === '0') ? 'ok' : 'maintenance';
-            this.status = this.extend (this.status, {
+            this.status = this.extend(this.status, {
                 'status': status,
-                'updated': this.milliseconds (),
+                'updated': this.milliseconds(),
             });
         }
         return this.status;
     }
 
-    async fetchTicker (symbol, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchTicker(symbol, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
         };
@@ -963,19 +966,19 @@ module.exports = class liqi extends Exchange {
         } else if (market['inverse']) {
             method = 'dapiPublicGetTicker24hr';
         }
-        const response = await this[method] (this.extend (request, params));
-        if (Array.isArray (response)) {
-            const firstTicker = this.safeValue (response, 0, {});
-            return this.parseTicker (firstTicker, market);
+        const response = await this[method](this.extend(request, params));
+        if (Array.isArray(response)) {
+            const firstTicker = this.safeValue(response, 0, {});
+            return this.parseTicker(firstTicker, market);
         }
-        return this.parseTicker (response, market);
+        return this.parseTicker(response, market);
     }
 
-    async fetchBidsAsks (symbols = undefined, params = {}) {
-        await this.loadMarkets ();
-        const defaultType = this.safeString2 (this.options, 'fetchBidsAsks', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+    async fetchBidsAsks(symbols = undefined, params = {}) {
+        await this.loadMarkets();
+        const defaultType = this.safeString2(this.options, 'fetchBidsAsks', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         let method = undefined;
         if (type === 'future') {
             method = 'fapiPublicGetTickerBookTicker';
@@ -984,15 +987,15 @@ module.exports = class liqi extends Exchange {
         } else {
             method = 'publicGetTickerBookTicker';
         }
-        const response = await this[method] (query);
-        return this.parseTickers (response, symbols);
+        const response = await this[method](query);
+        return this.parseTickers(response, symbols);
     }
 
-    async fetchTickers (symbols = undefined, params = {}) {
-        await this.loadMarkets ();
-        const defaultType = this.safeString2 (this.options, 'fetchTickers', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+    async fetchTickers(symbols = undefined, params = {}) {
+        await this.loadMarkets();
+        const defaultType = this.safeString2(this.options, 'fetchTickers', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         let defaultMethod = undefined;
         if (type === 'future') {
             defaultMethod = 'fapiPublicGetTicker24hr';
@@ -1001,12 +1004,12 @@ module.exports = class liqi extends Exchange {
         } else {
             defaultMethod = 'publicGetTicker24hr';
         }
-        const method = this.safeString (this.options, 'fetchTickersMethod', defaultMethod);
-        const response = await this[method] (query);
-        return this.parseTickers (response, symbols);
+        const method = this.safeString(this.options, 'fetchTickersMethod', defaultMethod);
+        const response = await this[method](query);
+        return this.parseTickers(response, symbols);
     }
 
-    parseOHLCV (ohlcv, market = undefined) {
+    parseOHLCV(ohlcv, market = undefined) {
         // when api method = publicGetKlines || fapiPublicGetKlines || dapiPublicGetKlines
         //     [
         //         1591478520000, // open time
@@ -1042,25 +1045,25 @@ module.exports = class liqi extends Exchange {
         //     ]
         //
         return [
-            this.safeInteger (ohlcv, 0),
-            this.safeNumber (ohlcv, 1),
-            this.safeNumber (ohlcv, 2),
-            this.safeNumber (ohlcv, 3),
-            this.safeNumber (ohlcv, 4),
-            this.safeNumber (ohlcv, 5),
+            this.safeInteger(ohlcv, 0),
+            this.safeNumber(ohlcv, 1),
+            this.safeNumber(ohlcv, 2),
+            this.safeNumber(ohlcv, 3),
+            this.safeNumber(ohlcv, 4),
+            this.safeNumber(ohlcv, 5),
         ];
     }
 
-    async fetchOHLCV (symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         // liqi docs say that the default limit 500, max 1500 for futures, max 1000 for spot markets
         // the reality is that the time range wider than 500 candles won't work right
         const defaultLimit = 500;
         const maxLimit = 1500;
-        const price = this.safeString (params, 'price');
-        params = this.omit (params, 'price');
-        limit = (limit === undefined) ? defaultLimit : Math.min (limit, maxLimit);
+        const price = this.safeString(params, 'price');
+        params = this.omit(params, 'price');
+        limit = (limit === undefined) ? defaultLimit : Math.min(limit, maxLimit);
         const request = {
             'interval': this.timeframes[timeframe],
             'limit': limit,
@@ -1079,10 +1082,10 @@ module.exports = class liqi extends Exchange {
             //
             if (market['inverse']) {
                 if (since > 0) {
-                    const duration = this.parseTimeframe (timeframe);
-                    const endTime = this.sum (since, limit * duration * 1000 - 1);
-                    const now = this.milliseconds ();
-                    request['endTime'] = Math.min (now, endTime);
+                    const duration = this.parseTimeframe(timeframe);
+                    const endTime = this.sum(since, limit * duration * 1000 - 1);
+                    const now = this.milliseconds();
+                    request['endTime'] = Math.min(now, endTime);
                 }
             }
         }
@@ -1104,7 +1107,7 @@ module.exports = class liqi extends Exchange {
         } else if (market['inverse']) {
             method = 'dapiPublicGetKlines';
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         //
         //     [
         //         [1591478520000,"0.02501300","0.02501800","0.02500000","0.02500000","22.19000000",1591478579999,"0.55490906",40,"10.92900000","0.27336462","0"],
@@ -1112,26 +1115,26 @@ module.exports = class liqi extends Exchange {
         //         [1591478640000,"0.02500800","0.02501100","0.02500300","0.02500800","154.14200000",1591478699999,"3.85405839",97,"5.32300000","0.13312641","0"],
         //     ]
         //
-        return this.parseOHLCVs (response, market, timeframe, since, limit);
+        return this.parseOHLCVs(response, market, timeframe, since, limit);
     }
 
-    async fetchMarkOHLCV (symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
+    async fetchMarkOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
         const request = {
             'price': 'mark',
         };
-        return await this.fetchOHLCV (symbol, timeframe, since, limit, this.extend (request, params));
+        return await this.fetchOHLCV(symbol, timeframe, since, limit, this.extend(request, params));
     }
 
-    async fetchIndexOHLCV (symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
+    async fetchIndexOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
         const request = {
             'price': 'index',
         };
-        return await this.fetchOHLCV (symbol, timeframe, since, limit, this.extend (request, params));
+        return await this.fetchOHLCV(symbol, timeframe, since, limit, this.extend(request, params));
     }
 
-    parseTrade (trade, market = undefined) {
+    parseTrade(trade, market = undefined) {
         if ('isDustTrade' in trade) {
-            return this.parseDustTrade (trade, market);
+            return this.parseDustTrade(trade, market);
         }
         //
         // aggregate trades
@@ -1226,22 +1229,22 @@ module.exports = class liqi extends Exchange {
         //       "tradeId": "1234",
         //     }
         //
-        const timestamp = this.safeInteger2 (trade, 'T', 'time');
-        const price = this.safeString2 (trade, 'p', 'price');
-        const amount = this.safeString2 (trade, 'q', 'qty');
-        const cost = this.safeString2 (trade, 'quoteQty', 'baseQty');  // inverse futures
-        const marketId = this.safeString (trade, 'symbol');
-        const symbol = this.safeSymbol (marketId, market);
-        let id = this.safeString2 (trade, 't', 'a');
-        id = this.safeString2 (trade, 'id', 'tradeId', id);
+        const timestamp = this.safeInteger2(trade, 'T', 'time');
+        const price = this.safeString2(trade, 'p', 'price');
+        const amount = this.safeString2(trade, 'q', 'qty');
+        const cost = this.safeString2(trade, 'quoteQty', 'baseQty');  // inverse futures
+        const marketId = this.safeString(trade, 'symbol');
+        const symbol = this.safeSymbol(marketId, market);
+        let id = this.safeString2(trade, 't', 'a');
+        id = this.safeString2(trade, 'id', 'tradeId', id);
         let side = undefined;
-        const orderId = this.safeString (trade, 'orderId');
+        const orderId = this.safeString(trade, 'orderId');
         if ('m' in trade) {
             side = trade['m'] ? 'sell' : 'buy'; // this is reversed intentionally
         } else if ('isBuyerMaker' in trade) {
             side = trade['isBuyerMaker'] ? 'sell' : 'buy';
         } else if ('side' in trade) {
-            side = this.safeStringLower (trade, 'side');
+            side = this.safeStringLower(trade, 'side');
         } else {
             if ('isBuyer' in trade) {
                 side = trade['isBuyer'] ? 'buy' : 'sell'; // this is a true side
@@ -1250,8 +1253,8 @@ module.exports = class liqi extends Exchange {
         let fee = undefined;
         if ('commission' in trade) {
             fee = {
-                'cost': this.safeString (trade, 'commission'),
-                'currency': this.safeCurrencyCode (this.safeString (trade, 'commissionAsset')),
+                'cost': this.safeString(trade, 'commission'),
+                'currency': this.safeCurrencyCode(this.safeString(trade, 'commissionAsset')),
             };
         }
         let takerOrMaker = undefined;
@@ -1261,10 +1264,10 @@ module.exports = class liqi extends Exchange {
         if ('maker' in trade) {
             takerOrMaker = trade['maker'] ? 'maker' : 'taker';
         }
-        return this.safeTrade ({
+        return this.safeTrade({
             'info': trade,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'symbol': symbol,
             'id': id,
             'order': orderId,
@@ -1278,9 +1281,9 @@ module.exports = class liqi extends Exchange {
         }, market);
     }
 
-    async fetchTrades (symbol, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchTrades(symbol, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
             // 'fromId': 123,    // ID to get aggregate trades from INCLUSIVE.
@@ -1288,9 +1291,9 @@ module.exports = class liqi extends Exchange {
             // 'endTime': 789,   // Timestamp in ms to get aggregate trades until INCLUSIVE.
             // 'limit': 500,     // default = 500, maximum = 1000
         };
-        const defaultType = this.safeString2 (this.options, 'fetchTrades', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+        const defaultType = this.safeString2(this.options, 'fetchTrades', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         let defaultMethod = undefined;
         if (type === 'future') {
             defaultMethod = 'fapiPublicGetAggTrades';
@@ -1299,7 +1302,7 @@ module.exports = class liqi extends Exchange {
         } else {
             defaultMethod = 'publicGetAggTrades';
         }
-        let method = this.safeString (this.options, 'fetchTradesMethod', defaultMethod);
+        let method = this.safeString(this.options, 'fetchTradesMethod', defaultMethod);
         if (method === 'publicGetAggTrades') {
             if (type === 'future') {
                 method = 'fapiPublicGetAggTrades';
@@ -1317,7 +1320,7 @@ module.exports = class liqi extends Exchange {
             request['startTime'] = since;
             // https://github.com/ccxt/ccxt/issues/6400
             // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#compressedaggregate-trades-list
-            request['endTime'] = this.sum (since, 3600000);
+            request['endTime'] = this.sum(since, 3600000);
         }
         if (limit !== undefined) {
             request['limit'] = limit; // default = 500, maximum = 1000
@@ -1331,7 +1334,7 @@ module.exports = class liqi extends Exchange {
         // - 'tradeId' accepted and returned by this method is "aggregate" trade id
         //   which is different from actual trade id
         // - setting both fromId and time window results in error
-        const response = await this[method] (this.extend (request, query));
+        const response = await this[method](this.extend(request, query));
         //
         // aggregate trades
         //
@@ -1361,10 +1364,10 @@ module.exports = class liqi extends Exchange {
         //         }
         //     ]
         //
-        return this.parseTrades (response, market, since, limit);
+        return this.parseTrades(response, market, since, limit);
     }
 
-    parseOrderStatus (status) {
+    parseOrderStatus(status) {
         const statuses = {
             'NEW': 'open',
             'PARTIALLY_FILLED': 'open',
@@ -1374,10 +1377,10 @@ module.exports = class liqi extends Exchange {
             'REJECTED': 'rejected',
             'EXPIRED': 'expired',
         };
-        return this.safeString (statuses, status, status);
+        return this.safeString(statuses, status, status);
     }
 
-    parseOrder (order, market = undefined) {
+    parseOrder(order, market = undefined) {
         //
         // spot
         //
@@ -1472,39 +1475,39 @@ module.exports = class liqi extends Exchange {
         //       "updateTime": "1636061952660"
         //     }
         //
-        const status = this.parseOrderStatus (this.safeString (order, 'status'));
-        const marketId = this.safeString (order, 'symbol');
-        const symbol = this.safeSymbol (marketId, market);
-        const filled = this.safeString (order, 'executedQty', '0');
+        const status = this.parseOrderStatus(this.safeString(order, 'status'));
+        const marketId = this.safeString(order, 'symbol');
+        const symbol = this.safeSymbol(marketId, market);
+        const filled = this.safeString(order, 'executedQty', '0');
         let timestamp = undefined;
         let lastTradeTimestamp = undefined;
         if ('time' in order) {
-            timestamp = this.safeInteger (order, 'time');
+            timestamp = this.safeInteger(order, 'time');
         } else if ('transactTime' in order) {
-            timestamp = this.safeInteger (order, 'transactTime');
+            timestamp = this.safeInteger(order, 'transactTime');
         } else if ('updateTime' in order) {
             if (status === 'open') {
-                if (Precise.stringGt (filled, '0')) {
-                    lastTradeTimestamp = this.safeInteger (order, 'updateTime');
+                if (Precise.stringGt(filled, '0')) {
+                    lastTradeTimestamp = this.safeInteger(order, 'updateTime');
                 } else {
-                    timestamp = this.safeInteger (order, 'updateTime');
+                    timestamp = this.safeInteger(order, 'updateTime');
                 }
             }
         }
-        const average = this.safeString (order, 'avgPrice');
-        const price = this.safeString (order, 'price');
-        const amount = this.safeString (order, 'origQty');
+        const average = this.safeString(order, 'avgPrice');
+        const price = this.safeString(order, 'price');
+        const amount = this.safeString(order, 'origQty');
         // - Spot/Margin market: cummulativeQuoteQty
         // - Futures market: cumQuote.
         //   Note this is not the actual cost, since Liqi futures uses leverage to calculate margins.
-        let cost = this.safeString2 (order, 'cummulativeQuoteQty', 'cumQuote');
-        cost = this.safeString (order, 'cumBase', cost);
-        const id = this.safeString (order, 'orderId');
-        let type = this.safeStringLower (order, 'type');
-        const side = this.safeStringLower (order, 'side');
-        const fills = this.safeValue (order, 'fills', []);
-        const clientOrderId = this.safeString (order, 'clientOrderId');
-        let timeInForce = this.safeString (order, 'timeInForce');
+        let cost = this.safeString2(order, 'cummulativeQuoteQty', 'cumQuote');
+        cost = this.safeString(order, 'cumBase', cost);
+        const id = this.safeString(order, 'orderId');
+        let type = this.safeStringLower(order, 'type');
+        const side = this.safeStringLower(order, 'side');
+        const fills = this.safeValue(order, 'fills', []);
+        const clientOrderId = this.safeString(order, 'clientOrderId');
+        let timeInForce = this.safeString(order, 'timeInForce');
         if (timeInForce === 'GTX') {
             // GTX means "Good Till Crossing" and is an equivalent way of saying Post Only
             timeInForce = 'PO';
@@ -1513,14 +1516,14 @@ module.exports = class liqi extends Exchange {
         if (type === 'limit_maker') {
             type = 'limit';
         }
-        const stopPriceString = this.safeString (order, 'stopPrice');
-        const stopPrice = this.parseNumber (this.omitZero (stopPriceString));
-        return this.safeOrder ({
+        const stopPriceString = this.safeString(order, 'stopPrice');
+        const stopPrice = this.parseNumber(this.omitZero(stopPriceString));
+        return this.safeOrder({
             'info': order,
             'id': id,
             'clientOrderId': clientOrderId,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'lastTradeTimestamp': lastTradeTimestamp,
             'symbol': symbol,
             'type': type,
@@ -1540,25 +1543,25 @@ module.exports = class liqi extends Exchange {
         }, market);
     }
 
-    async createReduceOnlyOrder (symbol, type, side, amount, price = undefined, params = {}) {
+    async createReduceOnlyOrder(symbol, type, side, amount, price = undefined, params = {}) {
         const request = {
             'reduceOnly': true,
         };
-        return await this.createOrder (symbol, type, side, amount, price, this.extend (request, params));
+        return await this.createOrder(symbol, type, side, amount, price, this.extend(request, params));
     }
 
-    async createOrder (symbol, type, side, amount, price = undefined, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const defaultType = this.safeString2 (this.options, 'createOrder', 'defaultType', 'spot');
-        const marketType = this.safeString (params, 'type', defaultType);
-        const clientOrderId = this.safeString2 (params, 'newClientOrderId', 'clientOrderId');
-        const postOnly = this.safeValue (params, 'postOnly', false);
-        params = this.omit (params, [ 'type', 'newClientOrderId', 'clientOrderId', 'postOnly' ]);
-        const reduceOnly = this.safeValue (params, 'reduceOnly');
+    async createOrder(symbol, type, side, amount, price = undefined, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const defaultType = this.safeString2(this.options, 'createOrder', 'defaultType', 'spot');
+        const marketType = this.safeString(params, 'type', defaultType);
+        const clientOrderId = this.safeString2(params, 'newClientOrderId', 'clientOrderId');
+        const postOnly = this.safeValue(params, 'postOnly', false);
+        params = this.omit(params, ['type', 'newClientOrderId', 'clientOrderId', 'postOnly']);
+        const reduceOnly = this.safeValue(params, 'reduceOnly');
         if (reduceOnly !== undefined) {
             if ((marketType !== 'future') && (marketType !== 'delivery')) {
-                throw new InvalidOrder (this.id + ' createOrder() does not support reduceOnly for ' + marketType + ' orders, reduceOnly orders are supported for future and delivery markets only');
+                throw new InvalidOrder(this.id + ' createOrder() does not support reduceOnly for ' + marketType + ' orders, reduceOnly orders are supported for future and delivery markets only');
             }
         }
         let method = 'privatePostOrder';
@@ -1571,39 +1574,39 @@ module.exports = class liqi extends Exchange {
         }
         // the next 5 lines are added to support for testing orders
         if (market['spot']) {
-            const test = this.safeValue (params, 'test', false);
+            const test = this.safeValue(params, 'test', false);
             if (test) {
                 method += 'Test';
             }
-            params = this.omit (params, 'test');
+            params = this.omit(params, 'test');
             // only supported for spot/margin api (all margin markets are spot markets)
             if (postOnly) {
                 type = 'LIMIT_MAKER';
             }
         }
-        const uppercaseType = type.toUpperCase ();
-        const validOrderTypes = this.safeValue (market['info'], 'orderTypes');
-        if (!this.inArray (uppercaseType, validOrderTypes)) {
-            throw new InvalidOrder (this.id + ' ' + type + ' is not a valid order type in market ' + symbol);
+        const uppercaseType = type.toUpperCase();
+        const validOrderTypes = this.safeValue(market['info'], 'orderTypes');
+        if (!this.inArray(uppercaseType, validOrderTypes)) {
+            throw new InvalidOrder(this.id + ' ' + type + ' is not a valid order type in market ' + symbol);
         }
         const request = {
             'symbol': market['id'],
             'type': uppercaseType,
-            'side': side.toUpperCase (),
+            'side': side.toUpperCase(),
         };
         if (clientOrderId === undefined) {
-            const broker = this.safeValue (this.options, 'broker');
+            const broker = this.safeValue(this.options, 'broker');
             if (broker !== undefined) {
-                const brokerId = this.safeString (broker, marketType);
+                const brokerId = this.safeString(broker, marketType);
                 if (brokerId !== undefined) {
-                    request['newClientOrderId'] = brokerId + this.uuid22 ();
+                    request['newClientOrderId'] = brokerId + this.uuid22();
                 }
             }
         } else {
             request['newClientOrderId'] = clientOrderId;
         }
         if ((marketType === 'spot') || (marketType === 'margin')) {
-            request['newOrderRespType'] = this.safeValue (this.options['newOrderRespType'], type, 'RESULT'); // 'ACK' for order id, 'RESULT' for full order or 'FULL' for order with fills
+            request['newOrderRespType'] = this.safeValue(this.options['newOrderRespType'], type, 'RESULT'); // 'ACK' for order id, 'RESULT' for full order or 'FULL' for order with fills
         } else {
             // delivery and future
             request['newOrderRespType'] = 'RESULT';  // "ACK", "RESULT", default "ACK"
@@ -1635,15 +1638,15 @@ module.exports = class liqi extends Exchange {
         //
         if (uppercaseType === 'MARKET') {
             if (market['spot']) {
-                const quoteOrderQty = this.safeValue (this.options, 'quoteOrderQty', false);
+                const quoteOrderQty = this.safeValue(this.options, 'quoteOrderQty', false);
                 if (quoteOrderQty) {
-                    const quoteOrderQty = this.safeNumber (params, 'quoteOrderQty');
+                    const quoteOrderQty = this.safeNumber(params, 'quoteOrderQty');
                     const precision = market['precision']['price'];
                     if (quoteOrderQty !== undefined) {
-                        request['quoteOrderQty'] = this.decimalToPrecision (quoteOrderQty, TRUNCATE, precision, this.precisionMode);
-                        params = this.omit (params, 'quoteOrderQty');
+                        request['quoteOrderQty'] = this.decimalToPrecision(quoteOrderQty, TRUNCATE, precision, this.precisionMode);
+                        params = this.omit(params, 'quoteOrderQty');
                     } else if (price !== undefined) {
-                        request['quoteOrderQty'] = this.decimalToPrecision (amount * price, TRUNCATE, precision, this.precisionMode);
+                        request['quoteOrderQty'] = this.decimalToPrecision(amount * price, TRUNCATE, precision, this.precisionMode);
                     } else {
                         quantityIsRequired = true;
                     }
@@ -1676,51 +1679,51 @@ module.exports = class liqi extends Exchange {
             stopPriceIsRequired = true;
             priceIsRequired = true;
         } else if ((uppercaseType === 'STOP_MARKET') || (uppercaseType === 'TAKE_PROFIT_MARKET')) {
-            const closePosition = this.safeValue (params, 'closePosition');
+            const closePosition = this.safeValue(params, 'closePosition');
             if (closePosition === undefined) {
                 quantityIsRequired = true;
             }
             stopPriceIsRequired = true;
         } else if (uppercaseType === 'TRAILING_STOP_MARKET') {
             quantityIsRequired = true;
-            const callbackRate = this.safeNumber (params, 'callbackRate');
+            const callbackRate = this.safeNumber(params, 'callbackRate');
             if (callbackRate === undefined) {
-                throw new InvalidOrder (this.id + ' createOrder() requires a callbackRate extra param for a ' + type + ' order');
+                throw new InvalidOrder(this.id + ' createOrder() requires a callbackRate extra param for a ' + type + ' order');
             }
         }
         if (quantityIsRequired) {
-            request['quantity'] = this.amountToPrecision (symbol, amount);
+            request['quantity'] = this.amountToPrecision(symbol, amount);
         }
         if (priceIsRequired) {
             if (price === undefined) {
-                throw new InvalidOrder (this.id + ' createOrder() requires a price argument for a ' + type + ' order');
+                throw new InvalidOrder(this.id + ' createOrder() requires a price argument for a ' + type + ' order');
             }
-            request['price'] = this.priceToPrecision (symbol, price);
+            request['price'] = this.priceToPrecision(symbol, price);
         }
         if (timeInForceIsRequired) {
             request['timeInForce'] = this.options['defaultTimeInForce']; // 'GTC' = Good To Cancel (default), 'IOC' = Immediate Or Cancel
         }
         if (stopPriceIsRequired) {
-            const stopPrice = this.safeNumber (params, 'stopPrice');
+            const stopPrice = this.safeNumber(params, 'stopPrice');
             if (stopPrice === undefined) {
-                throw new InvalidOrder (this.id + ' createOrder() requires a stopPrice extra param for a ' + type + ' order');
+                throw new InvalidOrder(this.id + ' createOrder() requires a stopPrice extra param for a ' + type + ' order');
             } else {
-                params = this.omit (params, 'stopPrice');
-                request['stopPrice'] = this.priceToPrecision (symbol, stopPrice);
+                params = this.omit(params, 'stopPrice');
+                request['stopPrice'] = this.priceToPrecision(symbol, stopPrice);
             }
         }
-        const response = await this[method] (this.extend (request, params));
-        return this.parseOrder (response, market);
+        const response = await this[method](this.extend(request, params));
+        return this.parseOrder(response, market);
     }
 
-    async fetchOrder (id, symbol = undefined, params = {}) {
+    async fetchOrder(id, symbol = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' fetchOrder() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' fetchOrder() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const defaultType = this.safeString2 (this.options, 'fetchOrder', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const defaultType = this.safeString2(this.options, 'fetchOrder', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
         let method = 'privateGetOrder';
         if (type === 'future') {
             method = 'fapiPrivateGetOrder';
@@ -1732,25 +1735,25 @@ module.exports = class liqi extends Exchange {
         const request = {
             'symbol': market['id'],
         };
-        const clientOrderId = this.safeValue2 (params, 'origClientOrderId', 'clientOrderId');
+        const clientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
         if (clientOrderId !== undefined) {
             request['origClientOrderId'] = clientOrderId;
         } else {
             request['orderId'] = id;
         }
-        const query = this.omit (params, [ 'type', 'clientOrderId', 'origClientOrderId' ]);
-        const response = await this[method] (this.extend (request, query));
-        return this.parseOrder (response, market);
+        const query = this.omit(params, ['type', 'clientOrderId', 'origClientOrderId']);
+        const response = await this[method](this.extend(request, query));
+        return this.parseOrder(response, market);
     }
 
-    async fetchOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' fetchOrders() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' fetchOrders() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const defaultType = this.safeString2 (this.options, 'fetchOrders', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const defaultType = this.safeString2(this.options, 'fetchOrders', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
         let method = 'privateGetAllOrders';
         if (type === 'future') {
             method = 'fapiPrivateGetAllOrders';
@@ -1768,8 +1771,8 @@ module.exports = class liqi extends Exchange {
         if (limit !== undefined) {
             request['limit'] = limit;
         }
-        const query = this.omit (params, 'type');
-        const response = await this[method] (this.extend (request, query));
+        const query = this.omit(params, 'type');
+        const response = await this[method](this.extend(request, query));
         //
         //  spot
         //
@@ -1814,31 +1817,31 @@ module.exports = class liqi extends Exchange {
         //         }
         //     ]
         //
-        return this.parseOrders (response, market, since, limit);
+        return this.parseOrders(response, market, since, limit);
     }
 
-    async fetchOpenOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
         let market = undefined;
         let query = undefined;
         let type = undefined;
         const request = {};
         if (symbol !== undefined) {
-            market = this.market (symbol);
+            market = this.market(symbol);
             request['symbol'] = market['id'];
-            const defaultType = this.safeString2 (this.options, 'fetchOpenOrders', 'defaultType', 'spot');
+            const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
             const marketType = ('type' in market) ? market['type'] : defaultType;
-            type = this.safeString (params, 'type', marketType);
-            query = this.omit (params, 'type');
+            type = this.safeString(params, 'type', marketType);
+            query = this.omit(params, 'type');
         } else if (this.options['warnOnFetchOpenOrdersWithoutSymbol']) {
             const symbols = this.symbols;
             const numSymbols = symbols.length;
-            const fetchOpenOrdersRateLimit = parseInt (numSymbols / 2);
-            throw new ExchangeError (this.id + ' fetchOpenOrders WARNING: fetching open orders without specifying a symbol is rate-limited to one call per ' + fetchOpenOrdersRateLimit.toString () + ' seconds. Do not call this method frequently to avoid ban. Set ' + this.id + '.options["warnOnFetchOpenOrdersWithoutSymbol"] = false to suppress this warning message.');
+            const fetchOpenOrdersRateLimit = parseInt(numSymbols / 2);
+            throw new ExchangeError(this.id + ' fetchOpenOrders WARNING: fetching open orders without specifying a symbol is rate-limited to one call per ' + fetchOpenOrdersRateLimit.toString() + ' seconds. Do not call this method frequently to avoid ban. Set ' + this.id + '.options["warnOnFetchOpenOrdersWithoutSymbol"] = false to suppress this warning message.');
         } else {
-            const defaultType = this.safeString2 (this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-            type = this.safeString (params, 'type', defaultType);
-            query = this.omit (params, 'type');
+            const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
+            type = this.safeString(params, 'type', defaultType);
+            query = this.omit(params, 'type');
         }
         let method = 'privateGetOpenOrders';
         if (type === 'future') {
@@ -1848,25 +1851,25 @@ module.exports = class liqi extends Exchange {
         } else if (type === 'margin') {
             method = 'sapiGetMarginOpenOrders';
         }
-        const response = await this[method] (this.extend (request, query));
-        return this.parseOrders (response, market, since, limit);
+        const response = await this[method](this.extend(request, query));
+        return this.parseOrders(response, market, since, limit);
     }
 
-    async fetchClosedOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        const orders = await this.fetchOrders (symbol, since, limit, params);
-        return this.filterBy (orders, 'status', 'closed');
+    async fetchClosedOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
+        const orders = await this.fetchOrders(symbol, since, limit, params);
+        return this.filterBy(orders, 'status', 'closed');
     }
 
-    async cancelOrder (id, symbol = undefined, params = {}) {
+    async cancelOrder(id, symbol = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' cancelOrder() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' cancelOrder() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const defaultType = this.safeString2 (this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
         // https://github.com/ccxt/ccxt/issues/6507
-        const origClientOrderId = this.safeValue2 (params, 'origClientOrderId', 'clientOrderId');
+        const origClientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
         const request = {
             'symbol': market['id'],
             // 'orderId': id,
@@ -1885,23 +1888,23 @@ module.exports = class liqi extends Exchange {
         } else if (type === 'margin') {
             method = 'sapiDeleteMarginOrder';
         }
-        const query = this.omit (params, [ 'type', 'origClientOrderId', 'clientOrderId' ]);
-        const response = await this[method] (this.extend (request, query));
-        return this.parseOrder (response, market);
+        const query = this.omit(params, ['type', 'origClientOrderId', 'clientOrderId']);
+        const response = await this[method](this.extend(request, query));
+        return this.parseOrder(response, market);
     }
 
-    async cancelAllOrders (symbol = undefined, params = {}) {
+    async cancelAllOrders(symbol = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' cancelAllOrders() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' cancelAllOrders() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
         };
-        const defaultType = this.safeString2 (this.options, 'cancelAllOrders', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+        const defaultType = this.safeString2(this.options, 'cancelAllOrders', 'defaultType', 'spot');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         let method = 'privateDeleteOpenOrders';
         if (type === 'margin') {
             method = 'sapiDeleteMarginOpenOrders';
@@ -1910,39 +1913,39 @@ module.exports = class liqi extends Exchange {
         } else if (type === 'delivery') {
             method = 'dapiPrivateDeleteAllOpenOrders';
         }
-        const response = await this[method] (this.extend (request, query));
-        if (Array.isArray (response)) {
-            return this.parseOrders (response, market);
+        const response = await this[method](this.extend(request, query));
+        if (Array.isArray(response)) {
+            return this.parseOrders(response, market);
         } else {
             return response;
         }
     }
 
-    async fetchOrderTrades (id, symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchOrderTrades(id, symbol = undefined, since = undefined, limit = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' fetchOrderTrades() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' fetchOrderTrades() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const type = this.safeString (params, 'type', market['type']);
-        params = this.omit (params, 'type');
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const type = this.safeString(params, 'type', market['type']);
+        params = this.omit(params, 'type');
         if (type !== 'spot') {
-            throw new NotSupported (this.id + ' fetchOrderTrades() supports spot markets only');
+            throw new NotSupported(this.id + ' fetchOrderTrades() supports spot markets only');
         }
         const request = {
             'orderId': id,
         };
-        return await this.fetchMyTrades (symbol, since, limit, this.extend (request, params));
+        return await this.fetchMyTrades(symbol, since, limit, this.extend(request, params));
     }
 
-    async fetchMyTrades (symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchMyTrades(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' fetchMyTrades() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' fetchMyTrades() requires a symbol argument');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
-        const type = this.safeString (params, 'type', market['type']);
-        params = this.omit (params, 'type');
+        await this.loadMarkets();
+        const market = this.market(symbol);
+        const type = this.safeString(params, 'type', market['type']);
+        params = this.omit(params, 'type');
         let method = undefined;
         if (type === 'spot') {
             method = 'privateGetMyTrades';
@@ -1962,7 +1965,7 @@ module.exports = class liqi extends Exchange {
         if (limit !== undefined) {
             request['limit'] = limit;
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         //
         // spot trade
         //
@@ -2004,23 +2007,23 @@ module.exports = class liqi extends Exchange {
         //         }
         //     ]
         //
-        return this.parseTrades (response, market, since, limit);
+        return this.parseTrades(response, market, since, limit);
     }
 
-    async fetchMyDustTrades (symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchMyDustTrades(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         //
         // Liqi provides an opportunity to trade insignificant (i.e. non-tradable and non-withdrawable)
         // token leftovers (of any asset) into `BNB` coin which in turn can be used to pay trading fees with it.
         // The corresponding trades history is called the `Dust Log` and can be requested via the following end-point:
         // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/wapi-api.md#dustlog-user_data
         //
-        await this.loadMarkets ();
+        await this.loadMarkets();
         const request = {};
         if (since !== undefined) {
             request['startTime'] = since;
-            request['endTime'] = this.sum (since, 7776000000);
+            request['endTime'] = this.sum(since, 7776000000);
         }
-        const response = await this.sapiGetAssetDribblet (this.extend (request, params));
+        const response = await this.sapiGetAssetDribblet(this.extend(request, params));
         //     {
         //       "total": "4",
         //       "userAssetDribblets": [
@@ -2050,21 +2053,21 @@ module.exports = class liqi extends Exchange {
         //         },
         //       ]
         //     }
-        const results = this.safeValue (response, 'userAssetDribblets', []);
-        const rows = this.safeInteger (response, 'total', 0);
+        const results = this.safeValue(response, 'userAssetDribblets', []);
+        const rows = this.safeInteger(response, 'total', 0);
         const data = [];
         for (let i = 0; i < rows; i++) {
-            const logs = this.safeValue (results[i], 'userAssetDribbletDetails', []);
+            const logs = this.safeValue(results[i], 'userAssetDribbletDetails', []);
             for (let j = 0; j < logs.length; j++) {
                 logs[j]['isDustTrade'] = true;
-                data.push (logs[j]);
+                data.push(logs[j]);
             }
         }
-        const trades = this.parseTrades (data, undefined, since, limit);
-        return this.filterBySinceLimit (trades, since, limit);
+        const trades = this.parseTrades(data, undefined, since, limit);
+        return this.filterBySinceLimit(trades, since, limit);
     }
 
-    parseDustTrade (trade, market = undefined) {
+    parseDustTrade(trade, market = undefined) {
         //
         //     {
         //       "fromAsset": "USDT",
@@ -2076,21 +2079,21 @@ module.exports = class liqi extends Exchange {
         //       "isDustTrade": true
         //     }
         //
-        const orderId = this.safeString (trade, 'transId');
-        const timestamp = this.safeInteger (trade, 'operateTime');
-        const currencyId = this.safeString (trade, 'fromAsset');
-        const tradedCurrency = this.safeCurrencyCode (currencyId);
-        const bnb = this.currency ('BNB');
+        const orderId = this.safeString(trade, 'transId');
+        const timestamp = this.safeInteger(trade, 'operateTime');
+        const currencyId = this.safeString(trade, 'fromAsset');
+        const tradedCurrency = this.safeCurrencyCode(currencyId);
+        const bnb = this.currency('BNB');
         const earnedCurrency = bnb['code'];
         const applicantSymbol = earnedCurrency + '/' + tradedCurrency;
         let tradedCurrencyIsQuote = false;
         if (applicantSymbol in this.markets) {
             tradedCurrencyIsQuote = true;
         }
-        const feeCostString = this.safeString (trade, 'serviceChargeAmount');
+        const feeCostString = this.safeString(trade, 'serviceChargeAmount');
         const fee = {
             'currency': earnedCurrency,
-            'cost': this.parseNumber (feeCostString),
+            'cost': this.parseNumber(feeCostString),
         };
         let symbol = undefined;
         let amountString = undefined;
@@ -2098,31 +2101,31 @@ module.exports = class liqi extends Exchange {
         let side = undefined;
         if (tradedCurrencyIsQuote) {
             symbol = applicantSymbol;
-            amountString = this.safeString (trade, 'transferedAmount');
-            costString = this.safeString (trade, 'amount');
+            amountString = this.safeString(trade, 'transferedAmount');
+            costString = this.safeString(trade, 'amount');
             side = 'buy';
         } else {
             symbol = tradedCurrency + '/' + earnedCurrency;
-            amountString = this.safeString (trade, 'amount');
-            costString = this.safeString (trade, 'transferedAmount');
+            amountString = this.safeString(trade, 'amount');
+            costString = this.safeString(trade, 'transferedAmount');
             side = 'sell';
         }
         let priceString = undefined;
         if (costString !== undefined) {
             if (amountString) {
-                priceString = Precise.stringDiv (costString, amountString);
+                priceString = Precise.stringDiv(costString, amountString);
             }
         }
         const id = undefined;
-        const amount = this.parseNumber (amountString);
-        const price = this.parseNumber (priceString);
-        const cost = this.parseNumber (costString);
+        const amount = this.parseNumber(amountString);
+        const price = this.parseNumber(priceString);
+        const cost = this.parseNumber(costString);
         const type = undefined;
         const takerOrMaker = undefined;
         return {
             'id': id,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'symbol': symbol,
             'order': orderId,
             'type': type,
@@ -2136,22 +2139,22 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async fetchDeposits (code = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchDeposits(code = undefined, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
         let currency = undefined;
         let response = undefined;
         const request = {};
-        const legalMoney = this.safeValue (this.options, 'legalMoney', {});
+        const legalMoney = this.safeValue(this.options, 'legalMoney', {});
         if (code in legalMoney) {
             if (code !== undefined) {
-                currency = this.currency (code);
+                currency = this.currency(code);
             }
             request['transactionType'] = 0;
             if (since !== undefined) {
                 request['beginTime'] = since;
             }
-            const raw = await this.sapiGetFiatOrders (this.extend (request, params));
-            response = this.safeValue (raw, 'data');
+            const raw = await this.sapiGetFiatOrders(this.extend(request, params));
+            response = this.safeValue(raw, 'data');
             //     {
             //       "code": "000000",
             //       "message": "success",
@@ -2173,18 +2176,18 @@ module.exports = class liqi extends Exchange {
             //     }
         } else {
             if (code !== undefined) {
-                currency = this.currency (code);
+                currency = this.currency(code);
                 request['coin'] = currency['id'];
             }
             if (since !== undefined) {
                 request['startTime'] = since;
                 // max 3 months range https://github.com/ccxt/ccxt/issues/6495
-                request['endTime'] = this.sum (since, 7776000000);
+                request['endTime'] = this.sum(since, 7776000000);
             }
             if (limit !== undefined) {
                 request['limit'] = limit;
             }
-            response = await this.sapiGetCapitalDepositHisrec (this.extend (request, params));
+            response = await this.sapiGetCapitalDepositHisrec(this.extend(request, params));
             //     [
             //       {
             //         "amount": "0.01844487",
@@ -2212,25 +2215,25 @@ module.exports = class liqi extends Exchange {
             //     }
             //   ]
         }
-        return this.parseTransactions (response, currency, since, limit);
+        return this.parseTransactions(response, currency, since, limit);
     }
 
-    async fetchWithdrawals (code = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
-        const legalMoney = this.safeValue (this.options, 'legalMoney', {});
+    async fetchWithdrawals(code = undefined, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
+        const legalMoney = this.safeValue(this.options, 'legalMoney', {});
         const request = {};
         let response = undefined;
         let currency = undefined;
         if (code in legalMoney) {
             if (code !== undefined) {
-                currency = this.currency (code);
+                currency = this.currency(code);
             }
             request['transactionType'] = 1;
             if (since !== undefined) {
                 request['beginTime'] = since;
             }
-            const raw = await this.sapiGetFiatOrders (this.extend (request, params));
-            response = this.safeValue (raw, 'data');
+            const raw = await this.sapiGetFiatOrders(this.extend(request, params));
+            response = this.safeValue(raw, 'data');
             //     {
             //       "code": "000000",
             //       "message": "success",
@@ -2263,18 +2266,18 @@ module.exports = class liqi extends Exchange {
             //     }
         } else {
             if (code !== undefined) {
-                currency = this.currency (code);
+                currency = this.currency(code);
                 request['coin'] = currency['id'];
             }
             if (since !== undefined) {
                 request['startTime'] = since;
                 // max 3 months range https://github.com/ccxt/ccxt/issues/6495
-                request['endTime'] = this.sum (since, 7776000000);
+                request['endTime'] = this.sum(since, 7776000000);
             }
             if (limit !== undefined) {
                 request['limit'] = limit;
             }
-            response = await this.sapiGetCapitalWithdrawHistory (this.extend (request, params));
+            response = await this.sapiGetCapitalWithdrawHistory(this.extend(request, params));
             //     [
             //       {
             //         "id": "69e53ad305124b96b43668ceab158a18",
@@ -2315,10 +2318,10 @@ module.exports = class liqi extends Exchange {
             //       }
             //     ]
         }
-        return this.parseTransactions (response, currency, since, limit);
+        return this.parseTransactions(response, currency, since, limit);
     }
 
-    parseTransactionStatusByType (status, type = undefined) {
+    parseTransactionStatusByType(status, type = undefined) {
         const statusesByType = {
             'deposit': {
                 '0': 'pending',
@@ -2350,11 +2353,11 @@ module.exports = class liqi extends Exchange {
                 'Refund Failed': 'failed',
             },
         };
-        const statuses = this.safeValue (statusesByType, type, {});
-        return this.safeString (statuses, status, status);
+        const statuses = this.safeValue(statusesByType, type, {});
+        return this.safeString(statuses, status, status);
     }
 
-    parseTransaction (transaction, currency = undefined) {
+    parseTransaction(transaction, currency = undefined) {
         //
         // fetchDeposits
         //
@@ -2414,24 +2417,24 @@ module.exports = class liqi extends Exchange {
         //       "updateTime": "1627501027000"
         //     }
         //
-        const id = this.safeString2 (transaction, 'id', 'orderNo');
-        const address = this.safeString (transaction, 'address');
-        let tag = this.safeString (transaction, 'addressTag'); // set but unused
+        const id = this.safeString2(transaction, 'id', 'orderNo');
+        const address = this.safeString(transaction, 'address');
+        let tag = this.safeString(transaction, 'addressTag'); // set but unused
         if (tag !== undefined) {
             if (tag.length < 1) {
                 tag = undefined;
             }
         }
-        let txid = this.safeString (transaction, 'txId');
-        if ((txid !== undefined) && (txid.indexOf ('Internal transfer ') >= 0)) {
-            txid = txid.slice (18);
+        let txid = this.safeString(transaction, 'txId');
+        if ((txid !== undefined) && (txid.indexOf('Internal transfer ') >= 0)) {
+            txid = txid.slice(18);
         }
-        const currencyId = this.safeString2 (transaction, 'coin', 'fiatCurrency');
-        const code = this.safeCurrencyCode (currencyId, currency);
+        const currencyId = this.safeString2(transaction, 'coin', 'fiatCurrency');
+        const code = this.safeCurrencyCode(currencyId, currency);
         let timestamp = undefined;
-        const insertTime = this.safeInteger2 (transaction, 'insertTime', 'createTime');
-        const applyTime = this.parse8601 (this.safeString (transaction, 'applyTime'));
-        let type = this.safeString (transaction, 'type');
+        const insertTime = this.safeInteger2(transaction, 'insertTime', 'createTime');
+        const applyTime = this.parse8601(this.safeString(transaction, 'applyTime'));
+        let type = this.safeString(transaction, 'type');
         if (type === undefined) {
             if ((insertTime !== undefined) && (applyTime === undefined)) {
                 type = 'deposit';
@@ -2441,23 +2444,23 @@ module.exports = class liqi extends Exchange {
                 timestamp = applyTime;
             }
         }
-        const status = this.parseTransactionStatusByType (this.safeString (transaction, 'status'), type);
-        const amount = this.safeNumber (transaction, 'amount');
-        const feeCost = this.safeNumber2 (transaction, 'transactionFee', 'totalFee');
+        const status = this.parseTransactionStatusByType(this.safeString(transaction, 'status'), type);
+        const amount = this.safeNumber(transaction, 'amount');
+        const feeCost = this.safeNumber2(transaction, 'transactionFee', 'totalFee');
         let fee = undefined;
         if (feeCost !== undefined) {
             fee = { 'currency': code, 'cost': feeCost };
         }
-        const updated = this.safeInteger2 (transaction, 'successTime', 'updateTime');
-        let internal = this.safeInteger (transaction, 'transferType', false);
+        const updated = this.safeInteger2(transaction, 'successTime', 'updateTime');
+        let internal = this.safeInteger(transaction, 'transferType', false);
         internal = internal ? true : false;
-        const network = this.safeString (transaction, 'network');
+        const network = this.safeString(transaction, 'network');
         return {
             'info': transaction,
             'id': id,
             'txid': txid,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'network': network,
             'address': address,
             'addressTo': address,
@@ -2475,14 +2478,14 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    parseTransferStatus (status) {
+    parseTransferStatus(status) {
         const statuses = {
             'CONFIRMED': 'ok',
         };
-        return this.safeString (statuses, status, status);
+        return this.safeString(statuses, status, status);
     }
 
-    parseTransfer (transfer, currency = undefined) {
+    parseTransfer(transfer, currency = undefined) {
         //
         // transfer
         //
@@ -2501,28 +2504,28 @@ module.exports = class liqi extends Exchange {
         //         tranId: 43000126248
         //     }
         //
-        const id = this.safeString (transfer, 'tranId');
-        const currencyId = this.safeString (transfer, 'asset');
-        const code = this.safeCurrencyCode (currencyId, currency);
-        const amount = this.safeNumber (transfer, 'amount');
-        const type = this.safeString (transfer, 'type');
+        const id = this.safeString(transfer, 'tranId');
+        const currencyId = this.safeString(transfer, 'asset');
+        const code = this.safeCurrencyCode(currencyId, currency);
+        const amount = this.safeNumber(transfer, 'amount');
+        const type = this.safeString(transfer, 'type');
         let fromAccount = undefined;
         let toAccount = undefined;
-        const typesByAccount = this.safeValue (this.options, 'typesByAccount', {});
+        const typesByAccount = this.safeValue(this.options, 'typesByAccount', {});
         if (type !== undefined) {
-            const parts = type.split ('_');
-            fromAccount = this.safeValue (parts, 0);
-            toAccount = this.safeValue (parts, 1);
-            fromAccount = this.safeString (typesByAccount, fromAccount, fromAccount);
-            toAccount = this.safeString (typesByAccount, toAccount, toAccount);
+            const parts = type.split('_');
+            fromAccount = this.safeValue(parts, 0);
+            toAccount = this.safeValue(parts, 1);
+            fromAccount = this.safeString(typesByAccount, fromAccount, fromAccount);
+            toAccount = this.safeString(typesByAccount, toAccount, toAccount);
         }
-        const timestamp = this.safeInteger (transfer, 'timestamp');
-        const status = this.parseTransferStatus (this.safeString (transfer, 'status'));
+        const timestamp = this.safeInteger(transfer, 'timestamp');
+        const status = this.parseTransferStatus(this.safeString(transfer, 'status'));
         return {
             'info': transfer,
             'id': id,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'currency': code,
             'amount': amount,
             'fromAccount': fromAccount,
@@ -2531,7 +2534,7 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    parseIncome (income, market = undefined) {
+    parseIncome(income, market = undefined) {
         //
         //     {
         //       "symbol": "ETHUSDT",
@@ -2544,68 +2547,68 @@ module.exports = class liqi extends Exchange {
         //       "tradeId": ""
         //     }
         //
-        const marketId = this.safeString (income, 'symbol');
-        const symbol = this.safeSymbol (marketId, market);
-        const amount = this.safeNumber (income, 'income');
-        const currencyId = this.safeString (income, 'asset');
-        const code = this.safeCurrencyCode (currencyId);
-        const id = this.safeString (income, 'tranId');
-        const timestamp = this.safeInteger (income, 'time');
+        const marketId = this.safeString(income, 'symbol');
+        const symbol = this.safeSymbol(marketId, market);
+        const amount = this.safeNumber(income, 'income');
+        const currencyId = this.safeString(income, 'asset');
+        const code = this.safeCurrencyCode(currencyId);
+        const id = this.safeString(income, 'tranId');
+        const timestamp = this.safeInteger(income, 'time');
         return {
             'info': income,
             'symbol': symbol,
             'code': code,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'id': id,
             'amount': amount,
         };
     }
 
-    parseIncomes (incomes, market = undefined, since = undefined, limit = undefined) {
+    parseIncomes(incomes, market = undefined, since = undefined, limit = undefined) {
         const result = [];
         for (let i = 0; i < incomes.length; i++) {
             const entry = incomes[i];
-            const parsed = this.parseIncome (entry, market);
-            result.push (parsed);
+            const parsed = this.parseIncome(entry, market);
+            result.push(parsed);
         }
-        const sorted = this.sortBy (result, 'timestamp');
-        return this.filterBySinceLimit (sorted, since, limit);
+        const sorted = this.sortBy(result, 'timestamp');
+        return this.filterBySinceLimit(sorted, since, limit);
     }
 
-    async transfer (code, amount, fromAccount, toAccount, params = {}) {
-        await this.loadMarkets ();
-        const currency = this.currency (code);
-        let type = this.safeString (params, 'type');
+    async transfer(code, amount, fromAccount, toAccount, params = {}) {
+        await this.loadMarkets();
+        const currency = this.currency(code);
+        let type = this.safeString(params, 'type');
         if (type === undefined) {
-            const accountsByType = this.safeValue (this.options, 'accountsByType', {});
-            fromAccount = fromAccount.toLowerCase ();
-            toAccount = toAccount.toLowerCase ();
-            const fromId = this.safeString (accountsByType, fromAccount);
-            const toId = this.safeString (accountsByType, toAccount);
+            const accountsByType = this.safeValue(this.options, 'accountsByType', {});
+            fromAccount = fromAccount.toLowerCase();
+            toAccount = toAccount.toLowerCase();
+            const fromId = this.safeString(accountsByType, fromAccount);
+            const toId = this.safeString(accountsByType, toAccount);
             if (fromId === undefined) {
-                const keys = Object.keys (accountsByType);
-                throw new ExchangeError (this.id + ' fromAccount must be one of ' + keys.join (', '));
+                const keys = Object.keys(accountsByType);
+                throw new ExchangeError(this.id + ' fromAccount must be one of ' + keys.join(', '));
             }
             if (toId === undefined) {
-                const keys = Object.keys (accountsByType);
-                throw new ExchangeError (this.id + ' toAccount must be one of ' + keys.join (', '));
+                const keys = Object.keys(accountsByType);
+                throw new ExchangeError(this.id + ' toAccount must be one of ' + keys.join(', '));
             }
             type = fromId + '_' + toId;
         }
         const request = {
             'asset': currency['id'],
-            'amount': this.currencyToPrecision (code, amount),
+            'amount': this.currencyToPrecision(code, amount),
             'type': type,
         };
-        const response = await this.sapiPostAssetTransfer (this.extend (request, params));
+        const response = await this.sapiPostAssetTransfer(this.extend(request, params));
         //
         //     {
         //         "tranId":13526853623
         //     }
         //
-        const transfer = this.parseTransfer (response, currency);
-        return this.extend (transfer, {
+        const transfer = this.parseTransfer(response, currency);
+        return this.extend(transfer, {
             'amount': amount,
             'currency': code,
             'fromAccount': fromAccount,
@@ -2613,28 +2616,28 @@ module.exports = class liqi extends Exchange {
         });
     }
 
-    async fetchTransfers (code = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchTransfers(code = undefined, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
         let currency = undefined;
         if (code !== undefined) {
-            currency = this.currency (code);
+            currency = this.currency(code);
         }
-        const defaultType = this.safeString2 (this.options, 'fetchTransfers', 'defaultType', 'spot');
-        const fromAccount = this.safeString (params, 'fromAccount', defaultType);
+        const defaultType = this.safeString2(this.options, 'fetchTransfers', 'defaultType', 'spot');
+        const fromAccount = this.safeString(params, 'fromAccount', defaultType);
         const defaultTo = (fromAccount === 'future') ? 'spot' : 'future';
-        const toAccount = this.safeString (params, 'toAccount', defaultTo);
-        let type = this.safeString (params, 'type');
-        const accountsByType = this.safeValue (this.options, 'accountsByType', {});
-        const fromId = this.safeString (accountsByType, fromAccount);
-        const toId = this.safeString (accountsByType, toAccount);
+        const toAccount = this.safeString(params, 'toAccount', defaultTo);
+        let type = this.safeString(params, 'type');
+        const accountsByType = this.safeValue(this.options, 'accountsByType', {});
+        const fromId = this.safeString(accountsByType, fromAccount);
+        const toId = this.safeString(accountsByType, toAccount);
         if (type === undefined) {
             if (fromId === undefined) {
-                const keys = Object.keys (accountsByType);
-                throw new ExchangeError (this.id + ' fromAccount parameter must be one of ' + keys.join (', '));
+                const keys = Object.keys(accountsByType);
+                throw new ExchangeError(this.id + ' fromAccount parameter must be one of ' + keys.join(', '));
             }
             if (toId === undefined) {
-                const keys = Object.keys (accountsByType);
-                throw new ExchangeError (this.id + ' toAccount parameter must be one of ' + keys.join (', '));
+                const keys = Object.keys(accountsByType);
+                throw new ExchangeError(this.id + ' toAccount parameter must be one of ' + keys.join(', '));
             }
             type = fromId + '_' + toId;
         }
@@ -2647,7 +2650,7 @@ module.exports = class liqi extends Exchange {
         if (limit !== undefined) {
             request['size'] = limit;
         }
-        const response = await this.sapiGetAssetTransfer (this.extend (request, params));
+        const response = await this.sapiGetAssetTransfer(this.extend(request, params));
         //
         //     {
         //         total: 3,
@@ -2663,27 +2666,27 @@ module.exports = class liqi extends Exchange {
         //         ]
         //     }
         //
-        const rows = this.safeValue (response, 'rows', []);
-        return this.parseTransfers (rows, currency, since, limit);
+        const rows = this.safeValue(response, 'rows', []);
+        return this.parseTransfers(rows, currency, since, limit);
     }
 
-    async fetchDepositAddress (code, params = {}) {
-        await this.loadMarkets ();
-        const currency = this.currency (code);
+    async fetchDepositAddress(code, params = {}) {
+        await this.loadMarkets();
+        const currency = this.currency(code);
         const request = {
             'coin': currency['id'],
             // 'network': 'ETH', // 'BSC', 'XMR', you can get network and isDefault in networkList in the response of sapiGetCapitalConfigDetail
         };
-        const networks = this.safeValue (this.options, 'networks', {});
-        let network = this.safeStringUpper (params, 'network'); // this line allows the user to specify either ERC20 or ETH
-        network = this.safeString (networks, network, network); // handle ERC20>ETH alias
+        const networks = this.safeValue(this.options, 'networks', {});
+        let network = this.safeStringUpper(params, 'network'); // this line allows the user to specify either ERC20 or ETH
+        network = this.safeString(networks, network, network); // handle ERC20>ETH alias
         if (network !== undefined) {
             request['network'] = network;
-            params = this.omit (params, 'network');
+            params = this.omit(params, 'network');
         }
         // has support for the 'network' parameter
         // https://liqi-docs.github.io/apidocs/spot/en/#deposit-address-supporting-network-user_data
-        const response = await this.sapiGetCapitalDepositAddress (this.extend (request, params));
+        const response = await this.sapiGetCapitalDepositAddress(this.extend(request, params));
         //
         //     {
         //         currency: 'XRP',
@@ -2697,34 +2700,34 @@ module.exports = class liqi extends Exchange {
         //         }
         //     }
         //
-        const address = this.safeString (response, 'address');
-        const url = this.safeString (response, 'url');
+        const address = this.safeString(response, 'address');
+        const url = this.safeString(response, 'url');
         let impliedNetwork = undefined;
         if (url !== undefined) {
-            const reverseNetworks = this.safeValue (this.options, 'reverseNetworks', {});
-            const parts = url.split ('/');
-            let topLevel = this.safeString (parts, 2);
+            const reverseNetworks = this.safeValue(this.options, 'reverseNetworks', {});
+            const parts = url.split('/');
+            let topLevel = this.safeString(parts, 2);
             if ((topLevel === 'blockchair.com') || (topLevel === 'viewblock.io')) {
-                const subLevel = this.safeString (parts, 3);
+                const subLevel = this.safeString(parts, 3);
                 if (subLevel !== undefined) {
                     topLevel = topLevel + '/' + subLevel;
                 }
             }
-            impliedNetwork = this.safeString (reverseNetworks, topLevel);
-            const impliedNetworks = this.safeValue (this.options, 'impliedNetworks', {
+            impliedNetwork = this.safeString(reverseNetworks, topLevel);
+            const impliedNetworks = this.safeValue(this.options, 'impliedNetworks', {
                 'ETH': { 'ERC20': 'ETH' },
                 'TRX': { 'TRC20': 'TRX' },
             });
             if (code in impliedNetworks) {
-                const conversion = this.safeValue (impliedNetworks, code, {});
-                impliedNetwork = this.safeString (conversion, impliedNetwork, impliedNetwork);
+                const conversion = this.safeValue(impliedNetworks, code, {});
+                impliedNetwork = this.safeString(conversion, impliedNetwork, impliedNetwork);
             }
         }
-        let tag = this.safeString (response, 'tag', '');
+        let tag = this.safeString(response, 'tag', '');
         if (tag.length === 0) {
             tag = undefined;
         }
-        this.checkAddress (address);
+        this.checkAddress(address);
         return {
             'currency': code,
             'address': address,
@@ -2734,9 +2737,9 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async fetchFundingFees (codes = undefined, params = {}) {
-        await this.loadMarkets ();
-        const response = await this.sapiGetCapitalConfigGetall (params);
+    async fetchFundingFees(codes = undefined, params = {}) {
+        await this.loadMarkets();
+        const response = await this.sapiGetCapitalConfigGetall(params);
         //
         //  [
         //     {
@@ -2821,15 +2824,15 @@ module.exports = class liqi extends Exchange {
         const withdrawFees = {};
         for (let i = 0; i < response.length; i++) {
             const entry = response[i];
-            const currencyId = this.safeString (entry, 'coin');
-            const code = this.safeCurrencyCode (currencyId);
-            const networkList = this.safeValue (entry, 'networkList');
+            const currencyId = this.safeString(entry, 'coin');
+            const code = this.safeCurrencyCode(currencyId);
+            const networkList = this.safeValue(entry, 'networkList');
             withdrawFees[code] = {};
             for (let j = 0; j < networkList.length; j++) {
                 const networkEntry = networkList[j];
-                const networkId = this.safeString (networkEntry, 'network');
-                const networkCode = this.safeCurrencyCode (networkId);
-                const fee = this.safeNumber (networkEntry, 'withdrawFee');
+                const networkId = this.safeString(networkEntry, 'network');
+                const networkCode = this.safeCurrencyCode(networkId);
+                const fee = this.safeNumber(networkEntry, 'withdrawFee');
                 withdrawFees[code][networkCode] = fee;
             }
         }
@@ -2840,11 +2843,11 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async withdraw (code, amount, address, tag = undefined, params = {}) {
-        [ tag, params ] = this.handleWithdrawTagAndParams (tag, params);
-        this.checkAddress (address);
-        await this.loadMarkets ();
-        const currency = this.currency (code);
+    async withdraw(code, amount, address, tag = undefined, params = {}) {
+        [tag, params] = this.handleWithdrawTagAndParams(tag, params);
+        this.checkAddress(address);
+        await this.loadMarkets();
+        const currency = this.currency(code);
         const request = {
             'coin': currency['id'],
             'address': address,
@@ -2856,22 +2859,22 @@ module.exports = class liqi extends Exchange {
         if (tag !== undefined) {
             request['addressTag'] = tag;
         }
-        const networks = this.safeValue (this.options, 'networks', {});
-        let network = this.safeStringUpper (params, 'network'); // this line allows the user to specify either ERC20 or ETH
-        network = this.safeString (networks, network, network); // handle ERC20>ETH alias
+        const networks = this.safeValue(this.options, 'networks', {});
+        let network = this.safeStringUpper(params, 'network'); // this line allows the user to specify either ERC20 or ETH
+        network = this.safeString(networks, network, network); // handle ERC20>ETH alias
         if (network !== undefined) {
             request['network'] = network;
-            params = this.omit (params, 'network');
+            params = this.omit(params, 'network');
         }
-        const response = await this.sapiPostCapitalWithdrawApply (this.extend (request, params));
+        const response = await this.sapiPostCapitalWithdrawApply(this.extend(request, params));
         //     { id: '9a67628b16ba4988ae20d329333f16bc' }
         return {
             'info': response,
-            'id': this.safeString (response, 'id'),
+            'id': this.safeString(response, 'id'),
         };
     }
 
-    parseTradingFee (fee, market = undefined) {
+    parseTradingFee(fee, market = undefined) {
         //
         //     {
         //         "symbol": "ADABNB",
@@ -2879,23 +2882,23 @@ module.exports = class liqi extends Exchange {
         //         "takerCommission": 0.001
         //     }
         //
-        const marketId = this.safeString (fee, 'symbol');
-        const symbol = this.safeSymbol (marketId);
+        const marketId = this.safeString(fee, 'symbol');
+        const symbol = this.safeSymbol(marketId);
         return {
             'info': fee,
             'symbol': symbol,
-            'maker': this.safeNumber (fee, 'makerCommission'),
-            'taker': this.safeNumber (fee, 'takerCommission'),
+            'maker': this.safeNumber(fee, 'makerCommission'),
+            'taker': this.safeNumber(fee, 'takerCommission'),
         };
     }
 
-    async fetchTradingFee (symbol, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchTradingFee(symbol, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
         };
-        const response = await this.sapiGetAssetTradeFee (this.extend (request, params));
+        const response = await this.sapiGetAssetTradeFee(this.extend(request, params));
         //
         //     [
         //       {
@@ -2905,16 +2908,16 @@ module.exports = class liqi extends Exchange {
         //       }
         //     ]
         //
-        const first = this.safeValue (response, 0, {});
-        return this.parseTradingFee (first);
+        const first = this.safeValue(response, 0, {});
+        return this.parseTradingFee(first);
     }
 
-    async fetchTradingFees (params = {}) {
-        await this.loadMarkets ();
+    async fetchTradingFees(params = {}) {
+        await this.loadMarkets();
         let method = undefined;
-        const defaultType = this.safeString2 (this.options, 'fetchFundingRates', 'defaultType', 'future');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+        const defaultType = this.safeString2(this.options, 'fetchFundingRates', 'defaultType', 'future');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         if ((type === 'spot') || (type === 'margin')) {
             method = 'sapiGetAssetTradeFee';
         } else if (type === 'future') {
@@ -2922,7 +2925,7 @@ module.exports = class liqi extends Exchange {
         } else if (type === 'delivery') {
             method = 'dapiPrivateGetAccount';
         }
-        const response = await this[method] (query);
+        const response = await this[method](query);
         //
         // sapi / spot
         //
@@ -2988,7 +2991,7 @@ module.exports = class liqi extends Exchange {
             //
             const result = {};
             for (let i = 0; i < response.length; i++) {
-                const fee = this.parseTradingFee (response[i]);
+                const fee = this.parseTradingFee(response[i]);
                 const symbol = fee['symbol'];
                 result[symbol] = fee;
             }
@@ -3015,9 +3018,9 @@ module.exports = class liqi extends Exchange {
             //         ...
             //     }
             //
-            const symbols = Object.keys (this.markets);
+            const symbols = Object.keys(this.markets);
             const result = {};
-            const feeTier = this.safeInteger (response, 'feeTier');
+            const feeTier = this.safeInteger(response, 'feeTier');
             const feeTiers = this.fees[type]['trading']['tiers'];
             const maker = feeTiers['maker'][feeTier][1];
             const taker = feeTiers['taker'][feeTier][1];
@@ -3043,9 +3046,9 @@ module.exports = class liqi extends Exchange {
             //         "updateTime": 0
             //     }
             //
-            const symbols = Object.keys (this.markets);
+            const symbols = Object.keys(this.markets);
             const result = {};
-            const feeTier = this.safeInteger (response, 'feeTier');
+            const feeTier = this.safeInteger(response, 'feeTier');
             const feeTiers = this.fees[type]['trading']['tiers'];
             const maker = feeTiers['maker'][feeTier][1];
             const taker = feeTiers['taker'][feeTier][1];
@@ -3064,29 +3067,29 @@ module.exports = class liqi extends Exchange {
         }
     }
 
-    async futuresTransfer (code, amount, type, params = {}) {
+    async futuresTransfer(code, amount, type, params = {}) {
         if ((type < 1) || (type > 4)) {
-            throw new ArgumentsRequired (this.id + ' type must be between 1 and 4');
+            throw new ArgumentsRequired(this.id + ' type must be between 1 and 4');
         }
-        await this.loadMarkets ();
-        const currency = this.currency (code);
+        await this.loadMarkets();
+        const currency = this.currency(code);
         const request = {
             'asset': currency['id'],
             'amount': amount,
             'type': type,
         };
-        const response = await this.sapiPostFuturesTransfer (this.extend (request, params));
+        const response = await this.sapiPostFuturesTransfer(this.extend(request, params));
         //
         //   {
         //       "tranId": 100000001
         //   }
         //
-        return this.parseTransfer (response, currency);
+        return this.parseTransfer(response, currency);
     }
 
-    async fetchFundingRate (symbol, params = {}) {
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+    async fetchFundingRate(symbol, params = {}) {
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'symbol': market['id'],
         };
@@ -3096,9 +3099,9 @@ module.exports = class liqi extends Exchange {
         } else if (market['inverse']) {
             method = 'dapiPublicGetPremiumIndex';
         } else {
-            throw new NotSupported (this.id + ' fetchFundingRate() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' fetchFundingRate() supports linear and inverse contracts only');
         }
-        let response = await this[method] (this.extend (request, params));
+        let response = await this[method](this.extend(request, params));
         if (market['inverse']) {
             response = response[0];
         }
@@ -3114,10 +3117,10 @@ module.exports = class liqi extends Exchange {
         //         "time": "1621252344001"
         //     }
         //
-        return this.parseFundingRate (response, market);
+        return this.parseFundingRate(response, market);
     }
 
-    async fetchFundingRateHistory (symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchFundingRateHistory(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         //
         // Gets a history of funding rates with their timestamps
         //  (param) symbol: Future currency pair (e.g. "BTC/USDT")
@@ -3127,19 +3130,19 @@ module.exports = class liqi extends Exchange {
         //          - until: Unix timestamp in miliseconds for the time of the earliest requested funding rate
         //  return: [{symbol, fundingRate, timestamp}]
         //
-        await this.loadMarkets ();
+        await this.loadMarkets();
         const request = {};
         let method = undefined;
-        const defaultType = this.safeString2 (this.options, 'fetchFundingRateHistory', 'defaultType', 'future');
-        const type = this.safeString (params, 'type', defaultType);
-        params = this.omit (params, 'type');
+        const defaultType = this.safeString2(this.options, 'fetchFundingRateHistory', 'defaultType', 'future');
+        const type = this.safeString(params, 'type', defaultType);
+        params = this.omit(params, 'type');
         if (type === 'future') {
             method = 'fapiPublicGetFundingRate';
         } else if (type === 'delivery') {
             method = 'dapiPublicGetFundingRate';
         }
         if (symbol !== undefined) {
-            const market = this.market (symbol);
+            const market = this.market(symbol);
             symbol = market['symbol'];
             request['symbol'] = market['id'];
             if (market['linear']) {
@@ -3149,21 +3152,21 @@ module.exports = class liqi extends Exchange {
             }
         }
         if (method === undefined) {
-            throw new NotSupported (this.id + ' fetchFundingRateHistory() not supported for ' + type + ' markets');
+            throw new NotSupported(this.id + ' fetchFundingRateHistory() not supported for ' + type + ' markets');
         }
         if (since !== undefined) {
             request['startTime'] = since;
         }
-        const till = this.safeInteger (params, 'till'); // unified in milliseconds
-        const endTime = this.safeString (params, 'endTime', till); // exchange-specific in milliseconds
-        params = this.omit (params, [ 'endTime', 'till' ]);
+        const till = this.safeInteger(params, 'till'); // unified in milliseconds
+        const endTime = this.safeString(params, 'endTime', till); // exchange-specific in milliseconds
+        params = this.omit(params, ['endTime', 'till']);
         if (endTime !== undefined) {
             request['endTime'] = endTime;
         }
         if (limit !== undefined) {
             request['limit'] = limit;
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         //
         //     {
         //         "symbol": "BTCUSDT",
@@ -3174,44 +3177,44 @@ module.exports = class liqi extends Exchange {
         const rates = [];
         for (let i = 0; i < response.length; i++) {
             const entry = response[i];
-            const timestamp = this.safeInteger (entry, 'fundingTime');
-            rates.push ({
+            const timestamp = this.safeInteger(entry, 'fundingTime');
+            rates.push({
                 'info': entry,
-                'symbol': this.safeSymbol (this.safeString (entry, 'symbol')),
-                'fundingRate': this.safeNumber (entry, 'fundingRate'),
+                'symbol': this.safeSymbol(this.safeString(entry, 'symbol')),
+                'fundingRate': this.safeNumber(entry, 'fundingRate'),
                 'timestamp': timestamp,
-                'datetime': this.iso8601 (timestamp),
+                'datetime': this.iso8601(timestamp),
             });
         }
-        const sorted = this.sortBy (rates, 'timestamp');
-        return this.filterBySymbolSinceLimit (sorted, symbol, since, limit);
+        const sorted = this.sortBy(rates, 'timestamp');
+        return this.filterBySymbolSinceLimit(sorted, symbol, since, limit);
     }
 
-    async fetchFundingRates (symbols = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchFundingRates(symbols = undefined, params = {}) {
+        await this.loadMarkets();
         let method = undefined;
-        const defaultType = this.safeString2 (this.options, 'fetchFundingRates', 'defaultType', 'future');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+        const defaultType = this.safeString2(this.options, 'fetchFundingRates', 'defaultType', 'future');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         if (type === 'future') {
             method = 'fapiPublicGetPremiumIndex';
         } else if (type === 'delivery') {
             method = 'dapiPublicGetPremiumIndex';
         } else {
-            throw new NotSupported (this.id + ' fetchFundingRates() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' fetchFundingRates() supports linear and inverse contracts only');
         }
-        const response = await this[method] (query);
+        const response = await this[method](query);
         const result = [];
         for (let i = 0; i < response.length; i++) {
             const entry = response[i];
-            const parsed = this.parseFundingRate (entry);
-            result.push (parsed);
+            const parsed = this.parseFundingRate(entry);
+            result.push(parsed);
         }
-        return this.filterByArray (result, 'symbol', symbols);
+        return this.filterByArray(result, 'symbol', symbols);
     }
 
-    parseFundingRate (premiumIndex, market = undefined) {
-        // ensure it matches with https://www.liqi.com/en/futures/funding-history/0
+    parseFundingRate(premiumIndex, market = undefined) {
+        // ensure it matches with https://www.liqi.com.br/en/futures/funding-history/0
         //
         //   {
         //     "symbol": "BTCUSDT",
@@ -3224,15 +3227,15 @@ module.exports = class liqi extends Exchange {
         //     "time": "1621252344001"
         //  }
         //
-        const timestamp = this.safeInteger (premiumIndex, 'time');
-        const marketId = this.safeString (premiumIndex, 'symbol');
-        const symbol = this.safeSymbol (marketId, market);
-        const markPrice = this.safeNumber (premiumIndex, 'markPrice');
-        const indexPrice = this.safeNumber (premiumIndex, 'indexPrice');
-        const interestRate = this.safeNumber (premiumIndex, 'interestRate');
-        const estimatedSettlePrice = this.safeNumber (premiumIndex, 'estimatedSettlePrice');
-        const fundingRate = this.safeNumber (premiumIndex, 'lastFundingRate');
-        const fundingTime = this.safeInteger (premiumIndex, 'nextFundingTime');
+        const timestamp = this.safeInteger(premiumIndex, 'time');
+        const marketId = this.safeString(premiumIndex, 'symbol');
+        const symbol = this.safeSymbol(marketId, market);
+        const markPrice = this.safeNumber(premiumIndex, 'markPrice');
+        const indexPrice = this.safeNumber(premiumIndex, 'indexPrice');
+        const interestRate = this.safeNumber(premiumIndex, 'interestRate');
+        const estimatedSettlePrice = this.safeNumber(premiumIndex, 'estimatedSettlePrice');
+        const fundingRate = this.safeNumber(premiumIndex, 'lastFundingRate');
+        const fundingTime = this.safeInteger(premiumIndex, 'nextFundingTime');
         return {
             'info': premiumIndex,
             'symbol': symbol,
@@ -3241,10 +3244,10 @@ module.exports = class liqi extends Exchange {
             'interestRate': interestRate,
             'estimatedSettlePrice': estimatedSettlePrice,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'fundingRate': fundingRate,
             'fundingTimestamp': fundingTime,
-            'fundingDatetime': this.iso8601 (fundingTime),
+            'fundingDatetime': this.iso8601(fundingTime),
             'nextFundingRate': undefined,
             'nextFundingTimestamp': undefined,
             'nextFundingDatetime': undefined,
@@ -3254,40 +3257,40 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    parseAccountPositions (account) {
-        const positions = this.safeValue (account, 'positions');
-        const assets = this.safeValue (account, 'assets');
+    parseAccountPositions(account) {
+        const positions = this.safeValue(account, 'positions');
+        const assets = this.safeValue(account, 'assets');
         const balances = {};
         for (let i = 0; i < assets.length; i++) {
             const entry = assets[i];
-            const currencyId = this.safeString (entry, 'asset');
-            const code = this.safeCurrencyCode (currencyId);
-            const crossWalletBalance = this.safeString (entry, 'crossWalletBalance');
-            const crossUnPnl = this.safeString (entry, 'crossUnPnl');
+            const currencyId = this.safeString(entry, 'asset');
+            const code = this.safeCurrencyCode(currencyId);
+            const crossWalletBalance = this.safeString(entry, 'crossWalletBalance');
+            const crossUnPnl = this.safeString(entry, 'crossUnPnl');
             balances[code] = {
-                'crossMargin': Precise.stringAdd (crossWalletBalance, crossUnPnl),
+                'crossMargin': Precise.stringAdd(crossWalletBalance, crossUnPnl),
                 'crossWalletBalance': crossWalletBalance,
             };
         }
         const result = [];
         for (let i = 0; i < positions.length; i++) {
             const position = positions[i];
-            const marketId = this.safeString (position, 'symbol');
-            const market = this.safeMarket (marketId);
+            const marketId = this.safeString(position, 'symbol');
+            const market = this.safeMarket(marketId);
             const code = (this.options['defaultType'] === 'future') ? market['quote'] : market['base'];
             // sometimes not all the codes are correctly returned...
             if (code in balances) {
-                const parsed = this.parseAccountPosition (this.extend (position, {
+                const parsed = this.parseAccountPosition(this.extend(position, {
                     'crossMargin': balances[code]['crossMargin'],
                     'crossWalletBalance': balances[code]['crossWalletBalance'],
                 }), market);
-                result.push (parsed);
+                result.push(parsed);
             }
         }
         return result;
     }
 
-    parseAccountPosition (position, market = undefined) {
+    parseAccountPosition(position, market = undefined) {
         //
         // usdm
         //    {
@@ -3328,80 +3331,80 @@ module.exports = class liqi extends Exchange {
         //       "crossWalletBalance": "34",
         //     }
         //
-        const marketId = this.safeString (position, 'symbol');
-        market = this.safeMarket (marketId, market);
-        const symbol = this.safeString (market, 'symbol');
-        const leverageString = this.safeString (position, 'leverage');
-        const leverage = parseInt (leverageString);
-        const initialMarginString = this.safeString (position, 'initialMargin');
-        const initialMargin = this.parseNumber (initialMarginString);
-        let initialMarginPercentageString = Precise.stringDiv ('1', leverageString, 8);
+        const marketId = this.safeString(position, 'symbol');
+        market = this.safeMarket(marketId, market);
+        const symbol = this.safeString(market, 'symbol');
+        const leverageString = this.safeString(position, 'leverage');
+        const leverage = parseInt(leverageString);
+        const initialMarginString = this.safeString(position, 'initialMargin');
+        const initialMargin = this.parseNumber(initialMarginString);
+        let initialMarginPercentageString = Precise.stringDiv('1', leverageString, 8);
         const rational = (1000 % leverage) === 0;
         if (!rational) {
-            initialMarginPercentageString = Precise.stringDiv (Precise.stringAdd (initialMarginPercentageString, '1e-8'), '1', 8);
+            initialMarginPercentageString = Precise.stringDiv(Precise.stringAdd(initialMarginPercentageString, '1e-8'), '1', 8);
         }
         // as oppose to notionalValue
         const usdm = ('notional' in position);
-        const maintenanceMarginString = this.safeString (position, 'maintMargin');
-        const maintenanceMargin = this.parseNumber (maintenanceMarginString);
-        const entryPriceString = this.safeString (position, 'entryPrice');
-        let entryPrice = this.parseNumber (entryPriceString);
-        const notionalString = this.safeString2 (position, 'notional', 'notionalValue');
-        const notionalStringAbs = Precise.stringAbs (notionalString);
-        const notional = this.parseNumber (notionalStringAbs);
-        let contractsString = this.safeString (position, 'positionAmt');
-        let contractsStringAbs = Precise.stringAbs (contractsString);
+        const maintenanceMarginString = this.safeString(position, 'maintMargin');
+        const maintenanceMargin = this.parseNumber(maintenanceMarginString);
+        const entryPriceString = this.safeString(position, 'entryPrice');
+        let entryPrice = this.parseNumber(entryPriceString);
+        const notionalString = this.safeString2(position, 'notional', 'notionalValue');
+        const notionalStringAbs = Precise.stringAbs(notionalString);
+        const notional = this.parseNumber(notionalStringAbs);
+        let contractsString = this.safeString(position, 'positionAmt');
+        let contractsStringAbs = Precise.stringAbs(contractsString);
         if (contractsString === undefined) {
-            const entryNotional = Precise.stringMul (Precise.stringMul (leverageString, initialMarginString), entryPriceString);
-            const contractSize = this.safeString (market, 'contractSize');
-            contractsString = Precise.stringDiv (entryNotional, contractSize);
-            contractsStringAbs = Precise.stringDiv (Precise.stringAdd (contractsString, '0.5'), '1', 0);
+            const entryNotional = Precise.stringMul(Precise.stringMul(leverageString, initialMarginString), entryPriceString);
+            const contractSize = this.safeString(market, 'contractSize');
+            contractsString = Precise.stringDiv(entryNotional, contractSize);
+            contractsStringAbs = Precise.stringDiv(Precise.stringAdd(contractsString, '0.5'), '1', 0);
         }
-        const contracts = this.parseNumber (contractsStringAbs);
-        const leverageBrackets = this.safeValue (this.options, 'leverageBrackets', {});
-        const leverageBracket = this.safeValue (leverageBrackets, symbol, []);
+        const contracts = this.parseNumber(contractsStringAbs);
+        const leverageBrackets = this.safeValue(this.options, 'leverageBrackets', {});
+        const leverageBracket = this.safeValue(leverageBrackets, symbol, []);
         let maintenanceMarginPercentageString = undefined;
         for (let i = 0; i < leverageBracket.length; i++) {
             const bracket = leverageBracket[i];
-            if (Precise.stringLt (notionalStringAbs, bracket[0])) {
+            if (Precise.stringLt(notionalStringAbs, bracket[0])) {
                 break;
             }
             maintenanceMarginPercentageString = bracket[1];
         }
-        const maintenanceMarginPercentage = this.parseNumber (maintenanceMarginPercentageString);
-        const unrealizedPnlString = this.safeString (position, 'unrealizedProfit');
-        const unrealizedPnl = this.parseNumber (unrealizedPnlString);
-        let timestamp = this.safeInteger (position, 'updateTime');
+        const maintenanceMarginPercentage = this.parseNumber(maintenanceMarginPercentageString);
+        const unrealizedPnlString = this.safeString(position, 'unrealizedProfit');
+        const unrealizedPnl = this.parseNumber(unrealizedPnlString);
+        let timestamp = this.safeInteger(position, 'updateTime');
         if (timestamp === 0) {
             timestamp = undefined;
         }
-        const isolated = this.safeValue (position, 'isolated');
+        const isolated = this.safeValue(position, 'isolated');
         let marginType = undefined;
         let collateralString = undefined;
         let walletBalance = undefined;
         if (isolated) {
             marginType = 'isolated';
-            walletBalance = this.safeString (position, 'isolatedWallet');
-            collateralString = Precise.stringAdd (walletBalance, unrealizedPnlString);
+            walletBalance = this.safeString(position, 'isolatedWallet');
+            collateralString = Precise.stringAdd(walletBalance, unrealizedPnlString);
         } else {
             marginType = 'cross';
-            walletBalance = this.safeString (position, 'crossWalletBalance');
-            collateralString = this.safeString (position, 'crossMargin');
+            walletBalance = this.safeString(position, 'crossWalletBalance');
+            collateralString = this.safeString(position, 'crossMargin');
         }
-        const collateral = this.parseNumber (collateralString);
+        const collateral = this.parseNumber(collateralString);
         let marginRatio = undefined;
         let side = undefined;
         let percentage = undefined;
         let liquidationPriceStringRaw = undefined;
         let liquidationPrice = undefined;
-        const contractSize = this.safeValue (market, 'contractSize');
-        const contractSizeString = this.numberToString (contractSize);
-        if (Precise.stringEquals (notionalString, '0')) {
+        const contractSize = this.safeValue(market, 'contractSize');
+        const contractSizeString = this.numberToString(contractSize);
+        if (Precise.stringEquals(notionalString, '0')) {
             entryPrice = undefined;
         } else {
-            side = Precise.stringLt (notionalString, '0') ? 'short' : 'long';
-            marginRatio = this.parseNumber (Precise.stringDiv (Precise.stringAdd (Precise.stringDiv (maintenanceMarginString, collateralString), '5e-5'), '1', 4));
-            percentage = this.parseNumber (Precise.stringMul (Precise.stringDiv (unrealizedPnlString, initialMarginString, 4), '100'));
+            side = Precise.stringLt(notionalString, '0') ? 'short' : 'long';
+            marginRatio = this.parseNumber(Precise.stringDiv(Precise.stringAdd(Precise.stringDiv(maintenanceMarginString, collateralString), '5e-5'), '1', 4));
+            percentage = this.parseNumber(Precise.stringMul(Precise.stringDiv(unrealizedPnlString, initialMarginString, 4), '100'));
             if (usdm) {
                 // calculate liquidation price
                 //
@@ -3413,14 +3416,14 @@ module.exports = class liqi extends Exchange {
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd ('1', maintenanceMarginPercentageString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd('1', maintenanceMarginPercentageString);
                 } else {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd ('-1', maintenanceMarginPercentageString);
-                    entryPriceSignString = Precise.stringMul ('-1', entryPriceSignString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd('-1', maintenanceMarginPercentageString);
+                    entryPriceSignString = Precise.stringMul('-1', entryPriceSignString);
                 }
-                const leftSide = Precise.stringDiv (walletBalance, Precise.stringMul (contractsStringAbs, onePlusMaintenanceMarginPercentageString));
-                const rightSide = Precise.stringDiv (entryPriceSignString, onePlusMaintenanceMarginPercentageString);
-                liquidationPriceStringRaw = Precise.stringAdd (leftSide, rightSide);
+                const leftSide = Precise.stringDiv(walletBalance, Precise.stringMul(contractsStringAbs, onePlusMaintenanceMarginPercentageString));
+                const rightSide = Precise.stringDiv(entryPriceSignString, onePlusMaintenanceMarginPercentageString);
+                liquidationPriceStringRaw = Precise.stringAdd(leftSide, rightSide);
             } else {
                 // calculate liquidation price
                 //
@@ -3429,45 +3432,45 @@ module.exports = class liqi extends Exchange {
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringSub ('1', maintenanceMarginPercentageString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringSub('1', maintenanceMarginPercentageString);
                 } else {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringSub ('-1', maintenanceMarginPercentageString);
-                    entryPriceSignString = Precise.stringMul ('-1', entryPriceSignString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringSub('-1', maintenanceMarginPercentageString);
+                    entryPriceSignString = Precise.stringMul('-1', entryPriceSignString);
                 }
-                const size = Precise.stringMul (contractsStringAbs, contractSizeString);
-                const leftSide = Precise.stringMul (size, onePlusMaintenanceMarginPercentageString);
-                const rightSide = Precise.stringSub (Precise.stringMul (Precise.stringDiv ('1', entryPriceSignString), size), walletBalance);
-                liquidationPriceStringRaw = Precise.stringDiv (leftSide, rightSide);
+                const size = Precise.stringMul(contractsStringAbs, contractSizeString);
+                const leftSide = Precise.stringMul(size, onePlusMaintenanceMarginPercentageString);
+                const rightSide = Precise.stringSub(Precise.stringMul(Precise.stringDiv('1', entryPriceSignString), size), walletBalance);
+                liquidationPriceStringRaw = Precise.stringDiv(leftSide, rightSide);
             }
             const pricePrecision = market['precision']['price'];
             const pricePrecisionPlusOne = pricePrecision + 1;
-            const pricePrecisionPlusOneString = pricePrecisionPlusOne.toString ();
+            const pricePrecisionPlusOneString = pricePrecisionPlusOne.toString();
             // round half up
-            const rounder = new Precise ('5e-' + pricePrecisionPlusOneString);
-            const rounderString = rounder.toString ();
-            const liquidationPriceRoundedString = Precise.stringAdd (rounderString, liquidationPriceStringRaw);
-            let truncatedLiquidationPrice = Precise.stringDiv (liquidationPriceRoundedString, '1', pricePrecision);
+            const rounder = new Precise('5e-' + pricePrecisionPlusOneString);
+            const rounderString = rounder.toString();
+            const liquidationPriceRoundedString = Precise.stringAdd(rounderString, liquidationPriceStringRaw);
+            let truncatedLiquidationPrice = Precise.stringDiv(liquidationPriceRoundedString, '1', pricePrecision);
             if (truncatedLiquidationPrice[0] === '-') {
                 // user cannot be liquidated
                 // since he has more collateral than the size of the position
                 truncatedLiquidationPrice = undefined;
             }
-            liquidationPrice = this.parseNumber (truncatedLiquidationPrice);
+            liquidationPrice = this.parseNumber(truncatedLiquidationPrice);
         }
-        const positionSide = this.safeString (position, 'positionSide');
+        const positionSide = this.safeString(position, 'positionSide');
         const hedged = positionSide !== 'BOTH';
         return {
             'info': position,
             'symbol': symbol,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'initialMargin': initialMargin,
-            'initialMarginPercentage': this.parseNumber (initialMarginPercentageString),
+            'initialMarginPercentage': this.parseNumber(initialMarginPercentageString),
             'maintenanceMargin': maintenanceMargin,
             'maintenanceMarginPercentage': maintenanceMarginPercentage,
             'entryPrice': entryPrice,
             'notional': notional,
-            'leverage': this.parseNumber (leverageString),
+            'leverage': this.parseNumber(leverageString),
             'unrealizedPnl': unrealizedPnl,
             'contracts': contracts,
             'contractSize': contractSize,
@@ -3482,7 +3485,7 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    parsePositionRisk (position, market = undefined) {
+    parsePositionRisk(position, market = undefined) {
         //
         // usdm
         //     {
@@ -3521,103 +3524,103 @@ module.exports = class liqi extends Exchange {
         //       "isolatedWallet": "0.00268058"
         //     }
         //
-        const marketId = this.safeString (position, 'symbol');
-        market = this.safeMarket (marketId, market);
-        const symbol = this.safeString (market, 'symbol');
-        const leverageBrackets = this.safeValue (this.options, 'leverageBrackets', {});
-        const leverageBracket = this.safeValue (leverageBrackets, symbol, []);
-        const notionalString = this.safeString2 (position, 'notional', 'notionalValue');
-        const notionalStringAbs = Precise.stringAbs (notionalString);
+        const marketId = this.safeString(position, 'symbol');
+        market = this.safeMarket(marketId, market);
+        const symbol = this.safeString(market, 'symbol');
+        const leverageBrackets = this.safeValue(this.options, 'leverageBrackets', {});
+        const leverageBracket = this.safeValue(leverageBrackets, symbol, []);
+        const notionalString = this.safeString2(position, 'notional', 'notionalValue');
+        const notionalStringAbs = Precise.stringAbs(notionalString);
         let maintenanceMarginPercentageString = undefined;
         for (let i = 0; i < leverageBracket.length; i++) {
             const bracket = leverageBracket[i];
-            if (Precise.stringLt (notionalStringAbs, bracket[0])) {
+            if (Precise.stringLt(notionalStringAbs, bracket[0])) {
                 break;
             }
             maintenanceMarginPercentageString = bracket[1];
         }
-        const notional = this.parseNumber (notionalStringAbs);
-        const contractsAbs = Precise.stringAbs (this.safeString (position, 'positionAmt'));
-        const contracts = this.parseNumber (contractsAbs);
-        const unrealizedPnlString = this.safeString (position, 'unRealizedProfit');
-        const unrealizedPnl = this.parseNumber (unrealizedPnlString);
-        const leverageString = this.safeString (position, 'leverage');
-        const leverage = parseInt (leverageString);
-        const liquidationPriceString = this.omitZero (this.safeString (position, 'liquidationPrice'));
-        const liquidationPrice = this.parseNumber (liquidationPriceString);
+        const notional = this.parseNumber(notionalStringAbs);
+        const contractsAbs = Precise.stringAbs(this.safeString(position, 'positionAmt'));
+        const contracts = this.parseNumber(contractsAbs);
+        const unrealizedPnlString = this.safeString(position, 'unRealizedProfit');
+        const unrealizedPnl = this.parseNumber(unrealizedPnlString);
+        const leverageString = this.safeString(position, 'leverage');
+        const leverage = parseInt(leverageString);
+        const liquidationPriceString = this.omitZero(this.safeString(position, 'liquidationPrice'));
+        const liquidationPrice = this.parseNumber(liquidationPriceString);
         let collateralString = undefined;
-        const marginType = this.safeString (position, 'marginType');
+        const marginType = this.safeString(position, 'marginType');
         let side = undefined;
-        if (Precise.stringGt (notionalString, '0')) {
+        if (Precise.stringGt(notionalString, '0')) {
             side = 'long';
-        } else if (Precise.stringLt (notionalString, '0')) {
+        } else if (Precise.stringLt(notionalString, '0')) {
             side = 'short';
         }
-        const entryPriceString = this.safeString (position, 'entryPrice');
-        const entryPrice = this.parseNumber (entryPriceString);
-        const contractSize = this.safeValue (market, 'contractSize');
-        const contractSizeString = this.numberToString (contractSize);
+        const entryPriceString = this.safeString(position, 'entryPrice');
+        const entryPrice = this.parseNumber(entryPriceString);
+        const contractSize = this.safeValue(market, 'contractSize');
+        const contractSizeString = this.numberToString(contractSize);
         // as oppose to notionalValue
         const linear = ('notional' in position);
         if (marginType === 'cross') {
             // calculate collateral
-            const precision = this.safeValue (market, 'precision');
+            const precision = this.safeValue(market, 'precision');
             if (linear) {
                 // walletBalance = (liquidationPrice * (±1 + mmp) ± entryPrice) * contracts
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd ('1', maintenanceMarginPercentageString);
-                    entryPriceSignString = Precise.stringMul ('-1', entryPriceSignString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd('1', maintenanceMarginPercentageString);
+                    entryPriceSignString = Precise.stringMul('-1', entryPriceSignString);
                 } else {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd ('-1', maintenanceMarginPercentageString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringAdd('-1', maintenanceMarginPercentageString);
                 }
-                const inner = Precise.stringMul (liquidationPriceString, onePlusMaintenanceMarginPercentageString);
-                const leftSide = Precise.stringAdd (inner, entryPriceSignString);
-                const quotePrecision = this.safeInteger (precision, 'quote');
-                collateralString = Precise.stringDiv (Precise.stringMul (leftSide, contractsAbs), '1', quotePrecision);
+                const inner = Precise.stringMul(liquidationPriceString, onePlusMaintenanceMarginPercentageString);
+                const leftSide = Precise.stringAdd(inner, entryPriceSignString);
+                const quotePrecision = this.safeInteger(precision, 'quote');
+                collateralString = Precise.stringDiv(Precise.stringMul(leftSide, contractsAbs), '1', quotePrecision);
             } else {
                 // walletBalance = (contracts * contractSize) * (±1/entryPrice - (±1 - mmp) / liquidationPrice)
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringSub ('1', maintenanceMarginPercentageString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringSub('1', maintenanceMarginPercentageString);
                 } else {
-                    onePlusMaintenanceMarginPercentageString = Precise.stringSub ('-1', maintenanceMarginPercentageString);
-                    entryPriceSignString = Precise.stringMul ('-1', entryPriceSignString);
+                    onePlusMaintenanceMarginPercentageString = Precise.stringSub('-1', maintenanceMarginPercentageString);
+                    entryPriceSignString = Precise.stringMul('-1', entryPriceSignString);
                 }
-                const leftSide = Precise.stringMul (contractsAbs, contractSizeString);
-                const rightSide = Precise.stringSub (Precise.stringDiv ('1', entryPriceSignString), Precise.stringDiv (onePlusMaintenanceMarginPercentageString, liquidationPriceString));
-                const basePrecision = this.safeInteger (precision, 'base');
-                collateralString = Precise.stringDiv (Precise.stringMul (leftSide, rightSide), '1', basePrecision);
+                const leftSide = Precise.stringMul(contractsAbs, contractSizeString);
+                const rightSide = Precise.stringSub(Precise.stringDiv('1', entryPriceSignString), Precise.stringDiv(onePlusMaintenanceMarginPercentageString, liquidationPriceString));
+                const basePrecision = this.safeInteger(precision, 'base');
+                collateralString = Precise.stringDiv(Precise.stringMul(leftSide, rightSide), '1', basePrecision);
             }
         } else {
-            collateralString = this.safeString (position, 'isolatedMargin');
+            collateralString = this.safeString(position, 'isolatedMargin');
         }
         collateralString = (collateralString === undefined) ? '0' : collateralString;
-        const collateral = this.parseNumber (collateralString);
-        const markPrice = this.parseNumber (this.omitZero (this.safeString (position, 'markPrice')));
-        let timestamp = this.safeInteger (position, 'updateTime');
+        const collateral = this.parseNumber(collateralString);
+        const markPrice = this.parseNumber(this.omitZero(this.safeString(position, 'markPrice')));
+        let timestamp = this.safeInteger(position, 'updateTime');
         if (timestamp === 0) {
             timestamp = undefined;
         }
-        const maintenanceMarginPercentage = this.parseNumber (maintenanceMarginPercentageString);
-        const maintenanceMarginString = Precise.stringMul (maintenanceMarginPercentageString, notionalStringAbs);
-        const maintenanceMargin = this.parseNumber (maintenanceMarginString);
-        let initialMarginPercentageString = Precise.stringDiv ('1', leverageString, 8);
+        const maintenanceMarginPercentage = this.parseNumber(maintenanceMarginPercentageString);
+        const maintenanceMarginString = Precise.stringMul(maintenanceMarginPercentageString, notionalStringAbs);
+        const maintenanceMargin = this.parseNumber(maintenanceMarginString);
+        let initialMarginPercentageString = Precise.stringDiv('1', leverageString, 8);
         const rational = (1000 % leverage) === 0;
         if (!rational) {
-            initialMarginPercentageString = Precise.stringAdd (initialMarginPercentageString, '1e-8');
+            initialMarginPercentageString = Precise.stringAdd(initialMarginPercentageString, '1e-8');
         }
-        const initialMarginString = Precise.stringDiv (Precise.stringMul (notionalStringAbs, initialMarginPercentageString), '1', 8);
-        const initialMargin = this.parseNumber (initialMarginString);
+        const initialMarginString = Precise.stringDiv(Precise.stringMul(notionalStringAbs, initialMarginPercentageString), '1', 8);
+        const initialMargin = this.parseNumber(initialMarginString);
         let marginRatio = undefined;
         let percentage = undefined;
-        if (!Precise.stringEquals (collateralString, '0')) {
-            marginRatio = this.parseNumber (Precise.stringDiv (Precise.stringAdd (Precise.stringDiv (maintenanceMarginString, collateralString), '5e-5'), '1', 4));
-            percentage = this.parseNumber (Precise.stringMul (Precise.stringDiv (unrealizedPnlString, initialMarginString, 4), '100'));
+        if (!Precise.stringEquals(collateralString, '0')) {
+            marginRatio = this.parseNumber(Precise.stringDiv(Precise.stringAdd(Precise.stringDiv(maintenanceMarginString, collateralString), '5e-5'), '1', 4));
+            percentage = this.parseNumber(Precise.stringMul(Precise.stringDiv(unrealizedPnlString, initialMarginString, 4), '100'));
         }
-        const positionSide = this.safeString (position, 'positionSide');
+        const positionSide = this.safeString(position, 'positionSide');
         const hedged = positionSide !== 'BOTH';
         return {
             'info': position,
@@ -3625,7 +3628,7 @@ module.exports = class liqi extends Exchange {
             'contracts': contracts,
             'contractSize': contractSize,
             'unrealizedPnl': unrealizedPnl,
-            'leverage': this.parseNumber (leverageString),
+            'leverage': this.parseNumber(leverageString),
             'liquidationPrice': liquidationPrice,
             'collateral': collateral,
             'notional': notional,
@@ -3633,11 +3636,11 @@ module.exports = class liqi extends Exchange {
             'entryPrice': entryPrice,
             'timestamp': timestamp,
             'initialMargin': initialMargin,
-            'initialMarginPercentage': this.parseNumber (initialMarginPercentageString),
+            'initialMarginPercentage': this.parseNumber(initialMarginPercentageString),
             'maintenanceMargin': maintenanceMargin,
             'maintenanceMarginPercentage': maintenanceMarginPercentage,
             'marginRatio': marginRatio,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'marginType': marginType,
             'side': side,
             'hedged': hedged,
@@ -3645,36 +3648,36 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async loadLeverageBrackets (reload = false, params = {}) {
-        await this.loadMarkets ();
+    async loadLeverageBrackets(reload = false, params = {}) {
+        await this.loadMarkets();
         // by default cache the leverage bracket
         // it contains useful stuff like the maintenance margin and initial margin for positions
-        const leverageBrackets = this.safeValue (this.options, 'leverageBrackets');
+        const leverageBrackets = this.safeValue(this.options, 'leverageBrackets');
         if ((leverageBrackets === undefined) || (reload)) {
             let method = undefined;
-            const defaultType = this.safeString (this.options, 'defaultType', 'future');
-            const type = this.safeString (params, 'type', defaultType);
-            const query = this.omit (params, 'type');
+            const defaultType = this.safeString(this.options, 'defaultType', 'future');
+            const type = this.safeString(params, 'type', defaultType);
+            const query = this.omit(params, 'type');
             if (type === 'future') {
                 method = 'fapiPrivateGetLeverageBracket';
             } else if (type === 'delivery') {
                 method = 'dapiPrivateV2GetLeverageBracket';
             } else {
-                throw new NotSupported (this.id + ' loadLeverageBrackets() supports linear and inverse contracts only');
+                throw new NotSupported(this.id + ' loadLeverageBrackets() supports linear and inverse contracts only');
             }
-            const response = await this[method] (query);
+            const response = await this[method](query);
             this.options['leverageBrackets'] = {};
             for (let i = 0; i < response.length; i++) {
                 const entry = response[i];
-                const marketId = this.safeString (entry, 'symbol');
-                const symbol = this.safeSymbol (marketId);
-                const brackets = this.safeValue (entry, 'brackets');
+                const marketId = this.safeString(entry, 'symbol');
+                const symbol = this.safeSymbol(marketId);
+                const brackets = this.safeValue(entry, 'brackets');
                 const result = [];
                 for (let j = 0; j < brackets.length; j++) {
                     const bracket = brackets[j];
-                    const floorValue = this.safeString2 (bracket, 'notionalFloor', 'qtyFloor');
-                    const maintenanceMarginPercentage = this.safeString (bracket, 'maintMarginRatio');
-                    result.push ([ floorValue, maintenanceMarginPercentage ]);
+                    const floorValue = this.safeString2(bracket, 'notionalFloor', 'qtyFloor');
+                    const maintenanceMarginPercentage = this.safeString(bracket, 'maintMarginRatio');
+                    result.push([floorValue, maintenanceMarginPercentage]);
                 }
                 this.options['leverageBrackets'][symbol] = result;
             }
@@ -3682,18 +3685,18 @@ module.exports = class liqi extends Exchange {
         return this.options['leverageBrackets'];
     }
 
-    async fetchLeverageTiers (symbols = undefined, params = {}) {
-        await this.loadMarkets ();
-        const [ type, query ] = this.handleMarketTypeAndParams ('fetchLeverageTiers', undefined, params);
+    async fetchLeverageTiers(symbols = undefined, params = {}) {
+        await this.loadMarkets();
+        const [type, query] = this.handleMarketTypeAndParams('fetchLeverageTiers', undefined, params);
         let method = undefined;
         if (type === 'future') {
             method = 'fapiPrivateGetLeverageBracket';
         } else if (type === 'delivery') {
             method = 'dapiPrivateV2GetLeverageBracket';
         } else {
-            throw new NotSupported (this.id + ' fetchLeverageTiers() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' fetchLeverageTiers() supports linear and inverse contracts only');
         }
-        const response = await this[method] (query);
+        const response = await this[method](query);
         //
         //    [
         //        {
@@ -3712,10 +3715,10 @@ module.exports = class liqi extends Exchange {
         //        }
         //    ]
         //
-        return this.parseLeverageTiers (response, symbols, 'symbol');
+        return this.parseLeverageTiers(response, symbols, 'symbol');
     }
 
-    parseMarketLeverageTiers (info, market) {
+    parseMarketLeverageTiers(info, market) {
         /**
             @param info: Exchange response for 1 market
             {
@@ -3734,75 +3737,75 @@ module.exports = class liqi extends Exchange {
             }
             @param market: CCXT market
         */
-        const marketId = this.safeString (info, 'symbol');
-        const safeSymbol = this.safeSymbol (marketId);
-        market = this.safeMarket (safeSymbol, market);
-        const brackets = this.safeValue (info, 'brackets');
+        const marketId = this.safeString(info, 'symbol');
+        const safeSymbol = this.safeSymbol(marketId);
+        market = this.safeMarket(safeSymbol, market);
+        const brackets = this.safeValue(info, 'brackets');
         const tiers = [];
         for (let j = 0; j < brackets.length; j++) {
             const bracket = brackets[j];
-            tiers.push ({
-                'tier': this.safeNumber (bracket, 'bracket'),
+            tiers.push({
+                'tier': this.safeNumber(bracket, 'bracket'),
                 'currency': market['quote'],
-                'notionalFloor': this.safeNumber2 (bracket, 'notionalFloor', 'qtyFloor'),
-                'notionalCap': this.safeNumber (bracket, 'notionalCap'),
-                'maintenanceMarginRate': this.safeNumber (bracket, 'maintMarginRatio'),
-                'maxLeverage': this.safeNumber (bracket, 'initialLeverage'),
+                'notionalFloor': this.safeNumber2(bracket, 'notionalFloor', 'qtyFloor'),
+                'notionalCap': this.safeNumber(bracket, 'notionalCap'),
+                'maintenanceMarginRate': this.safeNumber(bracket, 'maintMarginRatio'),
+                'maxLeverage': this.safeNumber(bracket, 'initialLeverage'),
                 'info': bracket,
             });
         }
         return tiers;
     }
 
-    async fetchPositions (symbols = undefined, params = {}) {
-        const defaultMethod = this.safeString (this.options, 'fetchPositions', 'positionRisk');
+    async fetchPositions(symbols = undefined, params = {}) {
+        const defaultMethod = this.safeString(this.options, 'fetchPositions', 'positionRisk');
         if (defaultMethod === 'positionRisk') {
-            return await this.fetchPositionsRisk (symbols, params);
+            return await this.fetchPositionsRisk(symbols, params);
         } else if (defaultMethod === 'account') {
-            return await this.fetchAccountPositions (symbols, params);
+            return await this.fetchAccountPositions(symbols, params);
         } else {
-            throw new NotSupported (this.id + '.options["fetchPositions"] = "' + defaultMethod + '" is invalid, please choose between "account" and "positionRisk"');
+            throw new NotSupported(this.id + '.options["fetchPositions"] = "' + defaultMethod + '" is invalid, please choose between "account" and "positionRisk"');
         }
     }
 
-    async fetchAccountPositions (symbols = undefined, params = {}) {
+    async fetchAccountPositions(symbols = undefined, params = {}) {
         if (symbols !== undefined) {
-            if (!Array.isArray (symbols)) {
-                throw new ArgumentsRequired (this.id + ' fetchPositions requires an array argument for symbols');
+            if (!Array.isArray(symbols)) {
+                throw new ArgumentsRequired(this.id + ' fetchPositions requires an array argument for symbols');
             }
         }
-        await this.loadMarkets ();
-        await this.loadLeverageBrackets ();
+        await this.loadMarkets();
+        await this.loadLeverageBrackets();
         let method = undefined;
-        const defaultType = this.safeString (this.options, 'defaultType', 'future');
-        const type = this.safeString (params, 'type', defaultType);
-        const query = this.omit (params, 'type');
+        const defaultType = this.safeString(this.options, 'defaultType', 'future');
+        const type = this.safeString(params, 'type', defaultType);
+        const query = this.omit(params, 'type');
         if (type === 'future') {
             method = 'fapiPrivateGetAccount';
         } else if (type === 'delivery') {
             method = 'dapiPrivateGetAccount';
         } else {
-            throw new NotSupported (this.id + ' fetchPositions() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' fetchPositions() supports linear and inverse contracts only');
         }
-        const account = await this[method] (query);
-        const result = this.parseAccountPositions (account);
-        return this.filterByArray (result, 'symbol', symbols, false);
+        const account = await this[method](query);
+        const result = this.parseAccountPositions(account);
+        return this.filterByArray(result, 'symbol', symbols, false);
     }
 
-    async fetchPositionsRisk (symbols = undefined, params = {}) {
+    async fetchPositionsRisk(symbols = undefined, params = {}) {
         if (symbols !== undefined) {
-            if (!Array.isArray (symbols)) {
-                throw new ArgumentsRequired (this.id + ' fetchPositionsRisk requires an array argument for symbols');
+            if (!Array.isArray(symbols)) {
+                throw new ArgumentsRequired(this.id + ' fetchPositionsRisk requires an array argument for symbols');
             }
         }
-        await this.loadMarkets ();
-        await this.loadLeverageBrackets ();
+        await this.loadMarkets();
+        await this.loadLeverageBrackets();
         const request = {};
         let method = undefined;
         let defaultType = 'future';
-        defaultType = this.safeString (this.options, 'defaultType', defaultType);
-        const type = this.safeString (params, 'type', defaultType);
-        params = this.omit (params, 'type');
+        defaultType = this.safeString(this.options, 'defaultType', defaultType);
+        const type = this.safeString(params, 'type', defaultType);
+        params = this.omit(params, 'type');
         if ((type === 'future') || (type === 'linear')) {
             method = 'fapiPrivateGetPositionRisk';
             // ### Response examples ###
@@ -3862,19 +3865,19 @@ module.exports = class liqi extends Exchange {
         } else if ((type === 'delivery') || (type === 'inverse')) {
             method = 'dapiPrivateGetPositionRisk';
         } else {
-            throw NotSupported (this.id + ' fetchPositionsRisk() supports linear and inverse contracts only');
+            throw NotSupported(this.id + ' fetchPositionsRisk() supports linear and inverse contracts only');
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         const result = [];
         for (let i = 0; i < response.length; i++) {
-            const parsed = this.parsePositionRisk (response[i]);
-            result.push (parsed);
+            const parsed = this.parsePositionRisk(response[i]);
+            result.push(parsed);
         }
-        return this.filterByArray (result, 'symbol', symbols, false);
+        return this.filterByArray(result, 'symbol', symbols, false);
     }
 
-    async fetchFundingHistory (symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchFundingHistory(symbol = undefined, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
         let market = undefined;
         let method = undefined;
         let defaultType = 'future';
@@ -3882,14 +3885,14 @@ module.exports = class liqi extends Exchange {
             'incomeType': 'FUNDING_FEE', // "TRANSFER"，"WELCOME_BONUS", "REALIZED_PNL"，"FUNDING_FEE", "COMMISSION" and "INSURANCE_CLEAR"
         };
         if (symbol !== undefined) {
-            market = this.market (symbol);
+            market = this.market(symbol);
             request['symbol'] = market['id'];
             if (market['linear']) {
                 defaultType = 'future';
             } else if (market['inverse']) {
                 defaultType = 'delivery';
             } else {
-                throw NotSupported (this.id + ' fetchFundingHistory() supports linear and inverse contracts only');
+                throw NotSupported(this.id + ' fetchFundingHistory() supports linear and inverse contracts only');
             }
         }
         if (since !== undefined) {
@@ -3898,49 +3901,49 @@ module.exports = class liqi extends Exchange {
         if (limit !== undefined) {
             request['limit'] = limit;
         }
-        defaultType = this.safeString2 (this.options, 'fetchFundingHistory', 'defaultType', defaultType);
-        const type = this.safeString (params, 'type', defaultType);
-        params = this.omit (params, 'type');
+        defaultType = this.safeString2(this.options, 'fetchFundingHistory', 'defaultType', defaultType);
+        const type = this.safeString(params, 'type', defaultType);
+        params = this.omit(params, 'type');
         if ((type === 'future') || (type === 'linear')) {
             method = 'fapiPrivateGetIncome';
         } else if ((type === 'delivery') || (type === 'inverse')) {
             method = 'dapiPrivateGetIncome';
         } else {
-            throw NotSupported (this.id + ' fetchFundingHistory() supports linear and inverse contracts only');
+            throw NotSupported(this.id + ' fetchFundingHistory() supports linear and inverse contracts only');
         }
-        const response = await this[method] (this.extend (request, params));
-        return this.parseIncomes (response, market, since, limit);
+        const response = await this[method](this.extend(request, params));
+        return this.parseIncomes(response, market, since, limit);
     }
 
-    async setLeverage (leverage, symbol = undefined, params = {}) {
+    async setLeverage(leverage, symbol = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' setLeverage() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' setLeverage() requires a symbol argument');
         }
         // WARNING: THIS WILL INCREASE LIQUIDATION PRICE FOR OPEN ISOLATED LONG POSITIONS
         // AND DECREASE LIQUIDATION PRICE FOR OPEN ISOLATED SHORT POSITIONS
         if ((leverage < 1) || (leverage > 125)) {
-            throw new BadRequest (this.id + ' leverage should be between 1 and 125');
+            throw new BadRequest(this.id + ' leverage should be between 1 and 125');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+        await this.loadMarkets();
+        const market = this.market(symbol);
         let method = undefined;
         if (market['linear']) {
             method = 'fapiPrivatePostLeverage';
         } else if (market['inverse']) {
             method = 'dapiPrivatePostLeverage';
         } else {
-            throw new NotSupported (this.id + ' setLeverage() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' setLeverage() supports linear and inverse contracts only');
         }
         const request = {
             'symbol': market['id'],
             'leverage': leverage,
         };
-        return await this[method] (this.extend (request, params));
+        return await this[method](this.extend(request, params));
     }
 
-    async setMarginMode (marginType, symbol = undefined, params = {}) {
+    async setMarginMode(marginType, symbol = undefined, params = {}) {
         if (symbol === undefined) {
-            throw new ArgumentsRequired (this.id + ' setMarginMode() requires a symbol argument');
+            throw new ArgumentsRequired(this.id + ' setMarginMode() requires a symbol argument');
         }
         //
         // { "code": -4048 , "msg": "Margin type cannot be changed if there exists position." }
@@ -3949,22 +3952,22 @@ module.exports = class liqi extends Exchange {
         //
         // { "code": 200, "msg": "success" }
         //
-        marginType = marginType.toUpperCase ();
+        marginType = marginType.toUpperCase();
         if (marginType === 'CROSS') {
             marginType = 'CROSSED';
         }
         if ((marginType !== 'ISOLATED') && (marginType !== 'CROSSED')) {
-            throw new BadRequest (this.id + ' marginType must be either isolated or cross');
+            throw new BadRequest(this.id + ' marginType must be either isolated or cross');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+        await this.loadMarkets();
+        const market = this.market(symbol);
         let method = undefined;
         if (market['linear']) {
             method = 'fapiPrivatePostMarginType';
         } else if (market['inverse']) {
             method = 'dapiPrivatePostMarginType';
         } else {
-            throw new NotSupported (this.id + ' setMarginMode() supports linear and inverse contracts only');
+            throw new NotSupported(this.id + ' setMarginMode() supports linear and inverse contracts only');
         }
         const request = {
             'symbol': market['id'],
@@ -3972,15 +3975,15 @@ module.exports = class liqi extends Exchange {
         };
         let response = undefined;
         try {
-            response = await this[method] (this.extend (request, params));
+            response = await this[method](this.extend(request, params));
         } catch (e) {
             // not an error
             // https://github.com/ccxt/ccxt/issues/11268
             // https://github.com/ccxt/ccxt/pull/11624
-            // POST https://fapi.liqi.com/fapi/v1/marginType 400 Bad Request
+            // POST https://fapi.liqi.com.br/fapi/v1/marginType 400 Bad Request
             // liqiusdm
             if (e instanceof MarginModeAlreadySet) {
-                const throwMarginModeAlreadySet = this.safeValue (this.options, 'throwMarginModeAlreadySet', false);
+                const throwMarginModeAlreadySet = this.safeValue(this.options, 'throwMarginModeAlreadySet', false);
                 if (throwMarginModeAlreadySet) {
                     throw e;
                 } else {
@@ -3991,10 +3994,10 @@ module.exports = class liqi extends Exchange {
         return response;
     }
 
-    async setPositionMode (hedged, symbol = undefined, params = {}) {
-        const defaultType = this.safeString (this.options, 'defaultType', 'future');
-        const type = this.safeString (params, 'type', defaultType);
-        params = this.omit (params, [ 'type' ]);
+    async setPositionMode(hedged, symbol = undefined, params = {}) {
+        const defaultType = this.safeString(this.options, 'defaultType', 'future');
+        const type = this.safeString(params, 'type', defaultType);
+        params = this.omit(params, ['type']);
         let dualSidePosition = undefined;
         if (hedged) {
             dualSidePosition = 'true';
@@ -4017,59 +4020,91 @@ module.exports = class liqi extends Exchange {
         //       "msg": "success"
         //     }
         //
-        return await this[method] (this.extend (request, params));
+        return await this[method](this.extend(request, params));
     }
 
-    sign (path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined) {
+    standardEcdsa(request, secret, algorithm = 'ed25519') {
+        const clientFromPriv = new EC(algorithm).keyFromPrivate(secret, 'hex');
+        const signature = this.toDER(clientFromPriv.sign(request), 'hex');
+        console.log(JSON.stringify(signature));
+        return signature;
+    }
+
+    toDER(signature, enc) {
+        var r = signature.r.toArray();
+        var s = signature.s.toArray();
+
+        // Pad values
+        if (r[0] & 0x80)
+            r = [0].concat(r);
+        // Pad values
+        if (s[0] & 0x80)
+            s = [0].concat(s);
+
+        r = this.rmPadding(r);
+        s = this.rmPadding(s);
+
+        while (!s[0] && !(s[1] & 0x80)) {
+            s = s.slice(1);
+        }
+        var arr = [0x02];
+        this.constructLength(arr, r.length);
+        arr = arr.concat(r);
+        arr.push(0x02);
+        this.constructLength(arr, s.length);
+        var backHalf = arr.concat(s);
+        var res = [0x30];
+        this.constructLength(res, backHalf.length);
+        res = res.concat(backHalf);
+        return utils.encode(res, enc);
+    };
+
+    constructLength(arr, len) {
+        if (len < 0x80) {
+            arr.push(len);
+            return;
+        }
+        var octets = 1 + (Math.log(len) / Math.LN2 >>> 3);
+        arr.push(octets | 0x80);
+        while (--octets) {
+            arr.push((len >>> (octets << 3)) & 0xff);
+        }
+        arr.push(len);
+    }
+
+    rmPadding(buf) {
+        var i = 0;
+        var len = buf.length - 1;
+        while (!buf[i] && !(buf[i + 1] & 0x80) && i < len) {
+            i++;
+        }
+        if (i === 0) {
+            return buf;
+        }
+        return buf.slice(i);
+    }
+
+    sign(path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined) {
         if (!(api in this.urls['api'])) {
-            throw new NotSupported (this.id + ' does not have a testnet/sandbox URL for ' + api + ' endpoints');
+            throw new NotSupported(this.id + ' does not have a testnet/sandbox URL for ' + api + ' endpoints');
         }
         let url = this.urls['api'][api];
         url += '/' + path;
-        if (api === 'wapi') {
-            url += '.html';
-        }
-        if (path === 'historicalTrades') {
-            if (this.apiKey) {
-                headers = {
-                    'X-MBX-APIKEY': this.apiKey,
-                };
-            } else {
-                throw new AuthenticationError (this.id + ' historicalTrades endpoint requires `apiKey` credential');
-            }
-        }
-        const userDataStream = (path === 'userDataStream') || (path === 'listenKey');
-        if (userDataStream) {
-            if (this.apiKey) {
-                // v1 special case for userDataStream
-                headers = {
-                    'X-MBX-APIKEY': this.apiKey,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                };
-                if (method !== 'GET') {
-                    body = this.urlencode (params);
-                }
-            } else {
-                throw new AuthenticationError (this.id + ' userDataStream endpoint requires `apiKey` credential');
-            }
-        } else if ((api === 'private') || (api === 'sapi' && path !== 'system/status') || (api === 'wapi' && path !== 'systemStatus') || (api === 'dapiPrivate') || (api === 'dapiPrivateV2') || (api === 'fapiPrivate') || (api === 'fapiPrivateV2')) {
-            this.checkRequiredCredentials ();
+        if (api === 'private') {
+            this.checkRequiredCredentials();
             let query = undefined;
-            const recvWindow = this.safeInteger (this.options, 'recvWindow', 5000);
-            const extendedParams = this.extend ({
-                'timestamp': this.nonce (),
+            const recvWindow = this.safeInteger(this.options, 'recvWindow', 5000);
+            const nonce = this.nonce();
+            const extendedParams = this.extend({
+                'timestamp': nonce,
                 'recvWindow': recvWindow,
             }, params);
-            if ((api === 'sapi') && (path === 'asset/dust')) {
-                query = this.urlencodeWithArrayRepeat (extendedParams);
-            } else if ((path === 'batchOrders') || (path.indexOf ('sub-account') >= 0) || (path === 'capital/withdraw/apply')) {
-                query = this.rawencode (extendedParams);
-            } else {
-                query = this.urlencode (extendedParams);
-            }
-            const signature = this.hmac (this.encode (query), this.encode (this.secret));
-            query += '&' + 'signature=' + signature;
+            query = this.urlencode(extendedParams);
+            console.log(query);
+            const hash = this.hash(query, 'sha256', 'hex');
+            const signature = this.standardEcdsa(hash, this.secret, 'ed25519');
             headers = {
+                'signature': signature,
                 'X-MBX-APIKEY': this.apiKey,
             };
             if ((method === 'GET') || (method === 'DELETE') || (api === 'wapi')) {
@@ -4079,29 +4114,29 @@ module.exports = class liqi extends Exchange {
                 headers['Content-Type'] = 'application/x-www-form-urlencoded';
             }
         } else {
-            if (Object.keys (params).length) {
-                url += '?' + this.urlencode (params);
+            if (Object.keys(params).length) {
+                url += '?' + this.urlencode(params);
             }
         }
         return { 'url': url, 'method': method, 'body': body, 'headers': headers };
     }
 
-    handleErrors (code, reason, url, method, headers, body, response, requestHeaders, requestBody) {
+    handleErrors(code, reason, url, method, headers, body, response, requestHeaders, requestBody) {
         if ((code === 418) || (code === 429)) {
-            throw new DDoSProtection (this.id + ' ' + code.toString () + ' ' + reason + ' ' + body);
+            throw new DDoSProtection(this.id + ' ' + code.toString() + ' ' + reason + ' ' + body);
         }
         // error response in a form: { "code": -1013, "msg": "Invalid quantity." }
         // following block cointains legacy checks against message patterns in "msg" property
         // will switch "code" checks eventually, when we know all of them
         if (code >= 400) {
-            if (body.indexOf ('Price * QTY is zero or less') >= 0) {
-                throw new InvalidOrder (this.id + ' order cost = amount * price is zero or less ' + body);
+            if (body.indexOf('Price * QTY is zero or less') >= 0) {
+                throw new InvalidOrder(this.id + ' order cost = amount * price is zero or less ' + body);
             }
-            if (body.indexOf ('LOT_SIZE') >= 0) {
-                throw new InvalidOrder (this.id + ' order amount should be evenly divisible by lot size ' + body);
+            if (body.indexOf('LOT_SIZE') >= 0) {
+                throw new InvalidOrder(this.id + ' order amount should be evenly divisible by lot size ' + body);
             }
-            if (body.indexOf ('PRICE_FILTER') >= 0) {
-                throw new InvalidOrder (this.id + ' order price is invalid, i.e. exceeds allowed price precision, exceeds min price or max price limits or is invalid value in general, use this.priceToPrecision (symbol, amount) ' + body);
+            if (body.indexOf('PRICE_FILTER') >= 0) {
+                throw new InvalidOrder(this.id + ' order price is invalid, i.e. exceeds allowed price precision, exceeds min price or max price limits or is invalid value in general, use this.priceToPrecision (symbol, amount) ' + body);
             }
         }
         if (response === undefined) {
@@ -4109,13 +4144,13 @@ module.exports = class liqi extends Exchange {
         }
         // check success value for wapi endpoints
         // response in format {'msg': 'The coin does not exist.', 'success': true/false}
-        const success = this.safeValue (response, 'success', true);
+        const success = this.safeValue(response, 'success', true);
         if (!success) {
-            const message = this.safeString (response, 'msg');
+            const message = this.safeString(response, 'msg');
             let parsedMessage = undefined;
             if (message !== undefined) {
                 try {
-                    parsedMessage = JSON.parse (message);
+                    parsedMessage = JSON.parse(message);
                 } catch (e) {
                     // do nothing
                     parsedMessage = undefined;
@@ -4125,43 +4160,43 @@ module.exports = class liqi extends Exchange {
                 }
             }
         }
-        const message = this.safeString (response, 'msg');
+        const message = this.safeString(response, 'msg');
         if (message !== undefined) {
-            this.throwExactlyMatchedException (this.exceptions['exact'], message, this.id + ' ' + message);
-            this.throwBroadlyMatchedException (this.exceptions['broad'], message, this.id + ' ' + message);
+            this.throwExactlyMatchedException(this.exceptions['exact'], message, this.id + ' ' + message);
+            this.throwBroadlyMatchedException(this.exceptions['broad'], message, this.id + ' ' + message);
         }
         // checks against error codes
-        const error = this.safeString (response, 'code');
+        const error = this.safeString(response, 'code');
         if (error !== undefined) {
             // https://github.com/ccxt/ccxt/issues/6501
             // https://github.com/ccxt/ccxt/issues/7742
-            if ((error === '200') || Precise.stringEquals (error, '0')) {
+            if ((error === '200') || Precise.stringEquals(error, '0')) {
                 return undefined;
             }
             // a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
             // despite that their message is very confusing, it is raised by Liqi
             // on a temporary ban, the API key is valid, but disabled for a while
             if ((error === '-2015') && this.options['hasAlreadyAuthenticatedSuccessfully']) {
-                throw new DDoSProtection (this.id + ' temporary banned: ' + body);
+                throw new DDoSProtection(this.id + ' temporary banned: ' + body);
             }
             const feedback = this.id + ' ' + body;
             if (message === 'No need to change margin type.') {
                 // not an error
                 // https://github.com/ccxt/ccxt/issues/11268
                 // https://github.com/ccxt/ccxt/pull/11624
-                // POST https://fapi.liqi.com/fapi/v1/marginType 400 Bad Request
+                // POST https://fapi.liqi.com.br/fapi/v1/marginType 400 Bad Request
                 // liqiusdm {"code":-4046,"msg":"No need to change margin type."}
-                throw new MarginModeAlreadySet (feedback);
+                throw new MarginModeAlreadySet(feedback);
             }
-            this.throwExactlyMatchedException (this.exceptions['exact'], error, feedback);
-            throw new ExchangeError (feedback);
+            this.throwExactlyMatchedException(this.exceptions['exact'], error, feedback);
+            throw new ExchangeError(feedback);
         }
         if (!success) {
-            throw new ExchangeError (this.id + ' ' + body);
+            throw new ExchangeError(this.id + ' ' + body);
         }
     }
 
-    calculateRateLimiterCost (api, method, path, params, config = {}, context = {}) {
+    calculateRateLimiterCost(api, method, path, params, config = {}, context = {}) {
         if (('noCoin' in config) && !('coin' in params)) {
             return config['noCoin'];
         } else if (('noSymbol' in config) && !('symbol' in params)) {
@@ -4178,11 +4213,11 @@ module.exports = class liqi extends Exchange {
                 }
             }
         }
-        return this.safeInteger (config, 'cost', 1);
+        return this.safeInteger(config, 'cost', 1);
     }
 
-    async request (path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined, config = {}, context = {}) {
-        const response = await this.fetch2 (path, api, method, params, headers, body, config, context);
+    async request(path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined, config = {}, context = {}) {
+        const response = await this.fetch2(path, api, method, params, headers, body, config, context);
         // a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
         if ((api === 'private') || (api === 'wapi')) {
             this.options['hasAlreadyAuthenticatedSuccessfully'] = true;
@@ -4190,18 +4225,18 @@ module.exports = class liqi extends Exchange {
         return response;
     }
 
-    async modifyMarginHelper (symbol, amount, addOrReduce, params = {}) {
+    async modifyMarginHelper(symbol, amount, addOrReduce, params = {}) {
         // used to modify isolated positions
-        let defaultType = this.safeString (this.options, 'defaultType', 'future');
+        let defaultType = this.safeString(this.options, 'defaultType', 'future');
         if (defaultType === 'spot') {
             defaultType = 'future';
         }
-        const type = this.safeString (params, 'type', defaultType);
+        const type = this.safeString(params, 'type', defaultType);
         if ((type === 'margin') || (type === 'spot')) {
-            throw new NotSupported (this.id + ' add / reduce margin only supported with type future or delivery');
+            throw new NotSupported(this.id + ' add / reduce margin only supported with type future or delivery');
         }
-        await this.loadMarkets ();
-        const market = this.market (symbol);
+        await this.loadMarkets();
+        const market = this.market(symbol);
         const request = {
             'type': addOrReduce,
             'symbol': market['id'],
@@ -4216,7 +4251,7 @@ module.exports = class liqi extends Exchange {
             method = 'dapiPrivatePostPositionMargin';
             code = market['base'];
         }
-        const response = await this[method] (this.extend (request, params));
+        const response = await this[method](this.extend(request, params));
         //
         //     {
         //       "code": 200,
@@ -4225,10 +4260,10 @@ module.exports = class liqi extends Exchange {
         //       "type": 1
         //     }
         //
-        const rawType = this.safeInteger (response, 'type');
+        const rawType = this.safeInteger(response, 'type');
         const resultType = (rawType === 1) ? 'add' : 'reduce';
-        const resultAmount = this.safeNumber (response, 'amount');
-        const errorCode = this.safeString (response, 'code');
+        const resultAmount = this.safeNumber(response, 'amount');
+        const errorCode = this.safeString(response, 'code');
         const status = (errorCode === '200') ? 'ok' : 'failed';
         return {
             'info': response,
@@ -4240,22 +4275,22 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async reduceMargin (symbol, amount, params = {}) {
-        return await this.modifyMarginHelper (symbol, amount, 2, params);
+    async reduceMargin(symbol, amount, params = {}) {
+        return await this.modifyMarginHelper(symbol, amount, 2, params);
     }
 
-    async addMargin (symbol, amount, params = {}) {
-        return await this.modifyMarginHelper (symbol, amount, 1, params);
+    async addMargin(symbol, amount, params = {}) {
+        return await this.modifyMarginHelper(symbol, amount, 1, params);
     }
 
-    async fetchBorrowRate (code, params = {}) {
-        await this.loadMarkets ();
-        const currency = this.currency (code);
+    async fetchBorrowRate(code, params = {}) {
+        await this.loadMarkets();
+        const currency = this.currency(code);
         const request = {
             'asset': currency['id'],
             // 'vipLevel': this.safeInteger (params, 'vipLevel'),
         };
-        const response = await this.sapiGetMarginInterestRateHistory (this.extend (request, params));
+        const response = await this.sapiGetMarginInterestRateHistory(this.extend(request, params));
         //
         // [
         //     {
@@ -4267,38 +4302,38 @@ module.exports = class liqi extends Exchange {
         //     ...
         // ]
         //
-        const rate = this.safeValue (response, 0);
-        const timestamp = this.safeNumber (rate, 'timestamp');
+        const rate = this.safeValue(response, 0);
+        const timestamp = this.safeNumber(rate, 'timestamp');
         return {
             'currency': code,
-            'rate': this.safeNumber (rate, 'dailyInterestRate'),
+            'rate': this.safeNumber(rate, 'dailyInterestRate'),
             'period': 86400000,
             'timestamp': timestamp,
-            'datetime': this.iso8601 (timestamp),
+            'datetime': this.iso8601(timestamp),
             'info': response,
         };
     }
 
-    async fetchBorrowRateHistory (code, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets ();
+    async fetchBorrowRateHistory(code, since = undefined, limit = undefined, params = {}) {
+        await this.loadMarkets();
         if (limit === undefined) {
             limit = 93;
         } else if (limit > 93) {
             // Liqi API says the limit is 100, but "Illegal characters found in a parameter." is returned when limit is > 93
-            throw new BadRequest (this.id + ' fetchBorrowRateHistory limit parameter cannot exceed 92');
+            throw new BadRequest(this.id + ' fetchBorrowRateHistory limit parameter cannot exceed 92');
         }
-        const currency = this.currency (code);
+        const currency = this.currency(code);
         const request = {
             'asset': currency['id'],
             'limit': limit,
         };
         if (since !== undefined) {
             request['startTime'] = since;
-            const endTime = this.sum (since, limit * 86400000) - 1; // required when startTime is further than 93 days in the past
-            const now = this.milliseconds ();
-            request['endTime'] = Math.min (endTime, now); // cannot have an endTime later than current time
+            const endTime = this.sum(since, limit * 86400000) - 1; // required when startTime is further than 93 days in the past
+            const now = this.milliseconds();
+            request['endTime'] = Math.min(endTime, now); // cannot have an endTime later than current time
         }
-        const response = await this.sapiGetMarginInterestRateHistory (this.extend (request, params));
+        const response = await this.sapiGetMarginInterestRateHistory(this.extend(request, params));
         //
         //     [
         //         {
@@ -4312,27 +4347,27 @@ module.exports = class liqi extends Exchange {
         const result = [];
         for (let i = 0; i < response.length; i++) {
             const item = response[i];
-            const timestamp = this.safeNumber (item, 'timestamp');
-            result.push ({
+            const timestamp = this.safeNumber(item, 'timestamp');
+            result.push({
                 'currency': code,
-                'rate': this.safeNumber (item, 'dailyInterestRate'),
+                'rate': this.safeNumber(item, 'dailyInterestRate'),
                 'timestamp': timestamp,
-                'datetime': this.iso8601 (timestamp),
+                'datetime': this.iso8601(timestamp),
                 'info': item,
             });
         }
         return result;
     }
 
-    async createGiftCode (code, amount, params = {}) {
-        await this.loadMarkets ();
-        const currency = this.currency (code);
+    async createGiftCode(code, amount, params = {}) {
+        await this.loadMarkets();
+        const currency = this.currency(code);
         // ensure you have enough token in your funding account before calling this code
         const request = {
             'token': currency['id'],
             'amount': amount,
         };
-        const response = await this.sapiPostGiftcardCreateCode (this.extend (request, params));
+        const response = await this.sapiPostGiftcardCreateCode(this.extend(request, params));
         //
         //     {
         //       code: '000000',
@@ -4341,9 +4376,9 @@ module.exports = class liqi extends Exchange {
         //       success: true
         //     }
         //
-        const data = this.safeValue (response, 'data');
-        const giftcardCode = this.safeString (data, 'code');
-        const id = this.safeString (data, 'referenceNo');
+        const data = this.safeValue(response, 'data');
+        const giftcardCode = this.safeString(data, 'code');
+        const id = this.safeString(data, 'referenceNo');
         return {
             'info': response,
             'id': id,
@@ -4353,11 +4388,11 @@ module.exports = class liqi extends Exchange {
         };
     }
 
-    async redeemGiftCode (giftcardCode, params = {}) {
+    async redeemGiftCode(giftcardCode, params = {}) {
         const request = {
             'code': giftcardCode,
         };
-        const response = await this.sapiPostGiftcardRedeemCode (this.extend (request, params));
+        const response = await this.sapiPostGiftcardRedeemCode(this.extend(request, params));
         //
         //     {
         //       code: '000000',
@@ -4372,11 +4407,11 @@ module.exports = class liqi extends Exchange {
         return response;
     }
 
-    async verifyGiftCode (id, params = {}) {
+    async verifyGiftCode(id, params = {}) {
         const request = {
             'referenceNo': id,
         };
-        const response = await this.sapiGetGiftcardVerify (this.extend (request, params));
+        const response = await this.sapiGetGiftcardVerify(this.extend(request, params));
         //
         //     {
         //       code: '000000',
