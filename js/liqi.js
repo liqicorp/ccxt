@@ -144,11 +144,14 @@ module.exports = class liqi extends Exchange {
                 'public': {
                     'get': {
                         'fetchMarkets': 20,
+                        'fetchTickers': 20,
                     },
                 },
                 'private': {
                     'get': {
                         'fetchBalance': 1,
+                        'fetchOrders': 20,
+                        'fetchOrder': 1,
                     },
                 },
             },
@@ -960,18 +963,9 @@ module.exports = class liqi extends Exchange {
         const request = {
             'symbol': market['id'],
         };
-        let method = 'publicGetTicker24hr';
-        if (market['linear']) {
-            method = 'fapiPublicGetTicker24hr';
-        } else if (market['inverse']) {
-            method = 'dapiPublicGetTicker24hr';
-        }
+        let method = 'publicGetFetchTicher';
         const response = await this[method](this.extend(request, params));
-        if (Array.isArray(response)) {
-            const firstTicker = this.safeValue(response, 0, {});
-            return this.parseTicker(firstTicker, market);
-        }
-        return this.parseTicker(response, market);
+        return response;
     }
 
     async fetchBidsAsks(symbols = undefined, params = {}) {
@@ -4023,7 +4017,7 @@ module.exports = class liqi extends Exchange {
         return await this[method](this.extend(request, params));
     }
 
-    standardEcdsa(request, secret, algorithm = 'ed25519') {
+    signEcdsa(request, secret, algorithm = 'ed25519') {
         const clientFromPriv = new EC(algorithm).keyFromPrivate(secret, 'hex');
         const signature = this.toDER(clientFromPriv.sign(request), 'hex');
         console.log(JSON.stringify(signature));
@@ -4102,7 +4096,7 @@ module.exports = class liqi extends Exchange {
             query = this.urlencode(extendedParams);
             console.log(query);
             const hash = this.hash(query, 'sha256', 'hex');
-            const signature = this.standardEcdsa(hash, this.secret, 'ed25519');
+            const signature = this.signEcdsa(hash, this.secret, 'ed25519');
             headers = {
                 'signature': signature,
                 'X-MBX-APIKEY': this.apiKey,
