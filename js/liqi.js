@@ -144,8 +144,12 @@ module.exports = class liqi extends Exchange {
                 'public': {
                     'get': {
                         'fetchMarkets': 20,
+                        'fetchCurrencies': 20,
                         'fetchTickers': 20,
                         'fetchTicker': 1,
+                        'fetchOrderBook': 100,
+                        'fetchOHLCV':50
+                        
                     },
                 },
                 'private': {
@@ -153,7 +157,12 @@ module.exports = class liqi extends Exchange {
                         'fetchBalance': 1,
                         'fetchOrders': 20,
                         'fetchOrder': 1,
+                        'fetchTrades':500
                     },
+                    'post':{
+                        'createOrder':1,
+                        'cancelOrder':1
+                    }
                 },
             },
             'fees': {
@@ -602,147 +611,154 @@ module.exports = class liqi extends Exchange {
         return this.safeInteger(response, 'serverTime');
     }
 
-    async fetchCurrencies(params = {}) {
-        const fetchCurrenciesEnabled = this.safeValue(this.options, 'fetchCurrencies');
-        if (!fetchCurrenciesEnabled) {
-            return undefined;
-        }
-        // this endpoint requires authentication
-        // while fetchCurrencies is a public API method by design
-        // therefore we check the keys here
-        // and fallback to generating the currencies from the markets
-        if (!this.checkRequiredCredentials(false)) {
-            return undefined;
-        }
-        // sandbox/testnet does not support sapi endpoints
-        const apiBackup = this.safeString(this.urls, 'apiBackup');
-        if (apiBackup !== undefined) {
-            return undefined;
-        }
-        const response = await this.sapiGetCapitalConfigGetall(params);
-        const result = {};
-        for (let i = 0; i < response.length; i++) {
-            //
-            //     {
-            //         coin: 'LINK',
-            //         depositAllEnable: true,
-            //         withdrawAllEnable: true,
-            //         name: 'ChainLink',
-            //         free: '0.06168',
-            //         locked: '0',
-            //         freeze: '0',
-            //         withdrawing: '0',
-            //         ipoing: '0',
-            //         ipoable: '0',
-            //         storage: '0',
-            //         isLegalMoney: false,
-            //         trading: true,
-            //         networkList: [
-            //             {
-            //                 network: 'BNB',
-            //                 coin: 'LINK',
-            //                 withdrawIntegerMultiple: '0',
-            //                 isDefault: false,
-            //                 depositEnable: true,
-            //                 withdrawEnable: true,
-            //                 depositDesc: '',
-            //                 withdrawDesc: '',
-            //                 specialTips: 'Both a MEMO and an Address are required to successfully deposit your LINK BEP2 tokens to Liqi.',
-            //                 name: 'BEP2',
-            //                 resetAddressStatus: false,
-            //                 addressRegex: '^(bnb1)[0-9a-z]{38}$',
-            //                 memoRegex: '^[0-9A-Za-z\\-_]{1,120}$',
-            //                 withdrawFee: '0.002',
-            //                 withdrawMin: '0.01',
-            //                 withdrawMax: '9999999',
-            //                 minConfirm: 1,
-            //                 unLockConfirm: 0
-            //             },
-            //             {
-            //                 network: 'BSC',
-            //                 coin: 'LINK',
-            //                 withdrawIntegerMultiple: '0.00000001',
-            //                 isDefault: false,
-            //                 depositEnable: true,
-            //                 withdrawEnable: true,
-            //                 depositDesc: '',
-            //                 withdrawDesc: '',
-            //                 specialTips: '',
-            //                 name: 'BEP20 (BSC)',
-            //                 resetAddressStatus: false,
-            //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-            //                 memoRegex: '',
-            //                 withdrawFee: '0.005',
-            //                 withdrawMin: '0.01',
-            //                 withdrawMax: '9999999',
-            //                 minConfirm: 15,
-            //                 unLockConfirm: 0
-            //             },
-            //             {
-            //                 network: 'ETH',
-            //                 coin: 'LINK',
-            //                 withdrawIntegerMultiple: '0.00000001',
-            //                 isDefault: true,
-            //                 depositEnable: true,
-            //                 withdrawEnable: true,
-            //                 depositDesc: '',
-            //                 withdrawDesc: '',
-            //                 name: 'ERC20',
-            //                 resetAddressStatus: false,
-            //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-            //                 memoRegex: '',
-            //                 withdrawFee: '0.34',
-            //                 withdrawMin: '0.68',
-            //                 withdrawMax: '0',
-            //                 minConfirm: 12,
-            //                 unLockConfirm: 0
-            //             }
-            //         ]
-            //     }
-            //
-            const entry = response[i];
-            const id = this.safeString(entry, 'coin');
-            const name = this.safeString(entry, 'name');
-            const code = this.safeCurrencyCode(id);
-            const precision = undefined;
-            let isWithdrawEnabled = true;
-            let isDepositEnabled = true;
-            const networkList = this.safeValue(entry, 'networkList', []);
-            const fees = {};
-            let fee = undefined;
-            for (let j = 0; j < networkList.length; j++) {
-                const networkItem = networkList[j];
-                const network = this.safeString(networkItem, 'network');
-                // const name = this.safeString (networkItem, 'name');
-                const withdrawFee = this.safeNumber(networkItem, 'withdrawFee');
-                const depositEnable = this.safeValue(networkItem, 'depositEnable');
-                const withdrawEnable = this.safeValue(networkItem, 'withdrawEnable');
-                isDepositEnabled = isDepositEnabled || depositEnable;
-                isWithdrawEnabled = isWithdrawEnabled || withdrawEnable;
-                fees[network] = withdrawFee;
-                const isDefault = this.safeValue(networkItem, 'isDefault');
-                if (isDefault || fee === undefined) {
-                    fee = withdrawFee;
-                }
-            }
-            const trading = this.safeValue(entry, 'trading');
-            const active = (isWithdrawEnabled && isDepositEnabled && trading);
-            result[code] = {
-                'id': id,
-                'name': name,
-                'code': code,
-                'precision': precision,
-                'info': entry,
-                'active': active,
-                'deposit': isDepositEnabled,
-                'withdraw': isWithdrawEnabled,
-                'networks': networkList,
-                'fee': fee,
-                'fees': fees,
-                'limits': this.limits,
-            };
-        }
-        return result;
+    async fetchCurrencies(limit, params = {}) {
+        const request = {
+            'limit': limit,
+        };
+
+        const method = 'publicGetFetchCurrencies';
+        const response = await this[method](this.extend(request, params));
+        return response;
+        // const fetchCurrenciesEnabled = this.safeValue(this.options, 'fetchCurrencies');
+        // if (!fetchCurrenciesEnabled) {
+        //     return undefined;
+        // }
+        // // this endpoint requires authentication
+        // // while fetchCurrencies is a public API method by design
+        // // therefore we check the keys here
+        // // and fallback to generating the currencies from the markets
+        // if (!this.checkRequiredCredentials(false)) {
+        //     return undefined;
+        // }
+        // // sandbox/testnet does not support sapi endpoints
+        // const apiBackup = this.safeString(this.urls, 'apiBackup');
+        // if (apiBackup !== undefined) {
+        //     return undefined;
+        // }
+        // const response = await this.sapiGetCapitalConfigGetall(params);
+        // const result = {};
+        // for (let i = 0; i < response.length; i++) {
+        //     //
+        //     //     {
+        //     //         coin: 'LINK',
+        //     //         depositAllEnable: true,
+        //     //         withdrawAllEnable: true,
+        //     //         name: 'ChainLink',
+        //     //         free: '0.06168',
+        //     //         locked: '0',
+        //     //         freeze: '0',
+        //     //         withdrawing: '0',
+        //     //         ipoing: '0',
+        //     //         ipoable: '0',
+        //     //         storage: '0',
+        //     //         isLegalMoney: false,
+        //     //         trading: true,
+        //     //         networkList: [
+        //     //             {
+        //     //                 network: 'BNB',
+        //     //                 coin: 'LINK',
+        //     //                 withdrawIntegerMultiple: '0',
+        //     //                 isDefault: false,
+        //     //                 depositEnable: true,
+        //     //                 withdrawEnable: true,
+        //     //                 depositDesc: '',
+        //     //                 withdrawDesc: '',
+        //     //                 specialTips: 'Both a MEMO and an Address are required to successfully deposit your LINK BEP2 tokens to Liqi.',
+        //     //                 name: 'BEP2',
+        //     //                 resetAddressStatus: false,
+        //     //                 addressRegex: '^(bnb1)[0-9a-z]{38}$',
+        //     //                 memoRegex: '^[0-9A-Za-z\\-_]{1,120}$',
+        //     //                 withdrawFee: '0.002',
+        //     //                 withdrawMin: '0.01',
+        //     //                 withdrawMax: '9999999',
+        //     //                 minConfirm: 1,
+        //     //                 unLockConfirm: 0
+        //     //             },
+        //     //             {
+        //     //                 network: 'BSC',
+        //     //                 coin: 'LINK',
+        //     //                 withdrawIntegerMultiple: '0.00000001',
+        //     //                 isDefault: false,
+        //     //                 depositEnable: true,
+        //     //                 withdrawEnable: true,
+        //     //                 depositDesc: '',
+        //     //                 withdrawDesc: '',
+        //     //                 specialTips: '',
+        //     //                 name: 'BEP20 (BSC)',
+        //     //                 resetAddressStatus: false,
+        //     //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
+        //     //                 memoRegex: '',
+        //     //                 withdrawFee: '0.005',
+        //     //                 withdrawMin: '0.01',
+        //     //                 withdrawMax: '9999999',
+        //     //                 minConfirm: 15,
+        //     //                 unLockConfirm: 0
+        //     //             },
+        //     //             {
+        //     //                 network: 'ETH',
+        //     //                 coin: 'LINK',
+        //     //                 withdrawIntegerMultiple: '0.00000001',
+        //     //                 isDefault: true,
+        //     //                 depositEnable: true,
+        //     //                 withdrawEnable: true,
+        //     //                 depositDesc: '',
+        //     //                 withdrawDesc: '',
+        //     //                 name: 'ERC20',
+        //     //                 resetAddressStatus: false,
+        //     //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
+        //     //                 memoRegex: '',
+        //     //                 withdrawFee: '0.34',
+        //     //                 withdrawMin: '0.68',
+        //     //                 withdrawMax: '0',
+        //     //                 minConfirm: 12,
+        //     //                 unLockConfirm: 0
+        //     //             }
+        //     //         ]
+        //     //     }
+        //     //
+        //     const entry = response[i];
+        //     const id = this.safeString(entry, 'coin');
+        //     const name = this.safeString(entry, 'name');
+        //     const code = this.safeCurrencyCode(id);
+        //     const precision = undefined;
+        //     let isWithdrawEnabled = true;
+        //     let isDepositEnabled = true;
+        //     const networkList = this.safeValue(entry, 'networkList', []);
+        //     const fees = {};
+        //     let fee = undefined;
+        //     for (let j = 0; j < networkList.length; j++) {
+        //         const networkItem = networkList[j];
+        //         const network = this.safeString(networkItem, 'network');
+        //         // const name = this.safeString (networkItem, 'name');
+        //         const withdrawFee = this.safeNumber(networkItem, 'withdrawFee');
+        //         const depositEnable = this.safeValue(networkItem, 'depositEnable');
+        //         const withdrawEnable = this.safeValue(networkItem, 'withdrawEnable');
+        //         isDepositEnabled = isDepositEnabled || depositEnable;
+        //         isWithdrawEnabled = isWithdrawEnabled || withdrawEnable;
+        //         fees[network] = withdrawFee;
+        //         const isDefault = this.safeValue(networkItem, 'isDefault');
+        //         if (isDefault || fee === undefined) {
+        //             fee = withdrawFee;
+        //         }
+        //     }
+        //     const trading = this.safeValue(entry, 'trading');
+        //     const active = (isWithdrawEnabled && isDepositEnabled && trading);
+        //     result[code] = {
+        //         'id': id,
+        //         'name': name,
+        //         'code': code,
+        //         'precision': precision,
+        //         'info': entry,
+        //         'active': active,
+        //         'deposit': isDepositEnabled,
+        //         'withdraw': isWithdrawEnabled,
+        //         'networks': networkList,
+        //         'fee': fee,
+        //         'fees': fees,
+        //         'limits': this.limits,
+        //     };
+        // }
+        // return result;
     }
 
     async fetchMarkets(params = {}) {
@@ -750,6 +766,7 @@ module.exports = class liqi extends Exchange {
         const response = await this[method]();
         return response;
     }
+
 
     parseBalance(response, type = undefined) {
         const result = {
@@ -821,43 +838,12 @@ module.exports = class liqi extends Exchange {
     }
 
     async fetchOrderBook(symbol, limit = undefined, params = {}) {
-        await this.loadMarkets();
-        const market = this.market(symbol);
         const request = {
-            'symbol': market['id'],
+            'symbol': symbol,
         };
-        if (limit !== undefined) {
-            request['limit'] = limit; // default 100, max 5000, see https://github.com/liqi/liqi-spot-api-docs/blob/master/rest-api.md#order-book
-        }
-        let method = 'publicGetDepth';
-        if (market['linear']) {
-            method = 'fapiPublicGetDepth';
-        } else if (market['inverse']) {
-            method = 'dapiPublicGetDepth';
-        }
+        let method = 'publicGetFetchOrderBook';
         const response = await this[method](this.extend(request, params));
-        //
-        // future
-        //
-        //     {
-        //         "lastUpdateId":333598053905,
-        //         "E":1618631511986,
-        //         "T":1618631511964,
-        //         "bids":[
-        //             ["2493.56","20.189"],
-        //             ["2493.54","1.000"],
-        //             ["2493.51","0.005"]
-        //         ],
-        //         "asks":[
-        //             ["2493.57","0.877"],
-        //             ["2493.62","0.063"],
-        //             ["2493.71","12.054"],
-        //         ]
-        //     }
-        const timestamp = this.safeInteger(response, 'T');
-        const orderbook = this.parseOrderBook(response, symbol, timestamp);
-        orderbook['nonce'] = this.safeInteger(response, 'lastUpdateId');
-        return orderbook;
+        return response;
     }
 
     parseTicker(ticker, market = undefined) {
@@ -1047,68 +1033,78 @@ module.exports = class liqi extends Exchange {
         ];
     }
 
-    async fetchOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets();
-        const market = this.market(symbol);
-        // liqi docs say that the default limit 500, max 1500 for futures, max 1000 for spot markets
-        // the reality is that the time range wider than 500 candles won't work right
-        const defaultLimit = 500;
-        const maxLimit = 1500;
-        const price = this.safeString(params, 'price');
-        params = this.omit(params, 'price');
-        limit = (limit === undefined) ? defaultLimit : Math.min(limit, maxLimit);
+    async fetchOHLCV(symbol, internal = '1m', limit = 500, params = {}) {
+        
         const request = {
-            'interval': this.timeframes[timeframe],
-            'limit': limit,
+            'symbol': symbol,
+            'interval': internal,
+            'limit': limit
         };
-        if (price === 'index') {
-            request['pair'] = market['id'];   // Index price takes this argument instead of symbol
-        } else {
-            request['symbol'] = market['id'];
-        }
-        // const duration = this.parseTimeframe (timeframe);
-        if (since !== undefined) {
-            request['startTime'] = since;
-            //
-            // It didn't work before without the endTime
-            // https://github.com/ccxt/ccxt/issues/8454
-            //
-            if (market['inverse']) {
-                if (since > 0) {
-                    const duration = this.parseTimeframe(timeframe);
-                    const endTime = this.sum(since, limit * duration * 1000 - 1);
-                    const now = this.milliseconds();
-                    request['endTime'] = Math.min(now, endTime);
-                }
-            }
-        }
-        let method = 'publicGetKlines';
-        if (price === 'mark') {
-            if (market['inverse']) {
-                method = 'dapiPublicGetMarkPriceKlines';
-            } else {
-                method = 'fapiPublicGetMarkPriceKlines';
-            }
-        } else if (price === 'index') {
-            if (market['inverse']) {
-                method = 'dapiPublicGetIndexPriceKlines';
-            } else {
-                method = 'fapiPublicGetIndexPriceKlines';
-            }
-        } else if (market['linear']) {
-            method = 'fapiPublicGetKlines';
-        } else if (market['inverse']) {
-            method = 'dapiPublicGetKlines';
-        }
+        let method = 'publicGetFetchOHLCV';
         const response = await this[method](this.extend(request, params));
-        //
-        //     [
-        //         [1591478520000,"0.02501300","0.02501800","0.02500000","0.02500000","22.19000000",1591478579999,"0.55490906",40,"10.92900000","0.27336462","0"],
-        //         [1591478580000,"0.02499600","0.02500900","0.02499400","0.02500300","21.34700000",1591478639999,"0.53370468",24,"7.53800000","0.18850725","0"],
-        //         [1591478640000,"0.02500800","0.02501100","0.02500300","0.02500800","154.14200000",1591478699999,"3.85405839",97,"5.32300000","0.13312641","0"],
-        //     ]
-        //
-        return this.parseOHLCVs(response, market, timeframe, since, limit);
+        return response;
+        
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
+        // // liqi docs say that the default limit 500, max 1500 for futures, max 1000 for spot markets
+        // // the reality is that the time range wider than 500 candles won't work right
+        // const defaultLimit = 500;
+        // const maxLimit = 1500;
+        // const price = this.safeString(params, 'price');
+        // params = this.omit(params, 'price');
+        // limit = (limit === undefined) ? defaultLimit : Math.min(limit, maxLimit);
+        // const request = {
+        //     'interval': this.timeframes[timeframe],
+        //     'limit': limit,
+        // };
+        // if (price === 'index') {
+        //     request['pair'] = market['id'];   // Index price takes this argument instead of symbol
+        // } else {
+        //     request['symbol'] = market['id'];
+        // }
+        // // const duration = this.parseTimeframe (timeframe);
+        // if (since !== undefined) {
+        //     request['startTime'] = since;
+        //     //
+        //     // It didn't work before without the endTime
+        //     // https://github.com/ccxt/ccxt/issues/8454
+        //     //
+        //     if (market['inverse']) {
+        //         if (since > 0) {
+        //             const duration = this.parseTimeframe(timeframe);
+        //             const endTime = this.sum(since, limit * duration * 1000 - 1);
+        //             const now = this.milliseconds();
+        //             request['endTime'] = Math.min(now, endTime);
+        //         }
+        //     }
+        // }
+        // let method = 'publicGetKlines';
+        // if (price === 'mark') {
+        //     if (market['inverse']) {
+        //         method = 'dapiPublicGetMarkPriceKlines';
+        //     } else {
+        //         method = 'fapiPublicGetMarkPriceKlines';
+        //     }
+        // } else if (price === 'index') {
+        //     if (market['inverse']) {
+        //         method = 'dapiPublicGetIndexPriceKlines';
+        //     } else {
+        //         method = 'fapiPublicGetIndexPriceKlines';
+        //     }
+        // } else if (market['linear']) {
+        //     method = 'fapiPublicGetKlines';
+        // } else if (market['inverse']) {
+        //     method = 'dapiPublicGetKlines';
+        // }
+        // const response = await this[method](this.extend(request, params));
+        // //
+        // //     [
+        // //         [1591478520000,"0.02501300","0.02501800","0.02500000","0.02500000","22.19000000",1591478579999,"0.55490906",40,"10.92900000","0.27336462","0"],
+        // //         [1591478580000,"0.02499600","0.02500900","0.02499400","0.02500300","21.34700000",1591478639999,"0.53370468",24,"7.53800000","0.18850725","0"],
+        // //         [1591478640000,"0.02500800","0.02501100","0.02500300","0.02500800","154.14200000",1591478699999,"3.85405839",97,"5.32300000","0.13312641","0"],
+        // //     ]
+        // //
+        // return this.parseOHLCVs(response, market, timeframe, since, limit);
     }
 
     async fetchMarkOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
@@ -1274,90 +1270,99 @@ module.exports = class liqi extends Exchange {
         }, market);
     }
 
-    async fetchTrades(symbol, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets();
-        const market = this.market(symbol);
+    async fetchTrades(symbol, limit = undefined, params = {}) {
+
         const request = {
-            'symbol': market['id'],
-            // 'fromId': 123,    // ID to get aggregate trades from INCLUSIVE.
-            // 'startTime': 456, // Timestamp in ms to get aggregate trades from INCLUSIVE.
-            // 'endTime': 789,   // Timestamp in ms to get aggregate trades until INCLUSIVE.
-            // 'limit': 500,     // default = 500, maximum = 1000
+            'symbol': symbol,
+            'limit': limit,
         };
-        const defaultType = this.safeString2(this.options, 'fetchTrades', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        const query = this.omit(params, 'type');
-        let defaultMethod = undefined;
-        if (type === 'future') {
-            defaultMethod = 'fapiPublicGetAggTrades';
-        } else if (type === 'delivery') {
-            defaultMethod = 'dapiPublicGetAggTrades';
-        } else {
-            defaultMethod = 'publicGetAggTrades';
-        }
-        let method = this.safeString(this.options, 'fetchTradesMethod', defaultMethod);
-        if (method === 'publicGetAggTrades') {
-            if (type === 'future') {
-                method = 'fapiPublicGetAggTrades';
-            } else if (type === 'delivery') {
-                method = 'dapiPublicGetAggTrades';
-            }
-        } else if (method === 'publicGetHistoricalTrades') {
-            if (type === 'future') {
-                method = 'fapiPublicGetHistoricalTrades';
-            } else if (type === 'delivery') {
-                method = 'dapiPublicGetHistoricalTrades';
-            }
-        }
-        if (since !== undefined) {
-            request['startTime'] = since;
-            // https://github.com/ccxt/ccxt/issues/6400
-            // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#compressedaggregate-trades-list
-            request['endTime'] = this.sum(since, 3600000);
-        }
-        if (limit !== undefined) {
-            request['limit'] = limit; // default = 500, maximum = 1000
-        }
-        //
-        // Caveats:
-        // - default limit (500) applies only if no other parameters set, trades up
-        //   to the maximum limit may be returned to satisfy other parameters
-        // - if both limit and time window is set and time window contains more
-        //   trades than the limit then the last trades from the window are returned
-        // - 'tradeId' accepted and returned by this method is "aggregate" trade id
-        //   which is different from actual trade id
-        // - setting both fromId and time window results in error
-        const response = await this[method](this.extend(request, query));
-        //
-        // aggregate trades
-        //
-        //     [
-        //         {
-        //             "a": 26129,         // Aggregate tradeId
-        //             "p": "0.01633102",  // Price
-        //             "q": "4.70443515",  // Quantity
-        //             "f": 27781,         // First tradeId
-        //             "l": 27781,         // Last tradeId
-        //             "T": 1498793709153, // Timestamp
-        //             "m": true,          // Was the buyer the maker?
-        //             "M": true           // Was the trade the best price match?
-        //         }
-        //     ]
-        //
-        // recent public trades and historical public trades
-        //
-        //     [
-        //         {
-        //             "id": 28457,
-        //             "price": "4.00000100",
-        //             "qty": "12.00000000",
-        //             "time": 1499865549590,
-        //             "isBuyerMaker": true,
-        //             "isBestMatch": true
-        //         }
-        //     ]
-        //
-        return this.parseTrades(response, market, since, limit);
+
+        const method = 'privateGetFetchTrades';
+        const response = await this[method](this.extend(request, params));
+        return response;
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
+        // const request = {
+        //     'symbol': market['id'],
+        //     // 'fromId': 123,    // ID to get aggregate trades from INCLUSIVE.
+        //     // 'startTime': 456, // Timestamp in ms to get aggregate trades from INCLUSIVE.
+        //     // 'endTime': 789,   // Timestamp in ms to get aggregate trades until INCLUSIVE.
+        //     // 'limit': 500,     // default = 500, maximum = 1000
+        // };
+        // const defaultType = this.safeString2(this.options, 'fetchTrades', 'defaultType', 'spot');
+        // const type = this.safeString(params, 'type', defaultType);
+        // const query = this.omit(params, 'type');
+        // let defaultMethod = undefined;
+        // if (type === 'future') {
+        //     defaultMethod = 'fapiPublicGetAggTrades';
+        // } else if (type === 'delivery') {
+        //     defaultMethod = 'dapiPublicGetAggTrades';
+        // } else {
+        //     defaultMethod = 'publicGetAggTrades';
+        // }
+        // let method = this.safeString(this.options, 'fetchTradesMethod', defaultMethod);
+        // if (method === 'publicGetAggTrades') {
+        //     if (type === 'future') {
+        //         method = 'fapiPublicGetAggTrades';
+        //     } else if (type === 'delivery') {
+        //         method = 'dapiPublicGetAggTrades';
+        //     }
+        // } else if (method === 'publicGetHistoricalTrades') {
+        //     if (type === 'future') {
+        //         method = 'fapiPublicGetHistoricalTrades';
+        //     } else if (type === 'delivery') {
+        //         method = 'dapiPublicGetHistoricalTrades';
+        //     }
+        // }
+        // if (since !== undefined) {
+        //     request['startTime'] = since;
+        //     // https://github.com/ccxt/ccxt/issues/6400
+        //     // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#compressedaggregate-trades-list
+        //     request['endTime'] = this.sum(since, 3600000);
+        // }
+        // if (limit !== undefined) {
+        //     request['limit'] = limit; // default = 500, maximum = 1000
+        // }
+        // //
+        // // Caveats:
+        // // - default limit (500) applies only if no other parameters set, trades up
+        // //   to the maximum limit may be returned to satisfy other parameters
+        // // - if both limit and time window is set and time window contains more
+        // //   trades than the limit then the last trades from the window are returned
+        // // - 'tradeId' accepted and returned by this method is "aggregate" trade id
+        // //   which is different from actual trade id
+        // // - setting both fromId and time window results in error
+        // const response = await this[method](this.extend(request, query));
+        // //
+        // // aggregate trades
+        // //
+        // //     [
+        // //         {
+        // //             "a": 26129,         // Aggregate tradeId
+        // //             "p": "0.01633102",  // Price
+        // //             "q": "4.70443515",  // Quantity
+        // //             "f": 27781,         // First tradeId
+        // //             "l": 27781,         // Last tradeId
+        // //             "T": 1498793709153, // Timestamp
+        // //             "m": true,          // Was the buyer the maker?
+        // //             "M": true           // Was the trade the best price match?
+        // //         }
+        // //     ]
+        // //
+        // // recent public trades and historical public trades
+        // //
+        // //     [
+        // //         {
+        // //             "id": 28457,
+        // //             "price": "4.00000100",
+        // //             "qty": "12.00000000",
+        // //             "time": 1499865549590,
+        // //             "isBuyerMaker": true,
+        // //             "isBestMatch": true
+        // //         }
+        // //     ]
+        // //
+        // return this.parseTrades(response, market, since, limit);
     }
 
     parseOrderStatus(status) {
@@ -1543,170 +1548,183 @@ module.exports = class liqi extends Exchange {
         return await this.createOrder(symbol, type, side, amount, price, this.extend(request, params));
     }
 
-    async createOrder(symbol, type, side, amount, price = undefined, params = {}) {
-        await this.loadMarkets();
-        const market = this.market(symbol);
-        const defaultType = this.safeString2(this.options, 'createOrder', 'defaultType', 'spot');
-        const marketType = this.safeString(params, 'type', defaultType);
-        const clientOrderId = this.safeString2(params, 'newClientOrderId', 'clientOrderId');
-        const postOnly = this.safeValue(params, 'postOnly', false);
-        params = this.omit(params, ['type', 'newClientOrderId', 'clientOrderId', 'postOnly']);
-        const reduceOnly = this.safeValue(params, 'reduceOnly');
-        if (reduceOnly !== undefined) {
-            if ((marketType !== 'future') && (marketType !== 'delivery')) {
-                throw new InvalidOrder(this.id + ' createOrder() does not support reduceOnly for ' + marketType + ' orders, reduceOnly orders are supported for future and delivery markets only');
-            }
-        }
-        let method = 'privatePostOrder';
-        if (marketType === 'future') {
-            method = 'fapiPrivatePostOrder';
-        } else if (marketType === 'delivery') {
-            method = 'dapiPrivatePostOrder';
-        } else if (marketType === 'margin') {
-            method = 'sapiPostMarginOrder';
-        }
-        // the next 5 lines are added to support for testing orders
-        if (market['spot']) {
-            const test = this.safeValue(params, 'test', false);
-            if (test) {
-                method += 'Test';
-            }
-            params = this.omit(params, 'test');
-            // only supported for spot/margin api (all margin markets are spot markets)
-            if (postOnly) {
-                type = 'LIMIT_MAKER';
-            }
-        }
-        const uppercaseType = type.toUpperCase();
-        const validOrderTypes = this.safeValue(market['info'], 'orderTypes');
-        if (!this.inArray(uppercaseType, validOrderTypes)) {
-            throw new InvalidOrder(this.id + ' ' + type + ' is not a valid order type in market ' + symbol);
-        }
+    async createOrder(symbol, type, side, amount = undefined, price = undefined, quoteAmount = undefined, params = {}) {
+
         const request = {
-            'symbol': market['id'],
-            'type': uppercaseType,
-            'side': side.toUpperCase(),
+            'symbol': symbol,
+            'type': type,
+            'side': side,
+            'amount': amount,
+            'price':price,
+            'quoteAmount':quoteAmount
         };
-        if (clientOrderId === undefined) {
-            const broker = this.safeValue(this.options, 'broker');
-            if (broker !== undefined) {
-                const brokerId = this.safeString(broker, marketType);
-                if (brokerId !== undefined) {
-                    request['newClientOrderId'] = brokerId + this.uuid22();
-                }
-            }
-        } else {
-            request['newClientOrderId'] = clientOrderId;
-        }
-        if ((marketType === 'spot') || (marketType === 'margin')) {
-            request['newOrderRespType'] = this.safeValue(this.options['newOrderRespType'], type, 'RESULT'); // 'ACK' for order id, 'RESULT' for full order or 'FULL' for order with fills
-        } else {
-            // delivery and future
-            request['newOrderRespType'] = 'RESULT';  // "ACK", "RESULT", default "ACK"
-        }
-        // additional required fields depending on the order type
-        let timeInForceIsRequired = false;
-        let priceIsRequired = false;
-        let stopPriceIsRequired = false;
-        let quantityIsRequired = false;
-        //
-        // spot/margin
-        //
-        //     LIMIT                timeInForce, quantity, price
-        //     MARKET               quantity or quoteOrderQty
-        //     STOP_LOSS            quantity, stopPrice
-        //     STOP_LOSS_LIMIT      timeInForce, quantity, price, stopPrice
-        //     TAKE_PROFIT          quantity, stopPrice
-        //     TAKE_PROFIT_LIMIT    timeInForce, quantity, price, stopPrice
-        //     LIMIT_MAKER          quantity, price
-        //
-        // futures
-        //
-        //     LIMIT                timeInForce, quantity, price
-        //     MARKET               quantity
-        //     STOP/TAKE_PROFIT     quantity, price, stopPrice
-        //     STOP_MARKET          stopPrice
-        //     TAKE_PROFIT_MARKET   stopPrice
-        //     TRAILING_STOP_MARKET callbackRate
-        //
-        if (uppercaseType === 'MARKET') {
-            if (market['spot']) {
-                const quoteOrderQty = this.safeValue(this.options, 'quoteOrderQty', false);
-                if (quoteOrderQty) {
-                    const quoteOrderQty = this.safeNumber(params, 'quoteOrderQty');
-                    const precision = market['precision']['price'];
-                    if (quoteOrderQty !== undefined) {
-                        request['quoteOrderQty'] = this.decimalToPrecision(quoteOrderQty, TRUNCATE, precision, this.precisionMode);
-                        params = this.omit(params, 'quoteOrderQty');
-                    } else if (price !== undefined) {
-                        request['quoteOrderQty'] = this.decimalToPrecision(amount * price, TRUNCATE, precision, this.precisionMode);
-                    } else {
-                        quantityIsRequired = true;
-                    }
-                } else {
-                    quantityIsRequired = true;
-                }
-            } else {
-                quantityIsRequired = true;
-            }
-        } else if (uppercaseType === 'LIMIT') {
-            priceIsRequired = true;
-            timeInForceIsRequired = true;
-            quantityIsRequired = true;
-        } else if ((uppercaseType === 'STOP_LOSS') || (uppercaseType === 'TAKE_PROFIT')) {
-            stopPriceIsRequired = true;
-            quantityIsRequired = true;
-            if (market['linear'] || market['inverse']) {
-                priceIsRequired = true;
-            }
-        } else if ((uppercaseType === 'STOP_LOSS_LIMIT') || (uppercaseType === 'TAKE_PROFIT_LIMIT')) {
-            quantityIsRequired = true;
-            stopPriceIsRequired = true;
-            priceIsRequired = true;
-            timeInForceIsRequired = true;
-        } else if (uppercaseType === 'LIMIT_MAKER') {
-            priceIsRequired = true;
-            quantityIsRequired = true;
-        } else if (uppercaseType === 'STOP') {
-            quantityIsRequired = true;
-            stopPriceIsRequired = true;
-            priceIsRequired = true;
-        } else if ((uppercaseType === 'STOP_MARKET') || (uppercaseType === 'TAKE_PROFIT_MARKET')) {
-            const closePosition = this.safeValue(params, 'closePosition');
-            if (closePosition === undefined) {
-                quantityIsRequired = true;
-            }
-            stopPriceIsRequired = true;
-        } else if (uppercaseType === 'TRAILING_STOP_MARKET') {
-            quantityIsRequired = true;
-            const callbackRate = this.safeNumber(params, 'callbackRate');
-            if (callbackRate === undefined) {
-                throw new InvalidOrder(this.id + ' createOrder() requires a callbackRate extra param for a ' + type + ' order');
-            }
-        }
-        if (quantityIsRequired) {
-            request['quantity'] = this.amountToPrecision(symbol, amount);
-        }
-        if (priceIsRequired) {
-            if (price === undefined) {
-                throw new InvalidOrder(this.id + ' createOrder() requires a price argument for a ' + type + ' order');
-            }
-            request['price'] = this.priceToPrecision(symbol, price);
-        }
-        if (timeInForceIsRequired) {
-            request['timeInForce'] = this.options['defaultTimeInForce']; // 'GTC' = Good To Cancel (default), 'IOC' = Immediate Or Cancel
-        }
-        if (stopPriceIsRequired) {
-            const stopPrice = this.safeNumber(params, 'stopPrice');
-            if (stopPrice === undefined) {
-                throw new InvalidOrder(this.id + ' createOrder() requires a stopPrice extra param for a ' + type + ' order');
-            } else {
-                params = this.omit(params, 'stopPrice');
-                request['stopPrice'] = this.priceToPrecision(symbol, stopPrice);
-            }
-        }
+        let method = 'privatePostCreateOrder';
         const response = await this[method](this.extend(request, params));
-        return this.parseOrder(response, market);
+        return response;
+
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
+        // const defaultType = this.safeString2(this.options, 'createOrder', 'defaultType', 'spot');
+        // const marketType = this.safeString(params, 'type', defaultType);
+        // const clientOrderId = this.safeString2(params, 'newClientOrderId', 'clientOrderId');
+        // const postOnly = this.safeValue(params, 'postOnly', false);
+        // params = this.omit(params, ['type', 'newClientOrderId', 'clientOrderId', 'postOnly']);
+        // const reduceOnly = this.safeValue(params, 'reduceOnly');
+        // if (reduceOnly !== undefined) {
+        //     if ((marketType !== 'future') && (marketType !== 'delivery')) {
+        //         throw new InvalidOrder(this.id + ' createOrder() does not support reduceOnly for ' + marketType + ' orders, reduceOnly orders are supported for future and delivery markets only');
+        //     }
+        // }
+        // let method = 'privatePostOrder';
+        // if (marketType === 'future') {
+        //     method = 'fapiPrivatePostOrder';
+        // } else if (marketType === 'delivery') {
+        //     method = 'dapiPrivatePostOrder';
+        // } else if (marketType === 'margin') {
+        //     method = 'sapiPostMarginOrder';
+        // }
+        // // the next 5 lines are added to support for testing orders
+        // if (market['spot']) {
+        //     const test = this.safeValue(params, 'test', false);
+        //     if (test) {
+        //         method += 'Test';
+        //     }
+        //     params = this.omit(params, 'test');
+        //     // only supported for spot/margin api (all margin markets are spot markets)
+        //     if (postOnly) {
+        //         type = 'LIMIT_MAKER';
+        //     }
+        // }
+        // const uppercaseType = type.toUpperCase();
+        // const validOrderTypes = this.safeValue(market['info'], 'orderTypes');
+        // if (!this.inArray(uppercaseType, validOrderTypes)) {
+        //     throw new InvalidOrder(this.id + ' ' + type + ' is not a valid order type in market ' + symbol);
+        // }
+        // const request = {
+        //     'symbol': market['id'],
+        //     'type': uppercaseType,
+        //     'side': side.toUpperCase(),
+        // };
+        // if (clientOrderId === undefined) {
+        //     const broker = this.safeValue(this.options, 'broker');
+        //     if (broker !== undefined) {
+        //         const brokerId = this.safeString(broker, marketType);
+        //         if (brokerId !== undefined) {
+        //             request['newClientOrderId'] = brokerId + this.uuid22();
+        //         }
+        //     }
+        // } else {
+        //     request['newClientOrderId'] = clientOrderId;
+        // }
+        // if ((marketType === 'spot') || (marketType === 'margin')) {
+        //     request['newOrderRespType'] = this.safeValue(this.options['newOrderRespType'], type, 'RESULT'); // 'ACK' for order id, 'RESULT' for full order or 'FULL' for order with fills
+        // } else {
+        //     // delivery and future
+        //     request['newOrderRespType'] = 'RESULT';  // "ACK", "RESULT", default "ACK"
+        // }
+        // // additional required fields depending on the order type
+        // let timeInForceIsRequired = false;
+        // let priceIsRequired = false;
+        // let stopPriceIsRequired = false;
+        // let quantityIsRequired = false;
+        // //
+        // // spot/margin
+        // //
+        // //     LIMIT                timeInForce, quantity, price
+        // //     MARKET               quantity or quoteOrderQty
+        // //     STOP_LOSS            quantity, stopPrice
+        // //     STOP_LOSS_LIMIT      timeInForce, quantity, price, stopPrice
+        // //     TAKE_PROFIT          quantity, stopPrice
+        // //     TAKE_PROFIT_LIMIT    timeInForce, quantity, price, stopPrice
+        // //     LIMIT_MAKER          quantity, price
+        // //
+        // // futures
+        // //
+        // //     LIMIT                timeInForce, quantity, price
+        // //     MARKET               quantity
+        // //     STOP/TAKE_PROFIT     quantity, price, stopPrice
+        // //     STOP_MARKET          stopPrice
+        // //     TAKE_PROFIT_MARKET   stopPrice
+        // //     TRAILING_STOP_MARKET callbackRate
+        // //
+        // if (uppercaseType === 'MARKET') {
+        //     if (market['spot']) {
+        //         const quoteOrderQty = this.safeValue(this.options, 'quoteOrderQty', false);
+        //         if (quoteOrderQty) {
+        //             const quoteOrderQty = this.safeNumber(params, 'quoteOrderQty');
+        //             const precision = market['precision']['price'];
+        //             if (quoteOrderQty !== undefined) {
+        //                 request['quoteOrderQty'] = this.decimalToPrecision(quoteOrderQty, TRUNCATE, precision, this.precisionMode);
+        //                 params = this.omit(params, 'quoteOrderQty');
+        //             } else if (price !== undefined) {
+        //                 request['quoteOrderQty'] = this.decimalToPrecision(amount * price, TRUNCATE, precision, this.precisionMode);
+        //             } else {
+        //                 quantityIsRequired = true;
+        //             }
+        //         } else {
+        //             quantityIsRequired = true;
+        //         }
+        //     } else {
+        //         quantityIsRequired = true;
+        //     }
+        // } else if (uppercaseType === 'LIMIT') {
+        //     priceIsRequired = true;
+        //     timeInForceIsRequired = true;
+        //     quantityIsRequired = true;
+        // } else if ((uppercaseType === 'STOP_LOSS') || (uppercaseType === 'TAKE_PROFIT')) {
+        //     stopPriceIsRequired = true;
+        //     quantityIsRequired = true;
+        //     if (market['linear'] || market['inverse']) {
+        //         priceIsRequired = true;
+        //     }
+        // } else if ((uppercaseType === 'STOP_LOSS_LIMIT') || (uppercaseType === 'TAKE_PROFIT_LIMIT')) {
+        //     quantityIsRequired = true;
+        //     stopPriceIsRequired = true;
+        //     priceIsRequired = true;
+        //     timeInForceIsRequired = true;
+        // } else if (uppercaseType === 'LIMIT_MAKER') {
+        //     priceIsRequired = true;
+        //     quantityIsRequired = true;
+        // } else if (uppercaseType === 'STOP') {
+        //     quantityIsRequired = true;
+        //     stopPriceIsRequired = true;
+        //     priceIsRequired = true;
+        // } else if ((uppercaseType === 'STOP_MARKET') || (uppercaseType === 'TAKE_PROFIT_MARKET')) {
+        //     const closePosition = this.safeValue(params, 'closePosition');
+        //     if (closePosition === undefined) {
+        //         quantityIsRequired = true;
+        //     }
+        //     stopPriceIsRequired = true;
+        // } else if (uppercaseType === 'TRAILING_STOP_MARKET') {
+        //     quantityIsRequired = true;
+        //     const callbackRate = this.safeNumber(params, 'callbackRate');
+        //     if (callbackRate === undefined) {
+        //         throw new InvalidOrder(this.id + ' createOrder() requires a callbackRate extra param for a ' + type + ' order');
+        //     }
+        // }
+        // if (quantityIsRequired) {
+        //     request['quantity'] = this.amountToPrecision(symbol, amount);
+        // }
+        // if (priceIsRequired) {
+        //     if (price === undefined) {
+        //         throw new InvalidOrder(this.id + ' createOrder() requires a price argument for a ' + type + ' order');
+        //     }
+        //     request['price'] = this.priceToPrecision(symbol, price);
+        // }
+        // if (timeInForceIsRequired) {
+        //     request['timeInForce'] = this.options['defaultTimeInForce']; // 'GTC' = Good To Cancel (default), 'IOC' = Immediate Or Cancel
+        // }
+        // if (stopPriceIsRequired) {
+        //     const stopPrice = this.safeNumber(params, 'stopPrice');
+        //     if (stopPrice === undefined) {
+        //         throw new InvalidOrder(this.id + ' createOrder() requires a stopPrice extra param for a ' + type + ' order');
+        //     } else {
+        //         params = this.omit(params, 'stopPrice');
+        //         request['stopPrice'] = this.priceToPrecision(symbol, stopPrice);
+        //     }
+        // }
+        // const response = await this[method](this.extend(request, params));
+        // return this.parseOrder(response, market);
     }
 
     async fetchOrder(id, symbol = undefined, params = {}) {
@@ -1853,37 +1871,45 @@ module.exports = class liqi extends Exchange {
         return this.filterBy(orders, 'status', 'closed');
     }
 
-    async cancelOrder(id, symbol = undefined, params = {}) {
-        if (symbol === undefined) {
-            throw new ArgumentsRequired(this.id + ' cancelOrder() requires a symbol argument');
-        }
-        await this.loadMarkets();
-        const market = this.market(symbol);
-        const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        // https://github.com/ccxt/ccxt/issues/6507
-        const origClientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
+    async cancelOrder(id, params = {}) {
+        
         const request = {
-            'symbol': market['id'],
-            // 'orderId': id,
-            // 'origClientOrderId': id,
+            'id': id
         };
-        if (origClientOrderId === undefined) {
-            request['orderId'] = id;
-        } else {
-            request['origClientOrderId'] = origClientOrderId;
-        }
-        let method = 'privateDeleteOrder';
-        if (type === 'future') {
-            method = 'fapiPrivateDeleteOrder';
-        } else if (type === 'delivery') {
-            method = 'dapiPrivateDeleteOrder';
-        } else if (type === 'margin') {
-            method = 'sapiDeleteMarginOrder';
-        }
-        const query = this.omit(params, ['type', 'origClientOrderId', 'clientOrderId']);
-        const response = await this[method](this.extend(request, query));
-        return this.parseOrder(response, market);
+        let method = 'privatePostCancelOrder';
+        const response = await this[method](this.extend(request, params));
+        return response;
+        
+        // if (symbol === undefined) {
+        //     throw new ArgumentsRequired(this.id + ' cancelOrder() requires a symbol argument');
+        // }
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
+        // const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
+        // const type = this.safeString(params, 'type', defaultType);
+        // // https://github.com/ccxt/ccxt/issues/6507
+        // const origClientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
+        // const request = {
+        //     'symbol': market['id'],
+        //     // 'orderId': id,
+        //     // 'origClientOrderId': id,
+        // };
+        // if (origClientOrderId === undefined) {
+        //     request['orderId'] = id;
+        // } else {
+        //     request['origClientOrderId'] = origClientOrderId;
+        // }
+        // let method = 'privateDeleteOrder';
+        // if (type === 'future') {
+        //     method = 'fapiPrivateDeleteOrder';
+        // } else if (type === 'delivery') {
+        //     method = 'dapiPrivateDeleteOrder';
+        // } else if (type === 'margin') {
+        //     method = 'sapiDeleteMarginOrder';
+        // }
+        // const query = this.omit(params, ['type', 'origClientOrderId', 'clientOrderId']);
+        // const response = await this[method](this.extend(request, query));
+        // return this.parseOrder(response, market);
     }
 
     async cancelAllOrders(symbol = undefined, params = {}) {
