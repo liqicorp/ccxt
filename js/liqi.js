@@ -125,8 +125,8 @@ module.exports = class liqi extends Exchange {
             'urls': {
                 'logo': 'https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg',
                 'api': {
-                    'public': 'http://localhost:7775/exchange/v1',
-                    'private': 'http://localhost:7775/exchange/v1',
+                    'public': 'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
+                    'private': 'https://api.liqi.com.br/exchange/v1',
                 },
                 'www': 'https://www.liqi.com.br',
                 'referral': {
@@ -143,6 +143,7 @@ module.exports = class liqi extends Exchange {
             'api': {
                 'public': {
                     'get': {
+                        'fetchMarket': 1,
                         'fetchMarkets': 20,
                         'fetchCurrencies': 20,
                         'fetchTickers': 20,
@@ -759,6 +760,15 @@ module.exports = class liqi extends Exchange {
         //     };
         // }
         // return result;
+    }
+
+    async fetchMarket(symbol, params = {}) {
+        const request = {
+            'symbol': symbol,
+        };
+        const method = 'publicGetFetchMarket';
+        const response = await this[method](this.extend(request, params));
+        return response;
     }
 
     async fetchMarkets(params = {}) {
