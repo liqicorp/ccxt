@@ -125,8 +125,8 @@ module.exports = class liqi extends Exchange {
             'urls': {
                 'logo': 'https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg',
                 'api': {
-                    'public': 'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
-                    'private': 'https://api.liqi.com.br/exchange/v1',
+                    'public': 'https://api.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
+                    'private': 'https://api.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1',
                 },
                 'www': 'https://www.liqi.com.br',
                 'referral': {
@@ -156,7 +156,7 @@ module.exports = class liqi extends Exchange {
                 'private': {
                     'get': {
                         'fetchBalance': 1,
-                        'fetchOrders': 20,
+                        'fetchOrders': 100,
                         'fetchOrder': 1,
                         'fetchTrades':500
                     },
@@ -777,6 +777,100 @@ module.exports = class liqi extends Exchange {
         return response;
     }
 
+    async fetchOrder(id, params = {}) {
+        if (id === undefined) {
+            throw new ArgumentsRequired(' fetchOrder() precisa do id da ordem como parâmetro');
+        }
+
+        const request = {
+            'id': id
+        };
+        let method = 'privateGetFetchOrder';
+        const response = await this[method](this.extend(request, params));
+        return response;
+    }
+
+    async fetchOrders(symbol, limit, since = undefined, params = {}) {
+        if (symbol === undefined) {
+            throw new ArgumentsRequired(' fetchOrders() precisa do symbol como parâmetro');
+        }
+
+        const request = {
+            'symbol': symbol,
+            'limit':limit || 50
+        };
+        let method = 'privateGetFetchOrders';
+        const response = await this[method](this.extend(request, params));
+        return response;
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
+        // const defaultType = this.safeString2(this.options, 'fetchOrders', 'defaultType', 'spot');
+        // const type = this.safeString(params, 'type', defaultType);
+        // let method = 'privateGetAllOrders';
+        // if (type === 'future') {
+        //     method = 'fapiPrivateGetAllOrders';
+        // } else if (type === 'delivery') {
+        //     method = 'dapiPrivateGetAllOrders';
+        // } else if (type === 'margin') {
+        //     method = 'sapiGetMarginAllOrders';
+        // }
+        // const request = {
+        //     'symbol': market['id'],
+        // };
+        // if (since !== undefined) {
+        //     request['startTime'] = since;
+        // }
+        // if (limit !== undefined) {
+        //     request['limit'] = limit;
+        // }
+        // const query = this.omit(params, 'type');
+        // const response = await this[method](this.extend(request, query));
+        // //
+        // //  spot
+        // //
+        // //     [
+        // //         {
+        // //             "symbol": "LTCBTC",
+        // //             "orderId": 1,
+        // //             "clientOrderId": "myOrder1",
+        // //             "price": "0.1",
+        // //             "origQty": "1.0",
+        // //             "executedQty": "0.0",
+        // //             "cummulativeQuoteQty": "0.0",
+        // //             "status": "NEW",
+        // //             "timeInForce": "GTC",
+        // //             "type": "LIMIT",
+        // //             "side": "BUY",
+        // //             "stopPrice": "0.0",
+        // //             "icebergQty": "0.0",
+        // //             "time": 1499827319559,
+        // //             "updateTime": 1499827319559,
+        // //             "isWorking": true
+        // //         }
+        // //     ]
+        // //
+        // //  futures
+        // //
+        // //     [
+        // //         {
+        // //             "symbol": "BTCUSDT",
+        // //             "orderId": 1,
+        // //             "clientOrderId": "myOrder1",
+        // //             "price": "0.1",
+        // //             "origQty": "1.0",
+        // //             "executedQty": "1.0",
+        // //             "cumQuote": "10.0",
+        // //             "status": "NEW",
+        // //             "timeInForce": "GTC",
+        // //             "type": "LIMIT",
+        // //             "side": "BUY",
+        // //             "stopPrice": "0.0",
+        // //             "updateTime": 1499827319559
+        // //         }
+        // //     ]
+        // //
+        // return this.parseOrders(response, market, since, limit);
+    }
 
     parseBalance(response, type = undefined) {
         const result = {
@@ -1737,109 +1831,8 @@ module.exports = class liqi extends Exchange {
         // return this.parseOrder(response, market);
     }
 
-    async fetchOrder(id, symbol = undefined, params = {}) {
-        if (symbol === undefined) {
-            throw new ArgumentsRequired(this.id + ' fetchOrder() requires a symbol argument');
-        }
-        await this.loadMarkets();
-        const market = this.market(symbol);
-        const defaultType = this.safeString2(this.options, 'fetchOrder', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        let method = 'privateGetOrder';
-        if (type === 'future') {
-            method = 'fapiPrivateGetOrder';
-        } else if (type === 'delivery') {
-            method = 'dapiPrivateGetOrder';
-        } else if (type === 'margin') {
-            method = 'sapiGetMarginOrder';
-        }
-        const request = {
-            'symbol': market['id'],
-        };
-        const clientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
-        if (clientOrderId !== undefined) {
-            request['origClientOrderId'] = clientOrderId;
-        } else {
-            request['orderId'] = id;
-        }
-        const query = this.omit(params, ['type', 'clientOrderId', 'origClientOrderId']);
-        const response = await this[method](this.extend(request, query));
-        return this.parseOrder(response, market);
-    }
 
-    async fetchOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        if (symbol === undefined) {
-            throw new ArgumentsRequired(this.id + ' fetchOrders() requires a symbol argument');
-        }
-        await this.loadMarkets();
-        const market = this.market(symbol);
-        const defaultType = this.safeString2(this.options, 'fetchOrders', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        let method = 'privateGetAllOrders';
-        if (type === 'future') {
-            method = 'fapiPrivateGetAllOrders';
-        } else if (type === 'delivery') {
-            method = 'dapiPrivateGetAllOrders';
-        } else if (type === 'margin') {
-            method = 'sapiGetMarginAllOrders';
-        }
-        const request = {
-            'symbol': market['id'],
-        };
-        if (since !== undefined) {
-            request['startTime'] = since;
-        }
-        if (limit !== undefined) {
-            request['limit'] = limit;
-        }
-        const query = this.omit(params, 'type');
-        const response = await this[method](this.extend(request, query));
-        //
-        //  spot
-        //
-        //     [
-        //         {
-        //             "symbol": "LTCBTC",
-        //             "orderId": 1,
-        //             "clientOrderId": "myOrder1",
-        //             "price": "0.1",
-        //             "origQty": "1.0",
-        //             "executedQty": "0.0",
-        //             "cummulativeQuoteQty": "0.0",
-        //             "status": "NEW",
-        //             "timeInForce": "GTC",
-        //             "type": "LIMIT",
-        //             "side": "BUY",
-        //             "stopPrice": "0.0",
-        //             "icebergQty": "0.0",
-        //             "time": 1499827319559,
-        //             "updateTime": 1499827319559,
-        //             "isWorking": true
-        //         }
-        //     ]
-        //
-        //  futures
-        //
-        //     [
-        //         {
-        //             "symbol": "BTCUSDT",
-        //             "orderId": 1,
-        //             "clientOrderId": "myOrder1",
-        //             "price": "0.1",
-        //             "origQty": "1.0",
-        //             "executedQty": "1.0",
-        //             "cumQuote": "10.0",
-        //             "status": "NEW",
-        //             "timeInForce": "GTC",
-        //             "type": "LIMIT",
-        //             "side": "BUY",
-        //             "stopPrice": "0.0",
-        //             "updateTime": 1499827319559
-        //         }
-        //     ]
-        //
-        return this.parseOrders(response, market, since, limit);
-    }
+    
 
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         await this.loadMarkets();
