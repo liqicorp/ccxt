@@ -125,8 +125,8 @@ module.exports = class liqi extends Exchange {
             'urls': {
                 'logo': 'https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg',
                 'api': {
-                    'public': 'https://api.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
-                    'private': 'https://api.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1',
+                    'public': 'https://api-bot.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
+                    'private': 'https://api-bot.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1',
                 },
                 'www': 'https://www.liqi.com.br',
                 'referral': {
