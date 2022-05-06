@@ -21,7 +21,6 @@ module.exports = class liqi extends Exchange {
             'rateLimit': 50,
             'certified': true,
             'pro': true,
-            // new metainfo interface
             'has': {
                 'CORS': undefined,
                 'spot': true,
@@ -32,78 +31,78 @@ module.exports = class liqi extends Exchange {
                 'addMargin': true,
                 'cancelAllOrders': true,
                 'cancelOrder': true,
-                'cancelOrders': undefined,
-                'createDepositAddress': undefined,
+                'cancelOrders': false,
+                'createDepositAddress': false,
                 'createOrder': true,
-                'createReduceOnlyOrder': true,
-                'deposit': undefined,
-                'fetchAccounts': undefined,
+                'createReduceOnlyOrder': false,
+                'deposit': false,
+                'fetchAccounts': false,
                 'fetchBalance': true,
-                'fetchBidsAsks': true,
-                'fetchBorrowRate': true,
-                'fetchBorrowRateHistories': true,
-                'fetchBorrowRateHistory': true,
+                'fetchBidsAsks': false,
+                'fetchBorrowRate': false,
+                'fetchBorrowRateHistories': false,
+                'fetchBorrowRateHistory': false,
                 'fetchBorrowRates': false,
                 'fetchBorrowRatesPerSymbol': false,
-                'fetchCanceledOrders': undefined,
-                'fetchClosedOrder': undefined,
-                'fetchClosedOrders': 'emulated',
+                'fetchCanceledOrders': false,
+                'fetchClosedOrder': false,
+                'fetchClosedOrders': true,
                 'fetchCurrencies': true,
-                'fetchDeposit': undefined,
-                'fetchDepositAddress': true,
-                'fetchDepositAddresses': undefined,
-                'fetchDepositAddressesByNetwork': undefined,
-                'fetchDeposits': true,
-                'fetchFundingFee': undefined,
-                'fetchFundingFees': true,
-                'fetchFundingHistory': true,
-                'fetchFundingRate': true,
-                'fetchFundingRateHistory': true,
-                'fetchFundingRates': true,
-                'fetchIndexOHLCV': true,
-                'fetchIsolatedPositions': undefined,
-                'fetchL3OrderBook': undefined,
-                'fetchLedger': undefined,
-                'fetchLeverage': undefined,
-                'fetchLeverageTiers': true,
+                'fetchDeposit': false,
+                'fetchDepositAddress': false,
+                'fetchDepositAddresses': false,
+                'fetchDepositAddressesByNetwork': false,
+                'fetchDeposits': false,
+                'fetchFundingFee': false,
+                'fetchFundingFees': false,
+                'fetchFundingHistory': false,
+                'fetchFundingRate': false,
+                'fetchFundingRateHistory': false,
+                'fetchFundingRates': false,
+                'fetchIndexOHLCV': false,
+                'fetchIsolatedPositions': false,
+                'fetchL3OrderBook': false,
+                'fetchLedger': false,
+                'fetchLeverage': false,
+                'fetchLeverageTiers': false,
                 'fetchMarketLeverageTiers': 'emulated',
                 'fetchMarkets': true,
-                'fetchMarkOHLCV': true,
-                'fetchMyBuys': undefined,
-                'fetchMySells': undefined,
+                'fetchMarkOHLCV': false,
+                'fetchMyBuys': false,
+                'fetchMySells': false,
                 'fetchMyTrades': true,
                 'fetchOHLCV': true,
-                'fetchOpenOrder': undefined,
+                'fetchOpenOrder': false,
                 'fetchOpenOrders': true,
                 'fetchOrder': true,
                 'fetchOrderBook': true,
-                'fetchOrderBooks': undefined,
-                'fetchOrders': true,
-                'fetchOrderTrades': true,
-                'fetchPosition': undefined,
-                'fetchPositions': true,
-                'fetchPositionsRisk': true,
+                'fetchOrderBooks': false,
+                'fetchOrders': false,
+                'fetchOrderTrades': false,
+                'fetchPosition': false,
+                'fetchPositions': false,
+                'fetchPositionsRisk': false,
                 'fetchPremiumIndexOHLCV': false,
-                'fetchStatus': true,
+                'fetchStatus': false,
                 'fetchTicker': true,
                 'fetchTickers': true,
-                'fetchTime': true,
-                'fetchTrades': true,
-                'fetchTradingFee': true,
-                'fetchTradingFees': true,
-                'fetchTradingLimits': undefined,
+                'fetchTime': false,
+                'fetchTrades': false,
+                'fetchTradingFee': false,
+                'fetchTradingFees': false,
+                'fetchTradingLimits': false,
                 'fetchTransactions': false,
-                'fetchTransfers': true,
+                'fetchTransfers': false,
                 'fetchWithdrawal': false,
-                'fetchWithdrawals': true,
+                'fetchWithdrawals': false,
                 'fetchWithdrawalWhitelist': false,
-                'reduceMargin': true,
-                'setLeverage': true,
-                'setMarginMode': true,
-                'setPositionMode': true,
-                'signIn': false,
-                'transfer': true,
-                'withdraw': true,
+                'reduceMargin': false,
+                'setLeverage': false,
+                'setMarginMode': false,
+                'setPositionMode': false,
+                'signIn': true,
+                'transfer': false,
+                'withdraw': false,
             },
             'timeframes': {
                 '1m': '1m',
@@ -123,21 +122,16 @@ module.exports = class liqi extends Exchange {
                 '1M': '1M',
             },
             'urls': {
-                'logo': 'https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg',
+                'logo': '',
                 'api': {
-                    'public': 'https://api-bot.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1', //'http://localhost:7775/exchange/v1', //
-                    'private': 'https://api-bot.liqi.com.br/exchange/v1', //'https://api.liqi.com.br/exchange/v1',
+                    'public': 'https://api.liqi.com.br/exchange/v1',
+                    'private': 'https://api.liqi.com.br/exchange/v1',
                 },
                 'www': 'https://www.liqi.com.br',
-                'referral': {
-                    'url': 'https://www.liqi.com.br/en/register?ref=D7YA7CLY',
-                    'discount': 0.1,
-                },
                 'doc': [
-                    'https://liqi-docs.github.io/apidocs/spot/en',
+                    'https://liqi.readme.io/',
                 ],
-                'api_management': 'https://www.liqi.com.br/en/usercenter/settings/api-management',
-                'fees': 'https://www.liqi.com.br/en/fee/schedule',
+                'api_management': 'https://www.liqi.com.br/gerenciamento-de-api'
             },
             'depth': 1,
             'api': {
@@ -150,7 +144,6 @@ module.exports = class liqi extends Exchange {
                         'fetchTicker': 1,
                         'fetchOrderBook': 100,
                         'fetchOHLCV':50
-                        
                     },
                 },
                 'private': {
@@ -182,19 +175,13 @@ module.exports = class liqi extends Exchange {
             },
             // exchange-specific options
             'options': {
-                'fetchCurrencies': true, // this is a private call and it requires API keys
-                // 'fetchTradesMethod': 'publicGetAggTrades', // publicGetTrades, publicGetHistoricalTrades
-                'defaultTimeInForce': 'GTC', // 'GTC' = Good To Cancel (default), 'IOC' = Immediate Or Cancel
-                'defaultType': 'spot', // 'spot', 'future', 'margin', 'delivery'
+                'fetchCurrencies': true, 
+                'defaultTimeInForce': 'GTC', 
+                'defaultType': 'spot', 
                 'hasAlreadyAuthenticatedSuccessfully': false,
                 'warnOnFetchOpenOrdersWithoutSymbol': true,
-                // not an error
-                // https://github.com/ccxt/ccxt/issues/11268
-                // https://github.com/ccxt/ccxt/pull/11624
-                // POST https://fapi.liqi.com.br/fapi/v1/marginType 400 Bad Request
-                // liqiusdm
                 'throwMarginModeAlreadySet': false,
-                'fetchPositions': 'positionRisk', // or 'account'
+                'fetchPositions': 'positionRisk', 
                 'recvWindow': 5 * 1000, // 5 sec, liqi default
                 'timeDifference': 0, // the difference between system clock and Liqi clock
                 'adjustForTimeDifference': false, // controls the adjustment logic upon instantiation
@@ -616,150 +603,9 @@ module.exports = class liqi extends Exchange {
         const request = {
             'limit': limit,
         };
-
         const method = 'publicGetFetchCurrencies';
         const response = await this[method](this.extend(request, params));
         return response;
-        // const fetchCurrenciesEnabled = this.safeValue(this.options, 'fetchCurrencies');
-        // if (!fetchCurrenciesEnabled) {
-        //     return undefined;
-        // }
-        // // this endpoint requires authentication
-        // // while fetchCurrencies is a public API method by design
-        // // therefore we check the keys here
-        // // and fallback to generating the currencies from the markets
-        // if (!this.checkRequiredCredentials(false)) {
-        //     return undefined;
-        // }
-        // // sandbox/testnet does not support sapi endpoints
-        // const apiBackup = this.safeString(this.urls, 'apiBackup');
-        // if (apiBackup !== undefined) {
-        //     return undefined;
-        // }
-        // const response = await this.sapiGetCapitalConfigGetall(params);
-        // const result = {};
-        // for (let i = 0; i < response.length; i++) {
-        //     //
-        //     //     {
-        //     //         coin: 'LINK',
-        //     //         depositAllEnable: true,
-        //     //         withdrawAllEnable: true,
-        //     //         name: 'ChainLink',
-        //     //         free: '0.06168',
-        //     //         locked: '0',
-        //     //         freeze: '0',
-        //     //         withdrawing: '0',
-        //     //         ipoing: '0',
-        //     //         ipoable: '0',
-        //     //         storage: '0',
-        //     //         isLegalMoney: false,
-        //     //         trading: true,
-        //     //         networkList: [
-        //     //             {
-        //     //                 network: 'BNB',
-        //     //                 coin: 'LINK',
-        //     //                 withdrawIntegerMultiple: '0',
-        //     //                 isDefault: false,
-        //     //                 depositEnable: true,
-        //     //                 withdrawEnable: true,
-        //     //                 depositDesc: '',
-        //     //                 withdrawDesc: '',
-        //     //                 specialTips: 'Both a MEMO and an Address are required to successfully deposit your LINK BEP2 tokens to Liqi.',
-        //     //                 name: 'BEP2',
-        //     //                 resetAddressStatus: false,
-        //     //                 addressRegex: '^(bnb1)[0-9a-z]{38}$',
-        //     //                 memoRegex: '^[0-9A-Za-z\\-_]{1,120}$',
-        //     //                 withdrawFee: '0.002',
-        //     //                 withdrawMin: '0.01',
-        //     //                 withdrawMax: '9999999',
-        //     //                 minConfirm: 1,
-        //     //                 unLockConfirm: 0
-        //     //             },
-        //     //             {
-        //     //                 network: 'BSC',
-        //     //                 coin: 'LINK',
-        //     //                 withdrawIntegerMultiple: '0.00000001',
-        //     //                 isDefault: false,
-        //     //                 depositEnable: true,
-        //     //                 withdrawEnable: true,
-        //     //                 depositDesc: '',
-        //     //                 withdrawDesc: '',
-        //     //                 specialTips: '',
-        //     //                 name: 'BEP20 (BSC)',
-        //     //                 resetAddressStatus: false,
-        //     //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-        //     //                 memoRegex: '',
-        //     //                 withdrawFee: '0.005',
-        //     //                 withdrawMin: '0.01',
-        //     //                 withdrawMax: '9999999',
-        //     //                 minConfirm: 15,
-        //     //                 unLockConfirm: 0
-        //     //             },
-        //     //             {
-        //     //                 network: 'ETH',
-        //     //                 coin: 'LINK',
-        //     //                 withdrawIntegerMultiple: '0.00000001',
-        //     //                 isDefault: true,
-        //     //                 depositEnable: true,
-        //     //                 withdrawEnable: true,
-        //     //                 depositDesc: '',
-        //     //                 withdrawDesc: '',
-        //     //                 name: 'ERC20',
-        //     //                 resetAddressStatus: false,
-        //     //                 addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-        //     //                 memoRegex: '',
-        //     //                 withdrawFee: '0.34',
-        //     //                 withdrawMin: '0.68',
-        //     //                 withdrawMax: '0',
-        //     //                 minConfirm: 12,
-        //     //                 unLockConfirm: 0
-        //     //             }
-        //     //         ]
-        //     //     }
-        //     //
-        //     const entry = response[i];
-        //     const id = this.safeString(entry, 'coin');
-        //     const name = this.safeString(entry, 'name');
-        //     const code = this.safeCurrencyCode(id);
-        //     const precision = undefined;
-        //     let isWithdrawEnabled = true;
-        //     let isDepositEnabled = true;
-        //     const networkList = this.safeValue(entry, 'networkList', []);
-        //     const fees = {};
-        //     let fee = undefined;
-        //     for (let j = 0; j < networkList.length; j++) {
-        //         const networkItem = networkList[j];
-        //         const network = this.safeString(networkItem, 'network');
-        //         // const name = this.safeString (networkItem, 'name');
-        //         const withdrawFee = this.safeNumber(networkItem, 'withdrawFee');
-        //         const depositEnable = this.safeValue(networkItem, 'depositEnable');
-        //         const withdrawEnable = this.safeValue(networkItem, 'withdrawEnable');
-        //         isDepositEnabled = isDepositEnabled || depositEnable;
-        //         isWithdrawEnabled = isWithdrawEnabled || withdrawEnable;
-        //         fees[network] = withdrawFee;
-        //         const isDefault = this.safeValue(networkItem, 'isDefault');
-        //         if (isDefault || fee === undefined) {
-        //             fee = withdrawFee;
-        //         }
-        //     }
-        //     const trading = this.safeValue(entry, 'trading');
-        //     const active = (isWithdrawEnabled && isDepositEnabled && trading);
-        //     result[code] = {
-        //         'id': id,
-        //         'name': name,
-        //         'code': code,
-        //         'precision': precision,
-        //         'info': entry,
-        //         'active': active,
-        //         'deposit': isDepositEnabled,
-        //         'withdraw': isWithdrawEnabled,
-        //         'networks': networkList,
-        //         'fee': fee,
-        //         'fees': fees,
-        //         'limits': this.limits,
-        //     };
-        // }
-        // return result;
     }
 
     async fetchMarket(symbol, params = {}) {
@@ -802,74 +648,6 @@ module.exports = class liqi extends Exchange {
         let method = 'privateGetFetchOrders';
         const response = await this[method](this.extend(request, params));
         return response;
-        // await this.loadMarkets();
-        // const market = this.market(symbol);
-        // const defaultType = this.safeString2(this.options, 'fetchOrders', 'defaultType', 'spot');
-        // const type = this.safeString(params, 'type', defaultType);
-        // let method = 'privateGetAllOrders';
-        // if (type === 'future') {
-        //     method = 'fapiPrivateGetAllOrders';
-        // } else if (type === 'delivery') {
-        //     method = 'dapiPrivateGetAllOrders';
-        // } else if (type === 'margin') {
-        //     method = 'sapiGetMarginAllOrders';
-        // }
-        // const request = {
-        //     'symbol': market['id'],
-        // };
-        // if (since !== undefined) {
-        //     request['startTime'] = since;
-        // }
-        // if (limit !== undefined) {
-        //     request['limit'] = limit;
-        // }
-        // const query = this.omit(params, 'type');
-        // const response = await this[method](this.extend(request, query));
-        // //
-        // //  spot
-        // //
-        // //     [
-        // //         {
-        // //             "symbol": "LTCBTC",
-        // //             "orderId": 1,
-        // //             "clientOrderId": "myOrder1",
-        // //             "price": "0.1",
-        // //             "origQty": "1.0",
-        // //             "executedQty": "0.0",
-        // //             "cummulativeQuoteQty": "0.0",
-        // //             "status": "NEW",
-        // //             "timeInForce": "GTC",
-        // //             "type": "LIMIT",
-        // //             "side": "BUY",
-        // //             "stopPrice": "0.0",
-        // //             "icebergQty": "0.0",
-        // //             "time": 1499827319559,
-        // //             "updateTime": 1499827319559,
-        // //             "isWorking": true
-        // //         }
-        // //     ]
-        // //
-        // //  futures
-        // //
-        // //     [
-        // //         {
-        // //             "symbol": "BTCUSDT",
-        // //             "orderId": 1,
-        // //             "clientOrderId": "myOrder1",
-        // //             "price": "0.1",
-        // //             "origQty": "1.0",
-        // //             "executedQty": "1.0",
-        // //             "cumQuote": "10.0",
-        // //             "status": "NEW",
-        // //             "timeInForce": "GTC",
-        // //             "type": "LIMIT",
-        // //             "side": "BUY",
-        // //             "stopPrice": "0.0",
-        // //             "updateTime": 1499827319559
-        // //         }
-        // //     ]
-        // //
-        // return this.parseOrders(response, market, since, limit);
     }
 
     parseBalance(response, type = undefined) {
@@ -951,52 +729,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseTicker(ticker, market = undefined) {
-        //
-        //     {
-        //         symbol: 'ETHBTC',
-        //         priceChange: '0.00068700',
-        //         priceChangePercent: '2.075',
-        //         weightedAvgPrice: '0.03342681',
-        //         prevClosePrice: '0.03310300',
-        //         lastPrice: '0.03378900',
-        //         lastQty: '0.07700000',
-        //         bidPrice: '0.03378900',
-        //         bidQty: '7.16800000',
-        //         askPrice: '0.03379000',
-        //         askQty: '24.00000000',
-        //         openPrice: '0.03310200',
-        //         highPrice: '0.03388900',
-        //         lowPrice: '0.03306900',
-        //         volume: '205478.41000000',
-        //         quoteVolume: '6868.48826294',
-        //         openTime: 1601469986932,
-        //         closeTime: 1601556386932,
-        //         firstId: 196098772,
-        //         lastId: 196186315,
-        //         count: 87544
-        //     }
-        //
-        // coinm
-        //     {
-        //         baseVolume: '214549.95171161',
-        //         closeTime: '1621965286847',
-        //         count: '1283779',
-        //         firstId: '152560106',
-        //         highPrice: '39938.3',
-        //         lastId: '153843955',
-        //         lastPrice: '37993.4',
-        //         lastQty: '1',
-        //         lowPrice: '36457.2',
-        //         openPrice: '37783.4',
-        //         openTime: '1621878840000',
-        //         pair: 'BTCUSD',
-        //         priceChange: '210.0',
-        //         priceChangePercent: '0.556',
-        //         symbol: 'BTCUSD_PERP',
-        //         volume: '81990451',
-        //         weightedAvgPrice: '38215.08713747'
-        //     }
-        //
         const timestamp = this.safeInteger(ticker, 'closeTime');
         const marketId = this.safeString(ticker, 'symbol');
         const symbol = this.safeSymbol(marketId, market);
@@ -1093,40 +825,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseOHLCV(ohlcv, market = undefined) {
-        // when api method = publicGetKlines || fapiPublicGetKlines || dapiPublicGetKlines
-        //     [
-        //         1591478520000, // open time
-        //         "0.02501300",  // open
-        //         "0.02501800",  // high
-        //         "0.02500000",  // low
-        //         "0.02500000",  // close
-        //         "22.19000000", // volume
-        //         1591478579999, // close time
-        //         "0.55490906",  // quote asset volume
-        //         40,            // number of trades
-        //         "10.92900000", // taker buy base asset volume
-        //         "0.27336462",  // taker buy quote asset volume
-        //         "0"            // ignore
-        //     ]
-        //
-        //  when api method = fapiPublicGetMarkPriceKlines || fapiPublicGetIndexPriceKlines
-        //     [
-        //         [
-        //         1591256460000,          // Open time
-        //         "9653.29201333",        // Open
-        //         "9654.56401333",        // High
-        //         "9653.07367333",        // Low
-        //         "9653.07367333",        // Close (or latest price)
-        //         "0",                    // Ignore
-        //         1591256519999,          // Close time
-        //         "0",                    // Ignore
-        //         60,                     // Number of bisic data
-        //         "0",                    // Ignore
-        //         "0",                    // Ignore
-        //         "0"                     // Ignore
-        //         ]
-        //     ]
-        //
         return [
             this.safeInteger(ohlcv, 0),
             this.safeNumber(ohlcv, 1),
@@ -1147,68 +845,6 @@ module.exports = class liqi extends Exchange {
         let method = 'publicGetFetchOHLCV';
         const response = await this[method](this.extend(request, params));
         return response;
-        
-        // await this.loadMarkets();
-        // const market = this.market(symbol);
-        // // liqi docs say that the default limit 500, max 1500 for futures, max 1000 for spot markets
-        // // the reality is that the time range wider than 500 candles won't work right
-        // const defaultLimit = 500;
-        // const maxLimit = 1500;
-        // const price = this.safeString(params, 'price');
-        // params = this.omit(params, 'price');
-        // limit = (limit === undefined) ? defaultLimit : Math.min(limit, maxLimit);
-        // const request = {
-        //     'interval': this.timeframes[timeframe],
-        //     'limit': limit,
-        // };
-        // if (price === 'index') {
-        //     request['pair'] = market['id'];   // Index price takes this argument instead of symbol
-        // } else {
-        //     request['symbol'] = market['id'];
-        // }
-        // // const duration = this.parseTimeframe (timeframe);
-        // if (since !== undefined) {
-        //     request['startTime'] = since;
-        //     //
-        //     // It didn't work before without the endTime
-        //     // https://github.com/ccxt/ccxt/issues/8454
-        //     //
-        //     if (market['inverse']) {
-        //         if (since > 0) {
-        //             const duration = this.parseTimeframe(timeframe);
-        //             const endTime = this.sum(since, limit * duration * 1000 - 1);
-        //             const now = this.milliseconds();
-        //             request['endTime'] = Math.min(now, endTime);
-        //         }
-        //     }
-        // }
-        // let method = 'publicGetKlines';
-        // if (price === 'mark') {
-        //     if (market['inverse']) {
-        //         method = 'dapiPublicGetMarkPriceKlines';
-        //     } else {
-        //         method = 'fapiPublicGetMarkPriceKlines';
-        //     }
-        // } else if (price === 'index') {
-        //     if (market['inverse']) {
-        //         method = 'dapiPublicGetIndexPriceKlines';
-        //     } else {
-        //         method = 'fapiPublicGetIndexPriceKlines';
-        //     }
-        // } else if (market['linear']) {
-        //     method = 'fapiPublicGetKlines';
-        // } else if (market['inverse']) {
-        //     method = 'dapiPublicGetKlines';
-        // }
-        // const response = await this[method](this.extend(request, params));
-        // //
-        // //     [
-        // //         [1591478520000,"0.02501300","0.02501800","0.02500000","0.02500000","22.19000000",1591478579999,"0.55490906",40,"10.92900000","0.27336462","0"],
-        // //         [1591478580000,"0.02499600","0.02500900","0.02499400","0.02500300","21.34700000",1591478639999,"0.53370468",24,"7.53800000","0.18850725","0"],
-        // //         [1591478640000,"0.02500800","0.02501100","0.02500300","0.02500800","154.14200000",1591478699999,"3.85405839",97,"5.32300000","0.13312641","0"],
-        // //     ]
-        // //
-        // return this.parseOHLCVs(response, market, timeframe, since, limit);
     }
 
     async fetchMarkOHLCV(symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
@@ -1229,99 +865,6 @@ module.exports = class liqi extends Exchange {
         if ('isDustTrade' in trade) {
             return this.parseDustTrade(trade, market);
         }
-        //
-        // aggregate trades
-        // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#compressedaggregate-trades-list
-        //
-        //     {
-        //         "a": 26129,         // Aggregate tradeId
-        //         "p": "0.01633102",  // Price
-        //         "q": "4.70443515",  // Quantity
-        //         "f": 27781,         // First tradeId
-        //         "l": 27781,         // Last tradeId
-        //         "T": 1498793709153, // Timestamp
-        //         "m": true,          // Was the buyer the maker?
-        //         "M": true           // Was the trade the best price match?
-        //     }
-        //
-        // recent public trades and old public trades
-        // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#recent-trades-list
-        // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#old-trade-lookup-market_data
-        //
-        //     {
-        //         "id": 28457,
-        //         "price": "4.00000100",
-        //         "qty": "12.00000000",
-        //         "time": 1499865549590,
-        //         "isBuyerMaker": true,
-        //         "isBestMatch": true
-        //     }
-        //
-        // private trades
-        // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#account-trade-list-user_data
-        //
-        //     {
-        //         "symbol": "BNBBTC",
-        //         "id": 28457,
-        //         "orderId": 100234,
-        //         "price": "4.00000100",
-        //         "qty": "12.00000000",
-        //         "commission": "10.10000000",
-        //         "commissionAsset": "BNB",
-        //         "time": 1499865549590,
-        //         "isBuyer": true,
-        //         "isMaker": false,
-        //         "isBestMatch": true
-        //     }
-        //
-        // futures trades
-        // https://liqi-docs.github.io/apidocs/futures/en/#account-trade-list-user_data
-        //
-        //     {
-        //       "accountId": 20,
-        //       "buyer": False,
-        //       "commission": "-0.07819010",
-        //       "commissionAsset": "USDT",
-        //       "counterPartyId": 653,
-        //       "id": 698759,
-        //       "maker": False,
-        //       "orderId": 25851813,
-        //       "price": "7819.01",
-        //       "qty": "0.002",
-        //       "quoteQty": "0.01563",
-        //       "realizedPnl": "-0.91539999",
-        //       "side": "SELL",
-        //       "symbol": "BTCUSDT",
-        //       "time": 1569514978020
-        //     }
-        //     {
-        //       "symbol": "BTCUSDT",
-        //       "id": 477128891,
-        //       "orderId": 13809777875,
-        //       "side": "SELL",
-        //       "price": "38479.55",
-        //       "qty": "0.001",
-        //       "realizedPnl": "-0.00009534",
-        //       "marginAsset": "USDT",
-        //       "quoteQty": "38.47955",
-        //       "commission": "-0.00076959",
-        //       "commissionAsset": "USDT",
-        //       "time": 1612733566708,
-        //       "positionSide": "BOTH",
-        //       "maker": true,
-        //       "buyer": false
-        //     }
-        //
-        // { respType: FULL }
-        //
-        //     {
-        //       "price": "4000.00000000",
-        //       "qty": "1.00000000",
-        //       "commission": "4.00000000",
-        //       "commissionAsset": "USDT",
-        //       "tradeId": "1234",
-        //     }
-        //
         const timestamp = this.safeInteger2(trade, 'T', 'time');
         const price = this.safeString2(trade, 'p', 'price');
         const amount = this.safeString2(trade, 'q', 'qty');
@@ -1384,89 +927,6 @@ module.exports = class liqi extends Exchange {
         const method = 'privateGetFetchTrades';
         const response = await this[method](this.extend(request, params));
         return response;
-        // await this.loadMarkets();
-        // const market = this.market(symbol);
-        // const request = {
-        //     'symbol': market['id'],
-        //     // 'fromId': 123,    // ID to get aggregate trades from INCLUSIVE.
-        //     // 'startTime': 456, // Timestamp in ms to get aggregate trades from INCLUSIVE.
-        //     // 'endTime': 789,   // Timestamp in ms to get aggregate trades until INCLUSIVE.
-        //     // 'limit': 500,     // default = 500, maximum = 1000
-        // };
-        // const defaultType = this.safeString2(this.options, 'fetchTrades', 'defaultType', 'spot');
-        // const type = this.safeString(params, 'type', defaultType);
-        // const query = this.omit(params, 'type');
-        // let defaultMethod = undefined;
-        // if (type === 'future') {
-        //     defaultMethod = 'fapiPublicGetAggTrades';
-        // } else if (type === 'delivery') {
-        //     defaultMethod = 'dapiPublicGetAggTrades';
-        // } else {
-        //     defaultMethod = 'publicGetAggTrades';
-        // }
-        // let method = this.safeString(this.options, 'fetchTradesMethod', defaultMethod);
-        // if (method === 'publicGetAggTrades') {
-        //     if (type === 'future') {
-        //         method = 'fapiPublicGetAggTrades';
-        //     } else if (type === 'delivery') {
-        //         method = 'dapiPublicGetAggTrades';
-        //     }
-        // } else if (method === 'publicGetHistoricalTrades') {
-        //     if (type === 'future') {
-        //         method = 'fapiPublicGetHistoricalTrades';
-        //     } else if (type === 'delivery') {
-        //         method = 'dapiPublicGetHistoricalTrades';
-        //     }
-        // }
-        // if (since !== undefined) {
-        //     request['startTime'] = since;
-        //     // https://github.com/ccxt/ccxt/issues/6400
-        //     // https://github.com/liqi-exchange/liqi-official-api-docs/blob/master/rest-api.md#compressedaggregate-trades-list
-        //     request['endTime'] = this.sum(since, 3600000);
-        // }
-        // if (limit !== undefined) {
-        //     request['limit'] = limit; // default = 500, maximum = 1000
-        // }
-        // //
-        // // Caveats:
-        // // - default limit (500) applies only if no other parameters set, trades up
-        // //   to the maximum limit may be returned to satisfy other parameters
-        // // - if both limit and time window is set and time window contains more
-        // //   trades than the limit then the last trades from the window are returned
-        // // - 'tradeId' accepted and returned by this method is "aggregate" trade id
-        // //   which is different from actual trade id
-        // // - setting both fromId and time window results in error
-        // const response = await this[method](this.extend(request, query));
-        // //
-        // // aggregate trades
-        // //
-        // //     [
-        // //         {
-        // //             "a": 26129,         // Aggregate tradeId
-        // //             "p": "0.01633102",  // Price
-        // //             "q": "4.70443515",  // Quantity
-        // //             "f": 27781,         // First tradeId
-        // //             "l": 27781,         // Last tradeId
-        // //             "T": 1498793709153, // Timestamp
-        // //             "m": true,          // Was the buyer the maker?
-        // //             "M": true           // Was the trade the best price match?
-        // //         }
-        // //     ]
-        // //
-        // // recent public trades and historical public trades
-        // //
-        // //     [
-        // //         {
-        // //             "id": 28457,
-        // //             "price": "4.00000100",
-        // //             "qty": "12.00000000",
-        // //             "time": 1499865549590,
-        // //             "isBuyerMaker": true,
-        // //             "isBestMatch": true
-        // //         }
-        // //     ]
-        // //
-        // return this.parseTrades(response, market, since, limit);
     }
 
     parseOrderStatus(status) {
@@ -1483,100 +943,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseOrder(order, market = undefined) {
-        //
-        // spot
-        //
-        //     {
-        //         "symbol": "LTCBTC",
-        //         "orderId": 1,
-        //         "clientOrderId": "myOrder1",
-        //         "price": "0.1",
-        //         "origQty": "1.0",
-        //         "executedQty": "0.0",
-        //         "cummulativeQuoteQty": "0.0",
-        //         "status": "NEW",
-        //         "timeInForce": "GTC",
-        //         "type": "LIMIT",
-        //         "side": "BUY",
-        //         "stopPrice": "0.0",
-        //         "icebergQty": "0.0",
-        //         "time": 1499827319559,
-        //         "updateTime": 1499827319559,
-        //         "isWorking": true
-        //     }
-        //
-        // futures
-        //
-        //     {
-        //         "symbol": "BTCUSDT",
-        //         "orderId": 1,
-        //         "clientOrderId": "myOrder1",
-        //         "price": "0.1",
-        //         "origQty": "1.0",
-        //         "executedQty": "1.0",
-        //         "cumQuote": "10.0",
-        //         "status": "NEW",
-        //         "timeInForce": "GTC",
-        //         "type": "LIMIT",
-        //         "side": "BUY",
-        //         "stopPrice": "0.0",
-        //         "updateTime": 1499827319559
-        //     }
-        //
-        // createOrder with { "newOrderRespType": "FULL" }
-        //
-        //     {
-        //       "symbol": "BTCUSDT",
-        //       "orderId": 5403233939,
-        //       "orderListId": -1,
-        //       "clientOrderId": "x-R4BD3S825e669e75b6c14f69a2c43e",
-        //       "transactTime": 1617151923742,
-        //       "price": "0.00000000",
-        //       "origQty": "0.00050000",
-        //       "executedQty": "0.00050000",
-        //       "cummulativeQuoteQty": "29.47081500",
-        //       "status": "FILLED",
-        //       "timeInForce": "GTC",
-        //       "type": "MARKET",
-        //       "side": "BUY",
-        //       "fills": [
-        //         {
-        //           "price": "58941.63000000",
-        //           "qty": "0.00050000",
-        //           "commission": "0.00007050",
-        //           "commissionAsset": "BNB",
-        //           "tradeId": 737466631
-        //         }
-        //       ]
-        //     }
-        //
-        // delivery
-        //
-        //     {
-        //       "orderId": "18742727411",
-        //       "symbol": "ETHUSD_PERP",
-        //       "pair": "ETHUSD",
-        //       "status": "FILLED",
-        //       "clientOrderId": "x-xcKtGhcu3e2d1503fdd543b3b02419",
-        //       "price": "0",
-        //       "avgPrice": "4522.14",
-        //       "origQty": "1",
-        //       "executedQty": "1",
-        //       "cumBase": "0.00221134",
-        //       "timeInForce": "GTC",
-        //       "type": "MARKET",
-        //       "reduceOnly": false,
-        //       "closePosition": false,
-        //       "side": "SELL",
-        //       "positionSide": "BOTH",
-        //       "stopPrice": "0",
-        //       "workingType": "CONTRACT_PRICE",
-        //       "priceProtect": false,
-        //       "origType": "MARKET",
-        //       "time": "1636061952660",
-        //       "updateTime": "1636061952660"
-        //     }
-        //
         const status = this.parseOrderStatus(this.safeString(order, 'status'));
         const marketId = this.safeString(order, 'symbol');
         const symbol = this.safeSymbol(marketId, market);
@@ -1665,174 +1031,7 @@ module.exports = class liqi extends Exchange {
         let method = 'privatePostCreateOrder';
         const response = await this[method](this.extend(request, params));
         return response;
-
-        // await this.loadMarkets();
-        // const market = this.market(symbol);
-        // const defaultType = this.safeString2(this.options, 'createOrder', 'defaultType', 'spot');
-        // const marketType = this.safeString(params, 'type', defaultType);
-        // const clientOrderId = this.safeString2(params, 'newClientOrderId', 'clientOrderId');
-        // const postOnly = this.safeValue(params, 'postOnly', false);
-        // params = this.omit(params, ['type', 'newClientOrderId', 'clientOrderId', 'postOnly']);
-        // const reduceOnly = this.safeValue(params, 'reduceOnly');
-        // if (reduceOnly !== undefined) {
-        //     if ((marketType !== 'future') && (marketType !== 'delivery')) {
-        //         throw new InvalidOrder(this.id + ' createOrder() does not support reduceOnly for ' + marketType + ' orders, reduceOnly orders are supported for future and delivery markets only');
-        //     }
-        // }
-        // let method = 'privatePostOrder';
-        // if (marketType === 'future') {
-        //     method = 'fapiPrivatePostOrder';
-        // } else if (marketType === 'delivery') {
-        //     method = 'dapiPrivatePostOrder';
-        // } else if (marketType === 'margin') {
-        //     method = 'sapiPostMarginOrder';
-        // }
-        // // the next 5 lines are added to support for testing orders
-        // if (market['spot']) {
-        //     const test = this.safeValue(params, 'test', false);
-        //     if (test) {
-        //         method += 'Test';
-        //     }
-        //     params = this.omit(params, 'test');
-        //     // only supported for spot/margin api (all margin markets are spot markets)
-        //     if (postOnly) {
-        //         type = 'LIMIT_MAKER';
-        //     }
-        // }
-        // const uppercaseType = type.toUpperCase();
-        // const validOrderTypes = this.safeValue(market['info'], 'orderTypes');
-        // if (!this.inArray(uppercaseType, validOrderTypes)) {
-        //     throw new InvalidOrder(this.id + ' ' + type + ' is not a valid order type in market ' + symbol);
-        // }
-        // const request = {
-        //     'symbol': market['id'],
-        //     'type': uppercaseType,
-        //     'side': side.toUpperCase(),
-        // };
-        // if (clientOrderId === undefined) {
-        //     const broker = this.safeValue(this.options, 'broker');
-        //     if (broker !== undefined) {
-        //         const brokerId = this.safeString(broker, marketType);
-        //         if (brokerId !== undefined) {
-        //             request['newClientOrderId'] = brokerId + this.uuid22();
-        //         }
-        //     }
-        // } else {
-        //     request['newClientOrderId'] = clientOrderId;
-        // }
-        // if ((marketType === 'spot') || (marketType === 'margin')) {
-        //     request['newOrderRespType'] = this.safeValue(this.options['newOrderRespType'], type, 'RESULT'); // 'ACK' for order id, 'RESULT' for full order or 'FULL' for order with fills
-        // } else {
-        //     // delivery and future
-        //     request['newOrderRespType'] = 'RESULT';  // "ACK", "RESULT", default "ACK"
-        // }
-        // // additional required fields depending on the order type
-        // let timeInForceIsRequired = false;
-        // let priceIsRequired = false;
-        // let stopPriceIsRequired = false;
-        // let quantityIsRequired = false;
-        // //
-        // // spot/margin
-        // //
-        // //     LIMIT                timeInForce, quantity, price
-        // //     MARKET               quantity or quoteOrderQty
-        // //     STOP_LOSS            quantity, stopPrice
-        // //     STOP_LOSS_LIMIT      timeInForce, quantity, price, stopPrice
-        // //     TAKE_PROFIT          quantity, stopPrice
-        // //     TAKE_PROFIT_LIMIT    timeInForce, quantity, price, stopPrice
-        // //     LIMIT_MAKER          quantity, price
-        // //
-        // // futures
-        // //
-        // //     LIMIT                timeInForce, quantity, price
-        // //     MARKET               quantity
-        // //     STOP/TAKE_PROFIT     quantity, price, stopPrice
-        // //     STOP_MARKET          stopPrice
-        // //     TAKE_PROFIT_MARKET   stopPrice
-        // //     TRAILING_STOP_MARKET callbackRate
-        // //
-        // if (uppercaseType === 'MARKET') {
-        //     if (market['spot']) {
-        //         const quoteOrderQty = this.safeValue(this.options, 'quoteOrderQty', false);
-        //         if (quoteOrderQty) {
-        //             const quoteOrderQty = this.safeNumber(params, 'quoteOrderQty');
-        //             const precision = market['precision']['price'];
-        //             if (quoteOrderQty !== undefined) {
-        //                 request['quoteOrderQty'] = this.decimalToPrecision(quoteOrderQty, TRUNCATE, precision, this.precisionMode);
-        //                 params = this.omit(params, 'quoteOrderQty');
-        //             } else if (price !== undefined) {
-        //                 request['quoteOrderQty'] = this.decimalToPrecision(amount * price, TRUNCATE, precision, this.precisionMode);
-        //             } else {
-        //                 quantityIsRequired = true;
-        //             }
-        //         } else {
-        //             quantityIsRequired = true;
-        //         }
-        //     } else {
-        //         quantityIsRequired = true;
-        //     }
-        // } else if (uppercaseType === 'LIMIT') {
-        //     priceIsRequired = true;
-        //     timeInForceIsRequired = true;
-        //     quantityIsRequired = true;
-        // } else if ((uppercaseType === 'STOP_LOSS') || (uppercaseType === 'TAKE_PROFIT')) {
-        //     stopPriceIsRequired = true;
-        //     quantityIsRequired = true;
-        //     if (market['linear'] || market['inverse']) {
-        //         priceIsRequired = true;
-        //     }
-        // } else if ((uppercaseType === 'STOP_LOSS_LIMIT') || (uppercaseType === 'TAKE_PROFIT_LIMIT')) {
-        //     quantityIsRequired = true;
-        //     stopPriceIsRequired = true;
-        //     priceIsRequired = true;
-        //     timeInForceIsRequired = true;
-        // } else if (uppercaseType === 'LIMIT_MAKER') {
-        //     priceIsRequired = true;
-        //     quantityIsRequired = true;
-        // } else if (uppercaseType === 'STOP') {
-        //     quantityIsRequired = true;
-        //     stopPriceIsRequired = true;
-        //     priceIsRequired = true;
-        // } else if ((uppercaseType === 'STOP_MARKET') || (uppercaseType === 'TAKE_PROFIT_MARKET')) {
-        //     const closePosition = this.safeValue(params, 'closePosition');
-        //     if (closePosition === undefined) {
-        //         quantityIsRequired = true;
-        //     }
-        //     stopPriceIsRequired = true;
-        // } else if (uppercaseType === 'TRAILING_STOP_MARKET') {
-        //     quantityIsRequired = true;
-        //     const callbackRate = this.safeNumber(params, 'callbackRate');
-        //     if (callbackRate === undefined) {
-        //         throw new InvalidOrder(this.id + ' createOrder() requires a callbackRate extra param for a ' + type + ' order');
-        //     }
-        // }
-        // if (quantityIsRequired) {
-        //     request['quantity'] = this.amountToPrecision(symbol, amount);
-        // }
-        // if (priceIsRequired) {
-        //     if (price === undefined) {
-        //         throw new InvalidOrder(this.id + ' createOrder() requires a price argument for a ' + type + ' order');
-        //     }
-        //     request['price'] = this.priceToPrecision(symbol, price);
-        // }
-        // if (timeInForceIsRequired) {
-        //     request['timeInForce'] = this.options['defaultTimeInForce']; // 'GTC' = Good To Cancel (default), 'IOC' = Immediate Or Cancel
-        // }
-        // if (stopPriceIsRequired) {
-        //     const stopPrice = this.safeNumber(params, 'stopPrice');
-        //     if (stopPrice === undefined) {
-        //         throw new InvalidOrder(this.id + ' createOrder() requires a stopPrice extra param for a ' + type + ' order');
-        //     } else {
-        //         params = this.omit(params, 'stopPrice');
-        //         request['stopPrice'] = this.priceToPrecision(symbol, stopPrice);
-        //     }
-        // }
-        // const response = await this[method](this.extend(request, params));
-        // return this.parseOrder(response, market);
     }
-
-
-    
 
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         await this.loadMarkets();
@@ -1882,37 +1081,6 @@ module.exports = class liqi extends Exchange {
         let method = 'privatePostCancelOrder';
         const response = await this[method](this.extend(request, params));
         return response;
-        
-        // if (symbol === undefined) {
-        //     throw new ArgumentsRequired(this.id + ' cancelOrder() requires a symbol argument');
-        // }
-        // await this.loadMarkets();
-        // const market = this.market(symbol);
-        // const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-        // const type = this.safeString(params, 'type', defaultType);
-        // // https://github.com/ccxt/ccxt/issues/6507
-        // const origClientOrderId = this.safeValue2(params, 'origClientOrderId', 'clientOrderId');
-        // const request = {
-        //     'symbol': market['id'],
-        //     // 'orderId': id,
-        //     // 'origClientOrderId': id,
-        // };
-        // if (origClientOrderId === undefined) {
-        //     request['orderId'] = id;
-        // } else {
-        //     request['origClientOrderId'] = origClientOrderId;
-        // }
-        // let method = 'privateDeleteOrder';
-        // if (type === 'future') {
-        //     method = 'fapiPrivateDeleteOrder';
-        // } else if (type === 'delivery') {
-        //     method = 'dapiPrivateDeleteOrder';
-        // } else if (type === 'margin') {
-        //     method = 'sapiDeleteMarginOrder';
-        // }
-        // const query = this.omit(params, ['type', 'origClientOrderId', 'clientOrderId']);
-        // const response = await this[method](this.extend(request, query));
-        // return this.parseOrder(response, market);
     }
 
     async cancelAllOrders(symbol = undefined, params = {}) {
@@ -1988,47 +1156,6 @@ module.exports = class liqi extends Exchange {
             request['limit'] = limit;
         }
         const response = await this[method](this.extend(request, params));
-        //
-        // spot trade
-        //
-        //     [
-        //         {
-        //             "symbol": "BNBBTC",
-        //             "id": 28457,
-        //             "orderId": 100234,
-        //             "price": "4.00000100",
-        //             "qty": "12.00000000",
-        //             "commission": "10.10000000",
-        //             "commissionAsset": "BNB",
-        //             "time": 1499865549590,
-        //             "isBuyer": true,
-        //             "isMaker": false,
-        //             "isBestMatch": true,
-        //         }
-        //     ]
-        //
-        // futures trade
-        //
-        //     [
-        //         {
-        //             "accountId": 20,
-        //             "buyer": False,
-        //             "commission": "-0.07819010",
-        //             "commissionAsset": "USDT",
-        //             "counterPartyId": 653,
-        //             "id": 698759,
-        //             "maker": False,
-        //             "orderId": 25851813,
-        //             "price": "7819.01",
-        //             "qty": "0.002",
-        //             "quoteQty": "0.01563",
-        //             "realizedPnl": "-0.91539999",
-        //             "side": "SELL",
-        //             "symbol": "BTCUSDT",
-        //             "time": 1569514978020
-        //         }
-        //     ]
-        //
         return this.parseTrades(response, market, since, limit);
     }
 
@@ -2046,35 +1173,6 @@ module.exports = class liqi extends Exchange {
             request['endTime'] = this.sum(since, 7776000000);
         }
         const response = await this.sapiGetAssetDribblet(this.extend(request, params));
-        //     {
-        //       "total": "4",
-        //       "userAssetDribblets": [
-        //         {
-        //           "operateTime": "1627575731000",
-        //           "totalServiceChargeAmount": "0.00001453",
-        //           "totalTransferedAmount": "0.00072693",
-        //           "transId": "70899815863",
-        //           "userAssetDribbletDetails": [
-        //             {
-        //               "fromAsset": "LTC",
-        //               "amount": "0.000006",
-        //               "transferedAmount": "0.00000267",
-        //               "serviceChargeAmount": "0.00000005",
-        //               "operateTime": "1627575731000",
-        //               "transId": "70899815863"
-        //             },
-        //             {
-        //               "fromAsset": "GBP",
-        //               "amount": "0.15949157",
-        //               "transferedAmount": "0.00072426",
-        //               "serviceChargeAmount": "0.00001448",
-        //               "operateTime": "1627575731000",
-        //               "transId": "70899815863"
-        //             }
-        //           ]
-        //         },
-        //       ]
-        //     }
         const results = this.safeValue(response, 'userAssetDribblets', []);
         const rows = this.safeInteger(response, 'total', 0);
         const data = [];
@@ -2090,17 +1188,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseDustTrade(trade, market = undefined) {
-        //
-        //     {
-        //       "fromAsset": "USDT",
-        //       "amount": "0.009669",
-        //       "transferedAmount": "0.00002992",
-        //       "serviceChargeAmount": "0.00000059",
-        //       "operateTime": "1628076010000",
-        //       "transId": "71416578712",
-        //       "isDustTrade": true
-        //     }
-        //
         const orderId = this.safeString(trade, 'transId');
         const timestamp = this.safeInteger(trade, 'operateTime');
         const currencyId = this.safeString(trade, 'fromAsset');
@@ -2177,25 +1264,6 @@ module.exports = class liqi extends Exchange {
             }
             const raw = await this.sapiGetFiatOrders(this.extend(request, params));
             response = this.safeValue(raw, 'data');
-            //     {
-            //       "code": "000000",
-            //       "message": "success",
-            //       "data": [
-            //         {
-            //           "orderNo": "25ced37075c1470ba8939d0df2316e23",
-            //           "fiatCurrency": "EUR",
-            //           "indicatedAmount": "15.00",
-            //           "amount": "15.00",
-            //           "totalFee": "0.00",
-            //           "method": "card",
-            //           "status": "Failed",
-            //           "createTime": 1627501026000,
-            //           "updateTime": 1627501027000
-            //         }
-            //       ],
-            //       "total": 1,
-            //       "success": true
-            //     }
         } else {
             if (code !== undefined) {
                 currency = this.currency(code);
@@ -2210,32 +1278,6 @@ module.exports = class liqi extends Exchange {
                 request['limit'] = limit;
             }
             response = await this.sapiGetCapitalDepositHisrec(this.extend(request, params));
-            //     [
-            //       {
-            //         "amount": "0.01844487",
-            //         "coin": "BCH",
-            //         "network": "BCH",
-            //         "status": 1,
-            //         "address": "1NYxAJhW2281HK1KtJeaENBqHeygA88FzR",
-            //         "addressTag": "",
-            //         "txId": "bafc5902504d6504a00b7d0306a41154cbf1d1b767ab70f3bc226327362588af",
-            //         "insertTime": 1610784980000,
-            //         "transferType": 0,
-            //         "confirmTimes": "2/2"
-            //       },
-            //       {
-            //         "amount": "4500",
-            //         "coin": "USDT",
-            //         "network": "BSC",
-            //         "status": 1,
-            //         "address": "0xc9c923c87347ca0f3451d6d308ce84f691b9f501",
-            //         "addressTag": "",
-            //         "txId": "Internal transfer 51376627901",
-            //         "insertTime": 1618394381000,
-            //         "transferType": 1,
-            //         "confirmTimes": "1/15"
-            //     }
-            //   ]
         }
         return this.parseTransactions(response, currency, since, limit);
     }
@@ -2256,36 +1298,6 @@ module.exports = class liqi extends Exchange {
             }
             const raw = await this.sapiGetFiatOrders(this.extend(request, params));
             response = this.safeValue(raw, 'data');
-            //     {
-            //       "code": "000000",
-            //       "message": "success",
-            //       "data": [
-            //         {
-            //           "orderNo": "CJW706452266115170304",
-            //           "fiatCurrency": "GBP",
-            //           "indicatedAmount": "10001.50",
-            //           "amount": "100.00",
-            //           "totalFee": "1.50",
-            //           "method": "bank transfer",
-            //           "status": "Successful",
-            //           "createTime": 1620037745000,
-            //           "updateTime": 1620038480000
-            //         },
-            //         {
-            //           "orderNo": "CJW706287492781891584",
-            //           "fiatCurrency": "GBP",
-            //           "indicatedAmount": "10001.50",
-            //           "amount": "100.00",
-            //           "totalFee": "1.50",
-            //           "method": "bank transfer",
-            //           "status": "Successful",
-            //           "createTime": 1619998460000,
-            //           "updateTime": 1619998823000
-            //         }
-            //       ],
-            //       "total": 39,
-            //       "success": true
-            //     }
         } else {
             if (code !== undefined) {
                 currency = this.currency(code);
@@ -2300,45 +1312,6 @@ module.exports = class liqi extends Exchange {
                 request['limit'] = limit;
             }
             response = await this.sapiGetCapitalWithdrawHistory(this.extend(request, params));
-            //     [
-            //       {
-            //         "id": "69e53ad305124b96b43668ceab158a18",
-            //         "amount": "28.75",
-            //         "transactionFee": "0.25",
-            //         "coin": "XRP",
-            //         "status": 6,
-            //         "address": "r3T75fuLjX51mmfb5Sk1kMNuhBgBPJsjza",
-            //         "addressTag": "101286922",
-            //         "txId": "19A5B24ED0B697E4F0E9CD09FCB007170A605BC93C9280B9E6379C5E6EF0F65A",
-            //         "applyTime": "2021-04-15 12:09:16",
-            //         "network": "XRP",
-            //         "transferType": 0
-            //       },
-            //       {
-            //         "id": "9a67628b16ba4988ae20d329333f16bc",
-            //         "amount": "20",
-            //         "transactionFee": "20",
-            //         "coin": "USDT",
-            //         "status": 6,
-            //         "address": "0x0AB991497116f7F5532a4c2f4f7B1784488628e1",
-            //         "txId": "0x77fbf2cf2c85b552f0fd31fd2e56dc95c08adae031d96f3717d8b17e1aea3e46",
-            //         "applyTime": "2021-04-15 12:06:53",
-            //         "network": "ETH",
-            //         "transferType": 0
-            //       },
-            //       {
-            //         "id": "a7cdc0afbfa44a48bd225c9ece958fe2",
-            //         "amount": "51",
-            //         "transactionFee": "1",
-            //         "coin": "USDT",
-            //         "status": 6,
-            //         "address": "TYDmtuWL8bsyjvcauUTerpfYyVhFtBjqyo",
-            //         "txId": "168a75112bce6ceb4823c66726ad47620ad332e69fe92d9cb8ceb76023f9a028",
-            //         "applyTime": "2021-04-13 12:46:59",
-            //         "network": "TRX",
-            //         "transferType": 0
-            //       }
-            //     ]
         }
         return this.parseTransactions(response, currency, since, limit);
     }
@@ -2380,65 +1353,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseTransaction(transaction, currency = undefined) {
-        //
-        // fetchDeposits
-        //
-        //     {
-        //       "amount": "4500",
-        //       "coin": "USDT",
-        //       "network": "BSC",
-        //       "status": 1,
-        //       "address": "0xc9c923c87347ca0f3451d6d308ce84f691b9f501",
-        //       "addressTag": "",
-        //       "txId": "Internal transfer 51376627901",
-        //       "insertTime": 1618394381000,
-        //       "transferType": 1,
-        //       "confirmTimes": "1/15"
-        //     }
-        //
-        // fetchWithdrawals
-        //
-        //     {
-        //       "id": "69e53ad305124b96b43668ceab158a18",
-        //       "amount": "28.75",
-        //       "transactionFee": "0.25",
-        //       "coin": "XRP",
-        //       "status": 6,
-        //       "address": "r3T75fuLjX51mmfb5Sk1kMNuhBgBPJsjza",
-        //       "addressTag": "101286922",
-        //       "txId": "19A5B24ED0B697E4F0E9CD09FCB007170A605BC93C9280B9E6379C5E6EF0F65A",
-        //       "applyTime": "2021-04-15 12:09:16",
-        //       "network": "XRP",
-        //       "transferType": 0
-        //     }
-        //
-        // fiat transaction
-        // withdraw
-        //     {
-        //       "orderNo": "CJW684897551397171200",
-        //       "fiatCurrency": "GBP",
-        //       "indicatedAmount": "29.99",
-        //       "amount": "28.49",
-        //       "totalFee": "1.50",
-        //       "method": "bank transfer",
-        //       "status": "Successful",
-        //       "createTime": 1614898701000,
-        //       "updateTime": 1614898820000
-        //     }
-        //
-        // deposit
-        //     {
-        //       "orderNo": "25ced37075c1470ba8939d0df2316e23",
-        //       "fiatCurrency": "EUR",
-        //       "indicatedAmount": "15.00",
-        //       "amount": "15.00",
-        //       "totalFee": "0.00",
-        //       "method": "card",
-        //       "status": "Failed",
-        //       "createTime": "1627501026000",
-        //       "updateTime": "1627501027000"
-        //     }
-        //
         const id = this.safeString2(transaction, 'id', 'orderNo');
         const address = this.safeString(transaction, 'address');
         let tag = this.safeString(transaction, 'addressTag'); // set but unused
@@ -2508,24 +1422,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseTransfer(transfer, currency = undefined) {
-        //
-        // transfer
-        //
-        //     {
-        //         "tranId":13526853623
-        //     }
-        //
-        // fetchTransfers
-        //
-        //     {
-        //         timestamp: 1614640878000,
-        //         asset: 'USDT',
-        //         amount: '25',
-        //         type: 'MAIN_UMFUTURE',
-        //         status: 'CONFIRMED',
-        //         tranId: 43000126248
-        //     }
-        //
         const id = this.safeString(transfer, 'tranId');
         const currencyId = this.safeString(transfer, 'asset');
         const code = this.safeCurrencyCode(currencyId, currency);
@@ -2557,18 +1453,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseIncome(income, market = undefined) {
-        //
-        //     {
-        //       "symbol": "ETHUSDT",
-        //       "incomeType": "FUNDING_FEE",
-        //       "income": "0.00134317",
-        //       "asset": "USDT",
-        //       "time": "1621584000000",
-        //       "info": "FUNDING_FEE",
-        //       "tranId": "4480321991774044580",
-        //       "tradeId": ""
-        //     }
-        //
         const marketId = this.safeString(income, 'symbol');
         const symbol = this.safeSymbol(marketId, market);
         const amount = this.safeNumber(income, 'income');
@@ -2624,11 +1508,6 @@ module.exports = class liqi extends Exchange {
             'type': type,
         };
         const response = await this.sapiPostAssetTransfer(this.extend(request, params));
-        //
-        //     {
-        //         "tranId":13526853623
-        //     }
-        //
         const transfer = this.parseTransfer(response, currency);
         return this.extend(transfer, {
             'amount': amount,
@@ -2673,21 +1552,6 @@ module.exports = class liqi extends Exchange {
             request['size'] = limit;
         }
         const response = await this.sapiGetAssetTransfer(this.extend(request, params));
-        //
-        //     {
-        //         total: 3,
-        //         rows: [
-        //             {
-        //                 timestamp: 1614640878000,
-        //                 asset: 'USDT',
-        //                 amount: '25',
-        //                 type: 'MAIN_UMFUTURE',
-        //                 status: 'CONFIRMED',
-        //                 tranId: 43000126248
-        //             },
-        //         ]
-        //     }
-        //
         const rows = this.safeValue(response, 'rows', []);
         return this.parseTransfers(rows, currency, since, limit);
     }
@@ -2696,8 +1560,7 @@ module.exports = class liqi extends Exchange {
         await this.loadMarkets();
         const currency = this.currency(code);
         const request = {
-            'coin': currency['id'],
-            // 'network': 'ETH', // 'BSC', 'XMR', you can get network and isDefault in networkList in the response of sapiGetCapitalConfigDetail
+            'coin': currency['id']
         };
         const networks = this.safeValue(this.options, 'networks', {});
         let network = this.safeStringUpper(params, 'network'); // this line allows the user to specify either ERC20 or ETH
@@ -2709,19 +1572,6 @@ module.exports = class liqi extends Exchange {
         // has support for the 'network' parameter
         // https://liqi-docs.github.io/apidocs/spot/en/#deposit-address-supporting-network-user_data
         const response = await this.sapiGetCapitalDepositAddress(this.extend(request, params));
-        //
-        //     {
-        //         currency: 'XRP',
-        //         address: 'rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh',
-        //         tag: '108618262',
-        //         info: {
-        //             coin: 'XRP',
-        //             address: 'rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh',
-        //             tag: '108618262',
-        //             url: 'https://bithomp.com/explorer/rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh'
-        //         }
-        //     }
-        //
         const address = this.safeString(response, 'address');
         const url = this.safeString(response, 'url');
         let impliedNetwork = undefined;
@@ -2762,87 +1612,6 @@ module.exports = class liqi extends Exchange {
     async fetchFundingFees(codes = undefined, params = {}) {
         await this.loadMarkets();
         const response = await this.sapiGetCapitalConfigGetall(params);
-        //
-        //  [
-        //     {
-        //       coin: 'BAT',
-        //       depositAllEnable: true,
-        //       withdrawAllEnable: true,
-        //       name: 'Basic Attention Token',
-        //       free: '0',
-        //       locked: '0',
-        //       freeze: '0',
-        //       withdrawing: '0',
-        //       ipoing: '0',
-        //       ipoable: '0',
-        //       storage: '0',
-        //       isLegalMoney: false,
-        //       trading: true,
-        //       networkList: [
-        //         {
-        //           network: 'BNB',
-        //           coin: 'BAT',
-        //           withdrawIntegerMultiple: '0.00000001',
-        //           isDefault: false,
-        //           depositEnable: true,
-        //           withdrawEnable: true,
-        //           depositDesc: '',
-        //           withdrawDesc: '',
-        //           specialTips: 'The name of this asset is Basic Attention Token (BAT). Both a MEMO and an Address are required to successfully deposit your BEP2 tokens to Liqi.',
-        //           name: 'BEP2',
-        //           resetAddressStatus: false,
-        //           addressRegex: '^(bnb1)[0-9a-z]{38}$',
-        //           memoRegex: '^[0-9A-Za-z\\-_]{1,120}$',
-        //           withdrawFee: '0.27',
-        //           withdrawMin: '0.54',
-        //           withdrawMax: '10000000000',
-        //           minConfirm: '1',
-        //           unLockConfirm: '0'
-        //         },
-        //         {
-        //           network: 'BSC',
-        //           coin: 'BAT',
-        //           withdrawIntegerMultiple: '0.00000001',
-        //           isDefault: false,
-        //           depositEnable: true,
-        //           withdrawEnable: true,
-        //           depositDesc: '',
-        //           withdrawDesc: '',
-        //           specialTips: 'The name of this asset is Basic Attention Token. Please ensure you are depositing Basic Attention Token (BAT) tokens under the contract address ending in 9766e.',
-        //           name: 'BEP20 (BSC)',
-        //           resetAddressStatus: false,
-        //           addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-        //           memoRegex: '',
-        //           withdrawFee: '0.27',
-        //           withdrawMin: '0.54',
-        //           withdrawMax: '10000000000',
-        //           minConfirm: '15',
-        //           unLockConfirm: '0'
-        //         },
-        //         {
-        //           network: 'ETH',
-        //           coin: 'BAT',
-        //           withdrawIntegerMultiple: '0.00000001',
-        //           isDefault: true,
-        //           depositEnable: true,
-        //           withdrawEnable: true,
-        //           depositDesc: '',
-        //           withdrawDesc: '',
-        //           specialTips: 'The name of this asset is Basic Attention Token. Please ensure you are depositing Basic Attention Token (BAT) tokens under the contract address ending in 887ef.',
-        //           name: 'ERC20',
-        //           resetAddressStatus: false,
-        //           addressRegex: '^(0x)[0-9A-Fa-f]{40}$',
-        //           memoRegex: '',
-        //           withdrawFee: '27',
-        //           withdrawMin: '54',
-        //           withdrawMax: '10000000000',
-        //           minConfirm: '12',
-        //           unLockConfirm: '0'
-        //         }
-        //       ]
-        //     }
-        //  ]
-        //
         const withdrawFees = {};
         for (let i = 0; i < response.length; i++) {
             const entry = response[i];
@@ -2873,10 +1642,7 @@ module.exports = class liqi extends Exchange {
         const request = {
             'coin': currency['id'],
             'address': address,
-            'amount': amount,
-            // https://liqi-docs.github.io/apidocs/spot/en/#withdraw-sapi
-            // issue sapiGetCapitalConfigGetall () to get networks for withdrawing USDT ERC20 vs USDT Omni
-            // 'network': 'ETH', // 'BTC', 'TRX', etc, optional
+            'amount': amount
         };
         if (tag !== undefined) {
             request['addressTag'] = tag;
@@ -2889,7 +1655,6 @@ module.exports = class liqi extends Exchange {
             params = this.omit(params, 'network');
         }
         const response = await this.sapiPostCapitalWithdrawApply(this.extend(request, params));
-        //     { id: '9a67628b16ba4988ae20d329333f16bc' }
         return {
             'info': response,
             'id': this.safeString(response, 'id'),
@@ -2897,13 +1662,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseTradingFee(fee, market = undefined) {
-        //
-        //     {
-        //         "symbol": "ADABNB",
-        //         "makerCommission": 0.001,
-        //         "takerCommission": 0.001
-        //     }
-        //
         const marketId = this.safeString(fee, 'symbol');
         const symbol = this.safeSymbol(marketId);
         return {
@@ -2921,15 +1679,6 @@ module.exports = class liqi extends Exchange {
             'symbol': market['id'],
         };
         const response = await this.sapiGetAssetTradeFee(this.extend(request, params));
-        //
-        //     [
-        //       {
-        //         "symbol": "BTCUSDT",
-        //         "makerCommission": "0.001",
-        //         "takerCommission": "0.001"
-        //       }
-        //     ]
-        //
         const first = this.safeValue(response, 0, {});
         return this.parseTradingFee(first);
     }
@@ -2948,69 +1697,8 @@ module.exports = class liqi extends Exchange {
             method = 'dapiPrivateGetAccount';
         }
         const response = await this[method](query);
-        //
-        // sapi / spot
-        //
-        //    [
-        //       {
-        //         "symbol": "ZRXBNB",
-        //         "makerCommission": "0.001",
-        //         "takerCommission": "0.001"
-        //       },
-        //       {
-        //         "symbol": "ZRXBTC",
-        //         "makerCommission": "0.001",
-        //         "takerCommission": "0.001"
-        //       },
-        //    ]
-        //
-        // fapi / future / linear
-        //
-        //     {
-        //         "feeTier": 0,       // account commisssion tier
-        //         "canTrade": true,   // if can trade
-        //         "canDeposit": true,     // if can transfer in asset
-        //         "canWithdraw": true,    // if can transfer out asset
-        //         "updateTime": 0,
-        //         "totalInitialMargin": "0.00000000",    // total initial margin required with current mark price (useless with isolated positions), only for USDT asset
-        //         "totalMaintMargin": "0.00000000",     // total maintenance margin required, only for USDT asset
-        //         "totalWalletBalance": "23.72469206",     // total wallet balance, only for USDT asset
-        //         "totalUnrealizedProfit": "0.00000000",   // total unrealized profit, only for USDT asset
-        //         "totalMarginBalance": "23.72469206",     // total margin balance, only for USDT asset
-        //         "totalPositionInitialMargin": "0.00000000",    // initial margin required for positions with current mark price, only for USDT asset
-        //         "totalOpenOrderInitialMargin": "0.00000000",   // initial margin required for open orders with current mark price, only for USDT asset
-        //         "totalCrossWalletBalance": "23.72469206",      // crossed wallet balance, only for USDT asset
-        //         "totalCrossUnPnl": "0.00000000",      // unrealized profit of crossed positions, only for USDT asset
-        //         "availableBalance": "23.72469206",       // available balance, only for USDT asset
-        //         "maxWithdrawAmount": "23.72469206"     // maximum amount for transfer out, only for USDT asset
-        //         ...
-        //     }
-        //
-        // dapi / delivery / inverse
-        //
-        //     {
-        //         "canDeposit": true,
-        //         "canTrade": true,
-        //         "canWithdraw": true,
-        //         "feeTier": 2,
-        //         "updateTime": 0
-        //     }
-        //
+        
         if ((type === 'spot') || (type === 'margin')) {
-            //
-            //    [
-            //       {
-            //         "symbol": "ZRXBNB",
-            //         "makerCommission": "0.001",
-            //         "takerCommission": "0.001"
-            //       },
-            //       {
-            //         "symbol": "ZRXBTC",
-            //         "makerCommission": "0.001",
-            //         "takerCommission": "0.001"
-            //       },
-            //    ]
-            //
             const result = {};
             for (let i = 0; i < response.length; i++) {
                 const fee = this.parseTradingFee(response[i]);
@@ -3019,27 +1707,6 @@ module.exports = class liqi extends Exchange {
             }
             return result;
         } else if (type === 'future') {
-            //
-            //     {
-            //         "feeTier": 0,       // account commisssion tier
-            //         "canTrade": true,   // if can trade
-            //         "canDeposit": true,     // if can transfer in asset
-            //         "canWithdraw": true,    // if can transfer out asset
-            //         "updateTime": 0,
-            //         "totalInitialMargin": "0.00000000",    // total initial margin required with current mark price (useless with isolated positions), only for USDT asset
-            //         "totalMaintMargin": "0.00000000",     // total maintenance margin required, only for USDT asset
-            //         "totalWalletBalance": "23.72469206",     // total wallet balance, only for USDT asset
-            //         "totalUnrealizedProfit": "0.00000000",   // total unrealized profit, only for USDT asset
-            //         "totalMarginBalance": "23.72469206",     // total margin balance, only for USDT asset
-            //         "totalPositionInitialMargin": "0.00000000",    // initial margin required for positions with current mark price, only for USDT asset
-            //         "totalOpenOrderInitialMargin": "0.00000000",   // initial margin required for open orders with current mark price, only for USDT asset
-            //         "totalCrossWalletBalance": "23.72469206",      // crossed wallet balance, only for USDT asset
-            //         "totalCrossUnPnl": "0.00000000",      // unrealized profit of crossed positions, only for USDT asset
-            //         "availableBalance": "23.72469206",       // available balance, only for USDT asset
-            //         "maxWithdrawAmount": "23.72469206"     // maximum amount for transfer out, only for USDT asset
-            //         ...
-            //     }
-            //
             const symbols = Object.keys(this.markets);
             const result = {};
             const feeTier = this.safeInteger(response, 'feeTier');
@@ -3059,15 +1726,6 @@ module.exports = class liqi extends Exchange {
             }
             return result;
         } else if (type === 'delivery') {
-            //
-            //     {
-            //         "canDeposit": true,
-            //         "canTrade": true,
-            //         "canWithdraw": true,
-            //         "feeTier": 2,
-            //         "updateTime": 0
-            //     }
-            //
             const symbols = Object.keys(this.markets);
             const result = {};
             const feeTier = this.safeInteger(response, 'feeTier');
@@ -3101,11 +1759,6 @@ module.exports = class liqi extends Exchange {
             'type': type,
         };
         const response = await this.sapiPostFuturesTransfer(this.extend(request, params));
-        //
-        //   {
-        //       "tranId": 100000001
-        //   }
-        //
         return this.parseTransfer(response, currency);
     }
 
@@ -3127,31 +1780,10 @@ module.exports = class liqi extends Exchange {
         if (market['inverse']) {
             response = response[0];
         }
-        //
-        //     {
-        //         "symbol": "BTCUSDT",
-        //         "markPrice": "45802.81129892",
-        //         "indexPrice": "45745.47701915",
-        //         "estimatedSettlePrice": "45133.91753671",
-        //         "lastFundingRate": "0.00063521",
-        //         "interestRate": "0.00010000",
-        //         "nextFundingTime": "1621267200000",
-        //         "time": "1621252344001"
-        //     }
-        //
         return this.parseFundingRate(response, market);
     }
 
     async fetchFundingRateHistory(symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        //
-        // Gets a history of funding rates with their timestamps
-        //  (param) symbol: Future currency pair (e.g. "BTC/USDT")
-        //  (param) limit: maximum number of data points returned
-        //  (param) since: Unix timestamp in miliseconds for the time of the earliest requested funding rate
-        //  (param) params: Object containing more params for the request
-        //          - until: Unix timestamp in miliseconds for the time of the earliest requested funding rate
-        //  return: [{symbol, fundingRate, timestamp}]
-        //
         await this.loadMarkets();
         const request = {};
         let method = undefined;
@@ -3189,13 +1821,6 @@ module.exports = class liqi extends Exchange {
             request['limit'] = limit;
         }
         const response = await this[method](this.extend(request, params));
-        //
-        //     {
-        //         "symbol": "BTCUSDT",
-        //         "fundingRate": "0.00063521",
-        //         "fundingTime": "1621267200000",
-        //     }
-        //
         const rates = [];
         for (let i = 0; i < response.length; i++) {
             const entry = response[i];
@@ -3236,19 +1861,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseFundingRate(premiumIndex, market = undefined) {
-        // ensure it matches with https://www.liqi.com.br/en/futures/funding-history/0
-        //
-        //   {
-        //     "symbol": "BTCUSDT",
-        //     "markPrice": "45802.81129892",
-        //     "indexPrice": "45745.47701915",
-        //     "estimatedSettlePrice": "45133.91753671",
-        //     "lastFundingRate": "0.00063521",
-        //     "interestRate": "0.00010000",
-        //     "nextFundingTime": "1621267200000",
-        //     "time": "1621252344001"
-        //  }
-        //
         const timestamp = this.safeInteger(premiumIndex, 'time');
         const marketId = this.safeString(premiumIndex, 'symbol');
         const symbol = this.safeSymbol(marketId, market);
@@ -3313,46 +1925,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parseAccountPosition(position, market = undefined) {
-        //
-        // usdm
-        //    {
-        //       "symbol": "BTCBUSD",
-        //       "initialMargin": "0",
-        //       "maintMargin": "0",
-        //       "unrealizedProfit": "0.00000000",
-        //       "positionInitialMargin": "0",
-        //       "openOrderInitialMargin": "0",
-        //       "leverage": "20",
-        //       "isolated": false,
-        //       "entryPrice": "0.0000",
-        //       "maxNotional": "100000",
-        //       "positionSide": "BOTH",
-        //       "positionAmt": "0.000",
-        //       "notional": "0",
-        //       "isolatedWallet": "0",
-        //       "updateTime": "0",
-        //       "crossMargin": "100.93634809",
-        //     }
-        //
-        // coinm
-        //     {
-        //       "symbol": "BTCUSD_210625",
-        //       "initialMargin": "0.00024393",
-        //       "maintMargin": "0.00002439",
-        //       "unrealizedProfit": "-0.00000163",
-        //       "positionInitialMargin": "0.00024393",
-        //       "openOrderInitialMargin": "0",
-        //       "leverage": "10",
-        //       "isolated": false,
-        //       "positionSide": "BOTH",
-        //       "entryPrice": "41021.20000069",
-        //       "maxQty": "100",
-        //       "notionalValue": "0.00243939",
-        //       "isolatedWallet": "0",
-        //       "crossMargin": "0.314"
-        //       "crossWalletBalance": "34",
-        //     }
-        //
         const marketId = this.safeString(position, 'symbol');
         market = this.safeMarket(marketId, market);
         const symbol = this.safeString(market, 'symbol');
@@ -3365,7 +1937,6 @@ module.exports = class liqi extends Exchange {
         if (!rational) {
             initialMarginPercentageString = Precise.stringDiv(Precise.stringAdd(initialMarginPercentageString, '1e-8'), '1', 8);
         }
-        // as oppose to notionalValue
         const usdm = ('notional' in position);
         const maintenanceMarginString = this.safeString(position, 'maintMargin');
         const maintenanceMargin = this.parseNumber(maintenanceMarginString);
@@ -3428,13 +1999,6 @@ module.exports = class liqi extends Exchange {
             marginRatio = this.parseNumber(Precise.stringDiv(Precise.stringAdd(Precise.stringDiv(maintenanceMarginString, collateralString), '5e-5'), '1', 4));
             percentage = this.parseNumber(Precise.stringMul(Precise.stringDiv(unrealizedPnlString, initialMarginString, 4), '100'));
             if (usdm) {
-                // calculate liquidation price
-                //
-                // liquidationPrice = (walletBalance / (contracts * (±1 + mmp))) + (±entryPrice / (±1 + mmp))
-                //
-                // mmp = maintenanceMarginPercentage
-                // where ± is negative for long and positive for short
-                // TODO: calculate liquidation price for coinm contracts
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
@@ -3447,10 +2011,6 @@ module.exports = class liqi extends Exchange {
                 const rightSide = Precise.stringDiv(entryPriceSignString, onePlusMaintenanceMarginPercentageString);
                 liquidationPriceStringRaw = Precise.stringAdd(leftSide, rightSide);
             } else {
-                // calculate liquidation price
-                //
-                // liquidationPrice = (contracts * contractSize(±1 - mmp)) / (±1/entryPrice * contracts * contractSize - walletBalance)
-                //
                 let onePlusMaintenanceMarginPercentageString = undefined;
                 let entryPriceSignString = entryPriceString;
                 if (side === 'short') {
@@ -3467,14 +2027,11 @@ module.exports = class liqi extends Exchange {
             const pricePrecision = market['precision']['price'];
             const pricePrecisionPlusOne = pricePrecision + 1;
             const pricePrecisionPlusOneString = pricePrecisionPlusOne.toString();
-            // round half up
             const rounder = new Precise('5e-' + pricePrecisionPlusOneString);
             const rounderString = rounder.toString();
             const liquidationPriceRoundedString = Precise.stringAdd(rounderString, liquidationPriceStringRaw);
             let truncatedLiquidationPrice = Precise.stringDiv(liquidationPriceRoundedString, '1', pricePrecision);
             if (truncatedLiquidationPrice[0] === '-') {
-                // user cannot be liquidated
-                // since he has more collateral than the size of the position
                 truncatedLiquidationPrice = undefined;
             }
             liquidationPrice = this.parseNumber(truncatedLiquidationPrice);
@@ -3508,44 +2065,6 @@ module.exports = class liqi extends Exchange {
     }
 
     parsePositionRisk(position, market = undefined) {
-        //
-        // usdm
-        //     {
-        //       "symbol": "BTCUSDT",
-        //       "positionAmt": "0.001",
-        //       "entryPrice": "43578.07000",
-        //       "markPrice": "43532.30000000",
-        //       "unRealizedProfit": "-0.04577000",
-        //       "liquidationPrice": "21841.24993976",
-        //       "leverage": "2",
-        //       "maxNotionalValue": "300000000",
-        //       "marginType": "isolated",
-        //       "isolatedMargin": "21.77841506",
-        //       "isAutoAddMargin": "false",
-        //       "positionSide": "BOTH",
-        //       "notional": "43.53230000",
-        //       "isolatedWallet": "21.82418506",
-        //       "updateTime": "1621358023886"
-        //     }
-        //
-        // coinm
-        //     {
-        //       "symbol": "BTCUSD_PERP",
-        //       "positionAmt": "2",
-        //       "entryPrice": "37643.10000021",
-        //       "markPrice": "38103.05510455",
-        //       "unRealizedProfit": "0.00006413",
-        //       "liquidationPrice": "25119.97445760",
-        //       "leverage": "2",
-        //       "maxQty": "1500",
-        //       "marginType": "isolated",
-        //       "isolatedMargin": "0.00274471",
-        //       "isAutoAddMargin": "false",
-        //       "positionSide": "BOTH",
-        //       "notionalValue": "0.00524892",
-        //       "isolatedWallet": "0.00268058"
-        //     }
-        //
         const marketId = this.safeString(position, 'symbol');
         market = this.safeMarket(marketId, market);
         const symbol = this.safeString(market, 'symbol');
@@ -3672,8 +2191,6 @@ module.exports = class liqi extends Exchange {
 
     async loadLeverageBrackets(reload = false, params = {}) {
         await this.loadMarkets();
-        // by default cache the leverage bracket
-        // it contains useful stuff like the maintenance margin and initial margin for positions
         const leverageBrackets = this.safeValue(this.options, 'leverageBrackets');
         if ((leverageBrackets === undefined) || (reload)) {
             let method = undefined;
@@ -3719,24 +2236,6 @@ module.exports = class liqi extends Exchange {
             throw new NotSupported(this.id + ' fetchLeverageTiers() supports linear and inverse contracts only');
         }
         const response = await this[method](query);
-        //
-        //    [
-        //        {
-        //            "symbol": "SUSHIUSDT",
-        //            "brackets": [
-        //                {
-        //                    "bracket": 1,
-        //                    "initialLeverage": 50,
-        //                    "notionalCap": 50000,
-        //                    "notionalFloor": 0,
-        //                    "maintMarginRatio": 0.01,
-        //                    "cum": 0.0
-        //                },
-        //                ...
-        //            ]
-        //        }
-        //    ]
-        //
         return this.parseLeverageTiers(response, symbols, 'symbol');
     }
 
@@ -3830,60 +2329,6 @@ module.exports = class liqi extends Exchange {
         params = this.omit(params, 'type');
         if ((type === 'future') || (type === 'linear')) {
             method = 'fapiPrivateGetPositionRisk';
-            // ### Response examples ###
-            //
-            // For One-way position mode:
-            //     [
-            //         {
-            //             "entryPrice": "0.00000",
-            //             "marginType": "isolated",
-            //             "isAutoAddMargin": "false",
-            //             "isolatedMargin": "0.00000000",
-            //             "leverage": "10",
-            //             "liquidationPrice": "0",
-            //             "markPrice": "6679.50671178",
-            //             "maxNotionalValue": "20000000",
-            //             "positionAmt": "0.000",
-            //             "symbol": "BTCUSDT",
-            //             "unRealizedProfit": "0.00000000",
-            //             "positionSide": "BOTH",
-            //             "updateTime": 0
-            //        }
-            //     ]
-            //
-            // For Hedge position mode:
-            //     [
-            //         {
-            //             "entryPrice": "6563.66500",
-            //             "marginType": "isolated",
-            //             "isAutoAddMargin": "false",
-            //             "isolatedMargin": "15517.54150468",
-            //             "leverage": "10",
-            //             "liquidationPrice": "5930.78",
-            //             "markPrice": "6679.50671178",
-            //             "maxNotionalValue": "20000000",
-            //             "positionAmt": "20.000",
-            //             "symbol": "BTCUSDT",
-            //             "unRealizedProfit": "2316.83423560"
-            //             "positionSide": "LONG",
-            //             "updateTime": 1625474304765
-            //         },
-            //         {
-            //             "entryPrice": "0.00000",
-            //             "marginType": "isolated",
-            //             "isAutoAddMargin": "false",
-            //             "isolatedMargin": "5413.95799991",
-            //             "leverage": "10",
-            //             "liquidationPrice": "7189.95",
-            //             "markPrice": "6679.50671178",
-            //             "maxNotionalValue": "20000000",
-            //             "positionAmt": "-10.000",
-            //             "symbol": "BTCUSDT",
-            //             "unRealizedProfit": "-1156.46711780",
-            //             "positionSide": "SHORT",
-            //             "updateTime": 0
-            //         }
-            //     ]
         } else if ((type === 'delivery') || (type === 'inverse')) {
             method = 'dapiPrivateGetPositionRisk';
         } else {
@@ -3967,13 +2412,6 @@ module.exports = class liqi extends Exchange {
         if (symbol === undefined) {
             throw new ArgumentsRequired(this.id + ' setMarginMode() requires a symbol argument');
         }
-        //
-        // { "code": -4048 , "msg": "Margin type cannot be changed if there exists position." }
-        //
-        // or
-        //
-        // { "code": 200, "msg": "success" }
-        //
         marginType = marginType.toUpperCase();
         if (marginType === 'CROSS') {
             marginType = 'CROSSED';
@@ -3999,11 +2437,6 @@ module.exports = class liqi extends Exchange {
         try {
             response = await this[method](this.extend(request, params));
         } catch (e) {
-            // not an error
-            // https://github.com/ccxt/ccxt/issues/11268
-            // https://github.com/ccxt/ccxt/pull/11624
-            // POST https://fapi.liqi.com.br/fapi/v1/marginType 400 Bad Request
-            // liqiusdm
             if (e instanceof MarginModeAlreadySet) {
                 const throwMarginModeAlreadySet = this.safeValue(this.options, 'throwMarginModeAlreadySet', false);
                 if (throwMarginModeAlreadySet) {
@@ -4033,15 +2466,8 @@ module.exports = class liqi extends Exchange {
         if (type === 'delivery') {
             method = 'dapiPrivatePostPositionSideDual';
         } else {
-            // default to future
             method = 'fapiPrivatePostPositionSideDual';
         }
-        //
-        //     {
-        //       "code": 200,
-        //       "msg": "success"
-        //     }
-        //
         return await this[method](this.extend(request, params));
     }
 
@@ -4271,14 +2697,6 @@ module.exports = class liqi extends Exchange {
             code = market['base'];
         }
         const response = await this[method](this.extend(request, params));
-        //
-        //     {
-        //       "code": 200,
-        //       "msg": "Successfully modify position margin.",
-        //       "amount": 0.001,
-        //       "type": 1
-        //     }
-        //
         const rawType = this.safeInteger(response, 'type');
         const resultType = (rawType === 1) ? 'add' : 'reduce';
         const resultAmount = this.safeNumber(response, 'amount');
@@ -4306,21 +2724,9 @@ module.exports = class liqi extends Exchange {
         await this.loadMarkets();
         const currency = this.currency(code);
         const request = {
-            'asset': currency['id'],
-            // 'vipLevel': this.safeInteger (params, 'vipLevel'),
+            'asset': currency['id']
         };
         const response = await this.sapiGetMarginInterestRateHistory(this.extend(request, params));
-        //
-        // [
-        //     {
-        //         "asset": "USDT",
-        //         "timestamp": 1638230400000,
-        //         "dailyInterestRate": "0.0006",
-        //         "vipLevel": 0
-        //     },
-        //     ...
-        // ]
-        //
         const rate = this.safeValue(response, 0);
         const timestamp = this.safeNumber(rate, 'timestamp');
         return {
@@ -4338,7 +2744,6 @@ module.exports = class liqi extends Exchange {
         if (limit === undefined) {
             limit = 93;
         } else if (limit > 93) {
-            // Liqi API says the limit is 100, but "Illegal characters found in a parameter." is returned when limit is > 93
             throw new BadRequest(this.id + ' fetchBorrowRateHistory limit parameter cannot exceed 92');
         }
         const currency = this.currency(code);
@@ -4353,16 +2758,6 @@ module.exports = class liqi extends Exchange {
             request['endTime'] = Math.min(endTime, now); // cannot have an endTime later than current time
         }
         const response = await this.sapiGetMarginInterestRateHistory(this.extend(request, params));
-        //
-        //     [
-        //         {
-        //             "asset": "USDT",
-        //             "timestamp": 1638230400000,
-        //             "dailyInterestRate": "0.0006",
-        //             "vipLevel": 0
-        //         },
-        //     ]
-        //
         const result = [];
         for (let i = 0; i < response.length; i++) {
             const item = response[i];
@@ -4381,20 +2776,11 @@ module.exports = class liqi extends Exchange {
     async createGiftCode(code, amount, params = {}) {
         await this.loadMarkets();
         const currency = this.currency(code);
-        // ensure you have enough token in your funding account before calling this code
         const request = {
             'token': currency['id'],
             'amount': amount,
         };
         const response = await this.sapiPostGiftcardCreateCode(this.extend(request, params));
-        //
-        //     {
-        //       code: '000000',
-        //       message: 'success',
-        //       data: { referenceNo: '0033002404219823', code: 'AP6EXTLKNHM6CEX7' },
-        //       success: true
-        //     }
-        //
         const data = this.safeValue(response, 'data');
         const giftcardCode = this.safeString(data, 'code');
         const id = this.safeString(data, 'referenceNo');
@@ -4412,17 +2798,6 @@ module.exports = class liqi extends Exchange {
             'code': giftcardCode,
         };
         const response = await this.sapiPostGiftcardRedeemCode(this.extend(request, params));
-        //
-        //     {
-        //       code: '000000',
-        //       message: 'success',
-        //       data: {
-        //         referenceNo: '0033002404219823',
-        //         identityNo: '10316431732801474560'
-        //       },
-        //       success: true
-        //     }
-        //
         return response;
     }
 
@@ -4431,14 +2806,6 @@ module.exports = class liqi extends Exchange {
             'referenceNo': id,
         };
         const response = await this.sapiGetGiftcardVerify(this.extend(request, params));
-        //
-        //     {
-        //       code: '000000',
-        //       message: 'success',
-        //       data: { valid: true },
-        //       success: true
-        //     }
-        //
         return response;
     }
 };
