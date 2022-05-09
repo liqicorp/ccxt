@@ -2536,6 +2536,9 @@ module.exports = class liqi extends Exchange {
             throw new NotSupported(this.id + ' does not have a testnet/sandbox URL for ' + api + ' endpoints');
         }
         let url = this.urls['api'][api] + '/' + this.implodeParams(path, this.encode(params));
+        
+        headers = headers || {};
+        
         if (api === 'private') {
             this.checkRequiredCredentials();
             let query = undefined;
@@ -2564,7 +2567,7 @@ module.exports = class liqi extends Exchange {
             }
         }
 
-        headers = { ...headers, cookie: `incap_ses_1235_2761709=xWhCYUWPQ0CtZw9Ek5ojEbALeWIAAAAAojUnhwR0fdyp0WhweDNH4A==;` };
+        headers = { ...headers, useragent: 'CCXT/Liqi', cookie: `incap_ses_1235_2761709=WbRwX37PHxg/KU1Ek5ojEWEteWIAAAAAH3TLBixu3GHgER/qGSN42A==; nlbi_2761709=bCMFIGqgDUwwTEEvasLBCgAAAABq11FI6oMxSqTvSx/0ZC+Y; visid_incap_2761709=6dHV2ACcQbK6Cv86NGb1RW0jO2IAAAAAQkIPAAAAAABxst/YXNsWFkm5OgFiOjMD` };
 
         return { 'url': url, 'method': method, 'body': body, 'headers': headers };
     }
