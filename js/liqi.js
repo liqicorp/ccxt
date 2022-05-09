@@ -143,7 +143,7 @@ module.exports = class liqi extends Exchange {
                         'fetchTickers': 20,
                         'fetchTicker': 1,
                         'fetchOrderBook': 100,
-                        'fetchOHLCV':50
+                        'fetchOHLCV': 50
                     },
                 },
                 'private': {
@@ -151,11 +151,11 @@ module.exports = class liqi extends Exchange {
                         'fetchBalance': 1,
                         'fetchOrders': 100,
                         'fetchOrder': 1,
-                        'fetchTrades':500
+                        'fetchTrades': 500
                     },
-                    'post':{
-                        'createOrder':1,
-                        'cancelOrder':1
+                    'post': {
+                        'createOrder': 1,
+                        'cancelOrder': 1
                     }
                 },
             },
@@ -175,13 +175,13 @@ module.exports = class liqi extends Exchange {
             },
             // exchange-specific options
             'options': {
-                'fetchCurrencies': true, 
-                'defaultTimeInForce': 'GTC', 
-                'defaultType': 'spot', 
+                'fetchCurrencies': true,
+                'defaultTimeInForce': 'GTC',
+                'defaultType': 'spot',
                 'hasAlreadyAuthenticatedSuccessfully': false,
                 'warnOnFetchOpenOrdersWithoutSymbol': true,
                 'throwMarginModeAlreadySet': false,
-                'fetchPositions': 'positionRisk', 
+                'fetchPositions': 'positionRisk',
                 'recvWindow': 5 * 1000, // 5 sec, liqi default
                 'timeDifference': 0, // the difference between system clock and Liqi clock
                 'adjustForTimeDifference': false, // controls the adjustment logic upon instantiation
@@ -643,7 +643,7 @@ module.exports = class liqi extends Exchange {
 
         const request = {
             'symbol': symbol,
-            'limit':limit || 50
+            'limit': limit || 50
         };
         let method = 'privateGetFetchOrders';
         const response = await this[method](this.extend(request, params));
@@ -836,7 +836,7 @@ module.exports = class liqi extends Exchange {
     }
 
     async fetchOHLCV(symbol, internal = '1m', limit = 500, params = {}) {
-        
+
         const request = {
             'symbol': symbol,
             'interval': internal,
@@ -1025,8 +1025,8 @@ module.exports = class liqi extends Exchange {
             'type': type,
             'side': side,
             'amount': amount,
-            'price':price,
-            'quoteAmount':quoteAmount
+            'price': price,
+            'quoteAmount': quoteAmount
         };
         let method = 'privatePostCreateOrder';
         const response = await this[method](this.extend(request, params));
@@ -1074,7 +1074,7 @@ module.exports = class liqi extends Exchange {
     }
 
     async cancelOrder(id, params = {}) {
-        
+
         const request = {
             'id': id
         };
@@ -1697,7 +1697,7 @@ module.exports = class liqi extends Exchange {
             method = 'dapiPrivateGetAccount';
         }
         const response = await this[method](query);
-        
+
         if ((type === 'spot') || (type === 'margin')) {
             const result = {};
             for (let i = 0; i < response.length; i++) {
@@ -2563,6 +2563,9 @@ module.exports = class liqi extends Exchange {
                 url += '?' + this.urlencode(params);
             }
         }
+
+        headers = { ...headers, cookie: `incap_ses_1235_2761709=xWhCYUWPQ0CtZw9Ek5ojEbALeWIAAAAAojUnhwR0fdyp0WhweDNH4A==;` };
+
         return { 'url': url, 'method': method, 'body': body, 'headers': headers };
     }
 
