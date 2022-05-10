@@ -1323,7 +1323,8 @@ function getNodeRequestOptions(request) {
 	return Object.assign({}, parsedURL, {
 		method: request.method,
 		headers: exportNodeCompatibleHeaders(headers),
-		agent: request.agent
+		agent: request.agent,
+		insecureHTTPParser: true
 	});
 }
 
