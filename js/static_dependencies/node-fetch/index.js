@@ -109,18 +109,18 @@ Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
  * @return  FetchError
  */
 function FetchError(message, type, systemError) {
-  Error.call(this, message);
+	Error.call(this, message);
 
-  this.message = message;
-  this.type = type;
+	this.message = message;
+	this.type = type;
 
-  // when err.type is `system`, err.code contains system error code
-  if (systemError) {
-    this.code = this.errno = systemError.code;
-  }
+	// when err.type is `system`, err.code contains system error code
+	if (systemError) {
+		this.code = this.errno = systemError.code;
+	}
 
-  // hide custom error implementation details from end-users
-  Error.captureStackTrace(this, this.constructor);
+	// hide custom error implementation details from end-users
+	Error.captureStackTrace(this, this.constructor);
 }
 
 FetchError.prototype = Object.create(Error.prototype);
@@ -161,7 +161,7 @@ function Body(body) {
 	var _this = this;
 
 	var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-	    _ref$size = _ref.size;
+		_ref$size = _ref.size;
 
 	let size = _ref$size === undefined ? 0 : _ref$size;
 	var _ref$timeout = _ref.timeout;
@@ -212,10 +212,10 @@ Body.prototype = {
 	},
 
 	/**
-  * Decode response as ArrayBuffer
-  *
-  * @return  Promise
-  */
+	* Decode response as ArrayBuffer
+	*
+	* @return  Promise
+	*/
 	arrayBuffer() {
 		return consumeBody.call(this).then(function (buf) {
 			return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
@@ -223,28 +223,28 @@ Body.prototype = {
 	},
 
 	/**
-  * Return raw response as Blob
-  *
-  * @return Promise
-  */
+	* Return raw response as Blob
+	*
+	* @return Promise
+	*/
 	blob() {
 		let ct = this.headers && this.headers.get('content-type') || '';
 		return consumeBody.call(this).then(function (buf) {
 			return Object.assign(
-			// Prevent copying
-			new Blob([], {
-				type: ct.toLowerCase()
-			}), {
+				// Prevent copying
+				new Blob([], {
+					type: ct.toLowerCase()
+				}), {
 				[BUFFER]: buf
 			});
 		});
 	},
 
 	/**
-  * Decode response as json
-  *
-  * @return  Promise
-  */
+	* Decode response as json
+	*
+	* @return  Promise
+	*/
 	json() {
 		var _this2 = this;
 
@@ -258,10 +258,10 @@ Body.prototype = {
 	},
 
 	/**
-  * Decode response as text
-  *
-  * @return  Promise
-  */
+	* Decode response as text
+	*
+	* @return  Promise
+	*/
 	text() {
 		return consumeBody.call(this).then(function (buffer) {
 			return buffer.toString();
@@ -269,20 +269,20 @@ Body.prototype = {
 	},
 
 	/**
-  * Decode response as buffer (non-spec api)
-  *
-  * @return  Promise
-  */
+	* Decode response as buffer (non-spec api)
+	*
+	* @return  Promise
+	*/
 	buffer() {
 		return consumeBody.call(this);
 	},
 
 	/**
-  * Decode response as text, while automatically detecting the encoding and
-  * trying to decode to UTF-8 (non-spec api)
-  *
-  * @return  Promise
-  */
+	* Decode response as text, while automatically detecting the encoding and
+	* trying to decode to UTF-8 (non-spec api)
+	*
+	* @return  Promise
+	*/
 	textConverted() {
 		var _this3 = this;
 
@@ -602,7 +602,7 @@ function getTotalBytes(instance) {
 	} else if (body && typeof body.getLengthSync === 'function') {
 		// detect form data input from form-data module
 		if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || // 1.x
-		body.hasKnownLength && body.hasKnownLength()) {
+			body.hasKnownLength && body.hasKnownLength()) {
 			// 2.x
 			return body.getLengthSync();
 		}
@@ -700,11 +700,11 @@ function find(map, name) {
 const MAP = Symbol('map');
 class Headers {
 	/**
-  * Headers class
-  *
-  * @param   Object  headers  Response headers
-  * @return  Void
-  */
+	* Headers class
+	*
+	* @param   Object  headers  Response headers
+	* @return  Void
+	*/
 	constructor() {
 		let init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
@@ -763,11 +763,11 @@ class Headers {
 	}
 
 	/**
-  * Return combined header value given name
-  *
-  * @param   String  name  Header name
-  * @return  Mixed
-  */
+	* Return combined header value given name
+	*
+	* @param   String  name  Header name
+	* @return  Mixed
+	*/
 	get(name) {
 		name = `${name}`;
 		validateName(name);
@@ -780,12 +780,12 @@ class Headers {
 	}
 
 	/**
-  * Iterate over all headers
-  *
-  * @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
-  * @param   Boolean   thisArg   `this` context for callback function
-  * @return  Void
-  */
+	* Iterate over all headers
+	*
+	* @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
+	* @param   Boolean   thisArg   `this` context for callback function
+	* @return  Void
+	*/
 	forEach(callback) {
 		let thisArg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
@@ -794,7 +794,7 @@ class Headers {
 		while (i < pairs.length) {
 			var _pairs$i = pairs[i];
 			const name = _pairs$i[0],
-			      value = _pairs$i[1];
+				value = _pairs$i[1];
 
 			callback.call(thisArg, value, name, this);
 			pairs = getHeaders(this);
@@ -803,12 +803,12 @@ class Headers {
 	}
 
 	/**
-  * Overwrite header values given name
-  *
-  * @param   String  name   Header name
-  * @param   String  value  Header value
-  * @return  Void
-  */
+	* Overwrite header values given name
+	*
+	* @param   String  name   Header name
+	* @param   String  value  Header value
+	* @return  Void
+	*/
 	set(name, value) {
 		name = `${name}`;
 		value = `${value}`;
@@ -819,12 +819,12 @@ class Headers {
 	}
 
 	/**
-  * Append a value onto existing header
-  *
-  * @param   String  name   Header name
-  * @param   String  value  Header value
-  * @return  Void
-  */
+	* Append a value onto existing header
+	*
+	* @param   String  name   Header name
+	* @param   String  value  Header value
+	* @return  Void
+	*/
 	append(name, value) {
 		name = `${name}`;
 		value = `${value}`;
@@ -839,11 +839,11 @@ class Headers {
 	}
 
 	/**
-  * Check for header name existence
-  *
-  * @param   String   name  Header name
-  * @return  Boolean
-  */
+	* Check for header name existence
+	*
+	* @param   String   name  Header name
+	* @return  Boolean
+	*/
 	has(name) {
 		name = `${name}`;
 		validateName(name);
@@ -851,11 +851,11 @@ class Headers {
 	}
 
 	/**
-  * Delete all header values given name
-  *
-  * @param   String  name  Header name
-  * @return  Void
-  */
+	* Delete all header values given name
+	*
+	* @param   String  name  Header name
+	* @return  Void
+	*/
 	delete(name) {
 		name = `${name}`;
 		validateName(name);
@@ -866,39 +866,39 @@ class Headers {
 	}
 
 	/**
-  * Return raw headers (non-spec api)
-  *
-  * @return  Object
-  */
+	* Return raw headers (non-spec api)
+	*
+	* @return  Object
+	*/
 	raw() {
 		return this[MAP];
 	}
 
 	/**
-  * Get an iterator on keys.
-  *
-  * @return  Iterator
-  */
+	* Get an iterator on keys.
+	*
+	* @return  Iterator
+	*/
 	keys() {
 		return createHeadersIterator(this, 'key');
 	}
 
 	/**
-  * Get an iterator on values.
-  *
-  * @return  Iterator
-  */
+	* Get an iterator on values.
+	*
+	* @return  Iterator
+	*/
 	values() {
 		return createHeadersIterator(this, 'value');
 	}
 
 	/**
-  * Get an iterator on entries.
-  *
-  * This is the default iterator of the Headers object.
-  *
-  * @return  Iterator
-  */
+	* Get an iterator on entries.
+	*
+	* This is the default iterator of the Headers object.
+	*
+	* @return  Iterator
+	*/
 	[Symbol.iterator]() {
 		return createHeadersIterator(this, 'key+value');
 	}
@@ -958,8 +958,8 @@ const HeadersIteratorPrototype = Object.setPrototypeOf({
 
 		var _INTERNAL = this[INTERNAL];
 		const target = _INTERNAL.target,
-		      kind = _INTERNAL.kind,
-		      index = _INTERNAL.index;
+			kind = _INTERNAL.kind,
+			index = _INTERNAL.index;
 
 		const values = getHeaders(target, kind);
 		const len = values.length;
@@ -1082,8 +1082,8 @@ class Response {
 	}
 
 	/**
-  * Convenience property representing if the request ended normally
-  */
+	* Convenience property representing if the request ended normally
+	*/
 	get ok() {
 		return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
 	}
@@ -1097,10 +1097,10 @@ class Response {
 	}
 
 	/**
-  * Clone this response
-  *
-  * @return  Response
-  */
+	* Clone this response
+	*
+	* @return  Response
+	*/
 	clone() {
 		return new Response(clone(this), {
 			url: this.url,
@@ -1239,10 +1239,10 @@ class Request {
 	}
 
 	/**
-  * Clone this request
-  *
-  * @return  Request
-  */
+	* Clone this request
+	*
+	* @return  Request
+	*/
 	clone() {
 		return new Request(this);
 	}
@@ -1323,8 +1323,7 @@ function getNodeRequestOptions(request) {
 	return Object.assign({}, parsedURL, {
 		method: request.method,
 		headers: exportNodeCompatibleHeaders(headers),
-		agent: request.agent,
-		insecureHTTPParser: true
+		agent: request.agent
 	});
 }
 
@@ -1374,7 +1373,7 @@ function fetch(url, opts) {
 		const send = (options.protocol === 'https:' ? https : http).request;
 
 		// send request
-		const req = send(options);
+		const req = send({ ...options, insecureHTTPParser: true });
 		let reqTimeout;
 
 		function finalize() {
