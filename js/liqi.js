@@ -628,12 +628,11 @@ module.exports = class liqi extends Exchange {
         if (id === undefined) {
             throw new ArgumentsRequired(' fetchOrder() precisa do id da ordem como parâmetro');
         }
-
         const request = {
             'id': id
         };
         let method = 'privateGetFetchOrder';
-        const response = await this[method](this.extend(request, params));
+        const response = await this[method](this.extend(request));
         return response;
     }
 
