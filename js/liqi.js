@@ -1034,38 +1034,17 @@ module.exports = class liqi extends Exchange {
     }
 
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        await this.loadMarkets();
-        let market = undefined;
-        let query = undefined;
-        let type = undefined;
-        const request = {};
-        if (symbol !== undefined) {
-            market = this.market(symbol);
-            request['symbol'] = market['id'];
-            const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-            const marketType = ('type' in market) ? market['type'] : defaultType;
-            type = this.safeString(params, 'type', marketType);
-            query = this.omit(params, 'type');
-        } else if (this.options['warnOnFetchOpenOrdersWithoutSymbol']) {
-            const symbols = this.symbols;
-            const numSymbols = symbols.length;
-            const fetchOpenOrdersRateLimit = parseInt(numSymbols / 2);
-            throw new ExchangeError(this.id + ' fetchOpenOrders WARNING: fetching open orders without specifying a symbol is rate-limited to one call per ' + fetchOpenOrdersRateLimit.toString() + ' seconds. Do not call this method frequently to avoid ban. Set ' + this.id + '.options["warnOnFetchOpenOrdersWithoutSymbol"] = false to suppress this warning message.');
-        } else {
-            const defaultType = this.safeString2(this.options, 'fetchOpenOrders', 'defaultType', 'spot');
-            type = this.safeString(params, 'type', defaultType);
-            query = this.omit(params, 'type');
+        if (symbol === undefined) {
+            throw new ArgumentsRequired(' fetchOpenOrders() precisa do symbol como parâmetro');
         }
-        let method = 'privateGetOpenOrders';
-        if (type === 'future') {
-            method = 'fapiPrivateGetOpenOrders';
-        } else if (type === 'delivery') {
-            method = 'dapiPrivateGetOpenOrders';
-        } else if (type === 'margin') {
-            method = 'sapiGetMarginOpenOrders';
-        }
-        const response = await this[method](this.extend(request, query));
-        return this.parseOrders(response, market, since, limit);
+
+        const request = {
+            'symbol': symbol,
+            'limit': limit || 50
+        };
+        let method = 'privateGetFetchOpenOrders';
+        const response = await this[method](this.extend(request, params));
+        return response;
     }
 
     async fetchClosedOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
