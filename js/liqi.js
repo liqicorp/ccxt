@@ -143,13 +143,14 @@ module.exports = class liqi extends Exchange {
                         'fetchTickers': 20,
                         'fetchTicker': 1,
                         'fetchOrderBook': 100,
-                        'fetchOHLCV': 50
+                        'fetchOHLCV': 1000
                     },
                 },
                 'private': {
                     'get': {
                         'fetchBalance': 1,
                         'fetchOrders': 100,
+                        'fetchOpenOrders': 100,
                         'fetchOrder': 1,
                         'fetchTrades': 500
                     },
