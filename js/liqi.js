@@ -156,7 +156,8 @@ module.exports = class liqi extends Exchange {
                     },
                     'post': {
                         'createOrder': 1,
-                        'cancelOrder': 1
+                        'cancelOrder': 1,
+                        'cancelAllOrders': 1
                     }
                 },
             },
@@ -1053,7 +1054,6 @@ module.exports = class liqi extends Exchange {
     }
 
     async cancelOrder(id, params = {}) {
-
         const request = {
             'id': id
         };
@@ -1071,23 +1071,9 @@ module.exports = class liqi extends Exchange {
         const request = {
             'symbol': market['id'],
         };
-        const defaultType = this.safeString2(this.options, 'cancelAllOrders', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        const query = this.omit(params, 'type');
-        let method = 'privateDeleteOpenOrders';
-        if (type === 'margin') {
-            method = 'sapiDeleteMarginOpenOrders';
-        } else if (type === 'future') {
-            method = 'fapiPrivateDeleteAllOpenOrders';
-        } else if (type === 'delivery') {
-            method = 'dapiPrivateDeleteAllOpenOrders';
-        }
-        const response = await this[method](this.extend(request, query));
-        if (Array.isArray(response)) {
-            return this.parseOrders(response, market);
-        } else {
-            return response;
-        }
+        let method = 'privatePostCancelAllOrders';
+        const response = await this[method](this.extend(request, params));
+        return response;
     }
 
     async fetchOrderTrades(id, symbol = undefined, since = undefined, limit = undefined, params = {}) {
