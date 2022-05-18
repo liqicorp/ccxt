@@ -1066,10 +1066,10 @@ module.exports = class liqi extends Exchange {
         if (symbol === undefined) {
             throw new ArgumentsRequired(this.id + ' cancelAllOrders() requires a symbol argument');
         }
-        await this.loadMarkets();
-        const market = this.market(symbol);
+        // await this.loadMarkets();
+        // const market = this.market(symbol);
         const request = {
-            'symbol': market['id'],
+            'symbol': symbol,
         };
         let method = 'privatePostCancelAllOrders';
         const response = await this[method](this.extend(request, params));
