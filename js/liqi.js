@@ -603,7 +603,7 @@ module.exports = class liqi extends Exchange {
 
     async fetchCurrencies(limit, params = {}) {
         const request = {
-            'limit': limit,
+            'limit': limit || 1000,
         };
         const method = 'publicGetFetchCurrencies';
         const response = await this[method](this.extend(request, params));
@@ -808,7 +808,6 @@ module.exports = class liqi extends Exchange {
     }
 
     async fetchTickers(symbols = undefined, params = {}) {
-        await this.loadMarkets();
         const defaultType = this.safeString2(this.options, 'fetchTickers', 'defaultType', 'spot');
         const type = this.safeString(params, 'type', defaultType);
         const query = this.omit(params, 'type');
