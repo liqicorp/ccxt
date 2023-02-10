@@ -807,21 +807,13 @@ module.exports = class liqi extends Exchange {
         return this.parseTickers(response, symbols);
     }
 
-    async fetchTickers(symbols = undefined, params = {}) {
-        const defaultType = this.safeString2(this.options, 'fetchTickers', 'defaultType', 'spot');
-        const type = this.safeString(params, 'type', defaultType);
-        const query = this.omit(params, 'type');
-        let defaultMethod = undefined;
-        if (type === 'future') {
-            defaultMethod = 'fapiPublicGetTicker24hr';
-        } else if (type === 'delivery') {
-            defaultMethod = 'dapiPublicGetTicker24hr';
-        } else {
-            defaultMethod = 'publicGetTicker24hr';
-        }
-        const method = this.safeString(this.options, 'fetchTickersMethod', defaultMethod);
-        const response = await this[method](query);
-        return this.parseTickers(response, symbols);
+    async fetchTickers(limit, params = {}) {
+        const request = {
+            'limit': limit || 1000,
+        };
+        const method = 'publicGetFetchTickers';
+        const response = await this[method](this.extend(request, params));
+        return response;
     }
 
     parseOHLCV(ohlcv, market = undefined) {
