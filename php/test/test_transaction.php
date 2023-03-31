@@ -7,8 +7,6 @@ namespace ccxt;
 // https://github.com/ccxt/ccxt/blob/master/CONTRIBUTING.md#how-to-contribute-code
 
 // -----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
 
 //  ---------------------------------------------------------------------------
 
@@ -23,7 +21,15 @@ function test_transaction($exchange, $transaction, $code, $now) {
     assert (is_array($transaction) && array_key_exists('tag', $transaction));
     assert (is_array($transaction) && array_key_exists('txid', $transaction));
     assert ($transaction['datetime'] === $exchange->iso8601 ($transaction['timestamp']));
-    assert (($transaction['status'] === 'ok') || ($transaction['status'] === 'pending') || ($transaction['status'] === 'canceled'));
+    $statuses = array(
+        'ok',
+        'pending',
+        'failed',
+        'rejected',
+        'canceled',
+    );
+    $transactionStatusIsValid = $exchange->in_array($transaction['status'], $statuses);
+    assert ($transactionStatusIsValid);
     assert ($transaction['currency'] === $code);
     assert (gettype($transaction['type']) === 'string');
     assert ($transaction['type'] === 'deposit' || $transaction['type'] === 'withdrawal');
@@ -37,5 +43,4 @@ function test_transaction($exchange, $transaction, $code, $now) {
     }
     assert ($transaction->info);
 }
-
 

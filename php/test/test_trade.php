@@ -11,7 +11,7 @@ namespace ccxt;
 function test_trade($exchange, $trade, $symbol, $now) {
     assert ($trade);
     $sampleTrade = array(
-        'info' => array( 'a' => 1, 'b' => 2, 'c' => 3 ),    // the original decoded JSON as is
+        'info' => array( 'a' => 1, 'b' => 2, 'c' => 3 ),    // the original decoded JSON
         'id' => '12345-67890:09876/54321',       // string $trade $id
         'timestamp' => 1502962946216,            // Unix $timestamp in milliseconds
         'datetime' => '2017-08-17 12:42:48.000', // ISO8601 datetime with milliseconds
@@ -40,7 +40,7 @@ function test_trade($exchange, $trade, $symbol, $now) {
         assert ((is_array($fee) && array_key_exists('cost', $fee)) && (is_array($fee) && array_key_exists('currency', $fee)));
     }
     if ($fees) {
-        assert (gettype($fees) === 'array' && count(array_filter(array_keys($fees), 'is_string')) == 0);
+        assert (gettype($fees) === 'array' && array_keys($fees) === array_keys(array_keys($fees)));
         for ($i = 0; $i < count($fees); $i++) {
             $fee = $fees[$i];
             assert ((is_array($fee) && array_key_exists('cost', $fee)) && (is_array($fee) && array_key_exists('currency', $fee)));
@@ -70,5 +70,4 @@ function test_trade($exchange, $trade, $symbol, $now) {
     $takerOrMaker = $trade['takerOrMaker'];
     assert ($takerOrMaker === null || $takerOrMaker === 'taker' || $takerOrMaker === 'maker');
 }
-
 

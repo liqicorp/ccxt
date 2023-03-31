@@ -19,16 +19,26 @@ class binancecoinm(binance):
                     'https://binance-docs.github.io/apidocs/spot/en',
                 ],
             },
+            'has': {
+                'CORS': None,
+                'spot': False,
+                'margin': False,
+                'swap': True,
+                'future': True,
+                'option': None,
+                'createStopMarketOrder': True,
+            },
             'options': {
-                'defaultType': 'delivery',
+                'fetchMarkets': ['inverse'],
+                'defaultSubType': 'inverse',
                 'leverageBrackets': None,
             },
         })
 
-    def transfer_in(self, code, amount, params={}):
+    def transfer_in(self, code: str, amount, params={}):
         # transfer from spot wallet to coinm futures wallet
         return self.futuresTransfer(code, amount, 3, params)
 
-    def transfer_out(self, code, amount, params={}):
+    def transfer_out(self, code: str, amount, params={}):
         # transfer from coinm futures wallet to spot wallet
         return self.futuresTransfer(code, amount, 4, params)

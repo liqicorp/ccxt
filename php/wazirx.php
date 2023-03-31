@@ -6,18 +6,18 @@ namespace ccxt;
 // https://github.com/ccxt/ccxt/blob/master/CONTRIBUTING.md#how-to-contribute-code
 
 use Exception; // a common import
-use \ccxt\ExchangeError;
-use \ccxt\ArgumentsRequired;
+use ccxt\abstract\wazirx as Exchange;
 
 class wazirx extends Exchange {
 
     public function describe() {
-        return $this->deep_extend(parent::describe (), array(
+        return $this->deep_extend(parent::describe(), array(
             'id' => 'wazirx',
             'name' => 'WazirX',
             'countries' => array( 'IN' ),
             'version' => 'v2',
-            'rateLimit' => 100,
+            'rateLimit' => 1000,
+            'pro' => true,
             'has' => array(
                 'CORS' => false,
                 'spot' => true,
@@ -28,6 +28,9 @@ class wazirx extends Exchange {
                 'cancelAllOrders' => true,
                 'cancelOrder' => true,
                 'createOrder' => true,
+                'createStopLimitOrder' => true,
+                'createStopMarketOrder' => true,
+                'createStopOrder' => true,
                 'fetchBalance' => true,
                 'fetchBidsAsks' => false,
                 'fetchClosedOrders' => false,
@@ -35,20 +38,22 @@ class wazirx extends Exchange {
                 'fetchDepositAddress' => false,
                 'fetchDepositAddressesByNetwork' => false,
                 'fetchDeposits' => true,
-                'fetchFundingFees' => false,
                 'fetchFundingHistory' => false,
                 'fetchFundingRate' => false,
                 'fetchFundingRateHistory' => false,
                 'fetchFundingRates' => false,
                 'fetchIndexOHLCV' => false,
+                'fetchMarginMode' => false,
                 'fetchMarkets' => true,
                 'fetchMarkOHLCV' => false,
                 'fetchMyTrades' => false,
-                'fetchOHLCV' => false,
+                'fetchOHLCV' => true,
+                'fetchOpenInterestHistory' => false,
                 'fetchOpenOrders' => true,
-                'fetchOrder' => true,
+                'fetchOrder' => false,
                 'fetchOrderBook' => true,
                 'fetchOrders' => true,
+                'fetchPositionMode' => false,
                 'fetchPremiumIndexOHLCV' => false,
                 'fetchStatus' => true,
                 'fetchTicker' => true,
@@ -57,6 +62,7 @@ class wazirx extends Exchange {
                 'fetchTrades' => true,
                 'fetchTradingFee' => false,
                 'fetchTradingFees' => false,
+                'fetchTransactionFees' => false,
                 'fetchTransactions' => false,
                 'fetchTransfers' => false,
                 'fetchWithdrawals' => false,
@@ -65,7 +71,9 @@ class wazirx extends Exchange {
             ),
             'urls' => array(
                 'logo' => 'https://user-images.githubusercontent.com/1294454/148647666-c109c20b-f8ac-472f-91c3-5f658cb90f49.jpeg',
-                'api' => 'https://api.wazirx.com/sapi/v1',
+                'api' => array(
+                    'rest' => 'https://api.wazirx.com/sapi/v1',
+                ),
                 'www' => 'https://wazirx.com',
                 'doc' => 'https://docs.wazirx.com/#public-rest-api-for-wazirx',
                 'fees' => 'https://wazirx.com/fees',
@@ -82,6 +90,7 @@ class wazirx extends Exchange {
                         'ticker/24hr' => 1,
                         'time' => 1,
                         'trades' => 1,
+                        'klines' => 1,
                     ),
                 ),
                 'private' => array(
@@ -107,6 +116,7 @@ class wazirx extends Exchange {
             'fees' => array(
                 'WRX' => array( 'maker' => $this->parse_number('0.0'), 'taker' => $this->parse_number('0.0') ),
             ),
+            'precisionMode' => TICK_SIZE,
             'exceptions' => array(
                 'exact' => array(
                     '-1121' => '\\ccxt\\BadSymbol', // array( "code" => -1121, "message" => "Invalid symbol." )
@@ -122,6 +132,18 @@ class wazirx extends Exchange {
                     '94001' => '\\ccxt\\InvalidOrder', // array("code":94001,"message":"Stop price not found.")
                 ),
             ),
+            'timeframes' => array(
+                '1m' => '1m',
+                '5m' => '5m',
+                '30m' => '30m',
+                '1h' => '1h',
+                '2h' => '2h',
+                '4h' => '4h',
+                '6h' => '6h',
+                '12h' => '12h',
+                '1d' => '1d',
+                '1w' => '1w',
+            ),
             'options' => array(
                 // 'fetchTradesMethod' => 'privateGetHistoricalTrades',
                 'recvWindow' => 10000,
@@ -130,6 +152,11 @@ class wazirx extends Exchange {
     }
 
     public function fetch_markets($params = array ()) {
+        /**
+         * retrieves data on all $markets for wazirx
+         * @param {array} $params extra parameters specific to the exchange api endpoint
+         * @return {[array]} an array of objects representing $market data
+         */
         $response = $this->publicGetExchangeInfo ($params);
         //
         // {
@@ -160,14 +187,14 @@ class wazirx extends Exchange {
         $markets = $this->safe_value($response, 'symbols', array());
         $result = array();
         for ($i = 0; $i < count($markets); $i++) {
-            $entry = $markets[$i];
-            $id = $this->safe_string($entry, 'symbol');
-            $baseId = $this->safe_string($entry, 'baseAsset');
-            $quoteId = $this->safe_string($entry, 'quoteAsset');
+            $market = $markets[$i];
+            $id = $this->safe_string($market, 'symbol');
+            $baseId = $this->safe_string($market, 'baseAsset');
+            $quoteId = $this->safe_string($market, 'quoteAsset');
             $base = $this->safe_currency_code($baseId);
             $quote = $this->safe_currency_code($quoteId);
-            $isSpot = $this->safe_value($entry, 'isSpotTradingAllowed');
-            $filters = $this->safe_value($entry, 'filters');
+            $isSpot = $this->safe_value($market, 'isSpotTradingAllowed');
+            $filters = $this->safe_value($market, 'filters');
             $minPrice = null;
             for ($j = 0; $j < count($filters); $j++) {
                 $filter = $filters[$j];
@@ -181,7 +208,7 @@ class wazirx extends Exchange {
             $takerString = Precise::string_div($takerString, '100');
             $makerString = $this->safe_string($fee, 'maker', '0.2');
             $makerString = Precise::string_div($makerString, '100');
-            $status = $this->safe_string($entry, 'status');
+            $status = $this->safe_string($market, 'status');
             $result[] = array(
                 'id' => $id,
                 'symbol' => $base . '/' . $quote,
@@ -209,8 +236,8 @@ class wazirx extends Exchange {
                 'strike' => null,
                 'optionType' => null,
                 'precision' => array(
-                    'amount' => $this->safe_integer($entry, 'baseAssetPrecision'),
-                    'price' => $this->safe_integer($entry, 'quoteAssetPrecision'),
+                    'amount' => $this->parse_number($this->parse_precision($this->safe_string($market, 'baseAssetPrecision'))),
+                    'price' => $this->parse_number($this->parse_precision($this->safe_string($market, 'quoteAssetPrecision'))),
                 ),
                 'limits' => array(
                     'leverage' => array(
@@ -230,13 +257,72 @@ class wazirx extends Exchange {
                         'max' => null,
                     ),
                 ),
-                'info' => $entry,
+                'info' => $market,
             );
         }
         return $result;
     }
 
-    public function fetch_order_book($symbol, $limit = null, $params = array ()) {
+    public function fetch_ohlcv(string $symbol, $timeframe = '1m', ?int $since = null, ?int $limit = null, $params = array ()) {
+        /**
+         * fetches historical candlestick data containing the open, high, low, and close price, and the volume of a $market
+         * @param {string} $symbol unified $symbol of the $market to fetch OHLCV data for
+         * @param {string} $timeframe the length of time each candle represents. Available values [1m,5m,15m,30m,1h,2h,4h,6h,12h,1d,1w]
+         * @param {int|null} $since timestamp in ms of the earliest candle to fetch
+         * @param {int|null} $limit the maximum amount of candles to fetch
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @param {int|null} $params->until timestamp in s of the latest candle to fetch
+         * @return {[[int]]} A list of candles ordered, open, high, low, close, volume
+         */
+        $this->load_markets();
+        $market = $this->market($symbol);
+        $request = array(
+            'symbol' => $market['id'],
+            'interval' => $this->safe_string($this->timeframes, $timeframe, $timeframe),
+        );
+        if ($limit !== null) {
+            $request['limit'] = $limit;
+        }
+        $until = $this->safe_integer($params, 'until');
+        $params = $this->omit($params, array( 'until' ));
+        if ($since !== null) {
+            $request['startTime'] = $this->parse_to_int($since / 1000);
+        }
+        if ($until !== null) {
+            $request['endTime'] = $until;
+        }
+        $response = $this->publicGetKlines (array_merge($request, $params));
+        //
+        //    [
+        //        [1669014360,1402001,1402001,1402001,1402001,0],
+        //        ...
+        //    ]
+        //
+        return $this->parse_ohlcvs($response, $market, $timeframe, $since, $limit);
+    }
+
+    public function parse_ohlcv($ohlcv, $market = null) {
+        //
+        //    [1669014300,1402001,1402001,1402001,1402001,0],
+        //
+        return array(
+            $this->safe_timestamp($ohlcv, 0),
+            $this->safe_number($ohlcv, 1),
+            $this->safe_number($ohlcv, 2),
+            $this->safe_number($ohlcv, 3),
+            $this->safe_number($ohlcv, 4),
+            $this->safe_number($ohlcv, 5),
+        );
+    }
+
+    public function fetch_order_book(string $symbol, ?int $limit = null, $params = array ()) {
+        /**
+         * fetches information on open orders with bid (buy) and ask (sell) prices, volumes and other data
+         * @param {string} $symbol unified $symbol of the $market to fetch the order book for
+         * @param {int|null} $limit the maximum amount of order book entries to return
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} A dictionary of ~@link https://docs.ccxt.com/#/?id=order-book-structure order book structures~ indexed by $market symbols
+         */
         $this->load_markets();
         $market = $this->market($symbol);
         $request = array(
@@ -263,7 +349,13 @@ class wazirx extends Exchange {
         return $this->parse_order_book($response, $symbol, $timestamp);
     }
 
-    public function fetch_ticker($symbol, $params = array ()) {
+    public function fetch_ticker(string $symbol, $params = array ()) {
+        /**
+         * fetches a price $ticker, a statistical calculation with the information calculated over the past 24 hours for a specific $market
+         * @param {string} $symbol unified $symbol of the $market to fetch the $ticker for
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} a ~@link https://docs.ccxt.com/#/?id=$ticker-structure $ticker structure~
+         */
         $this->load_markets();
         $market = $this->market($symbol);
         $request = array(
@@ -288,7 +380,13 @@ class wazirx extends Exchange {
         return $this->parse_ticker($ticker, $market);
     }
 
-    public function fetch_tickers($symbols = null, $params = array ()) {
+    public function fetch_tickers(?array $symbols = null, $params = array ()) {
+        /**
+         * fetches price $tickers for multiple markets, statistical calculations with the information calculated over the past 24 hours each market
+         * @param {[string]|null} $symbols unified $symbols of the markets to fetch the $ticker for, all market $tickers are returned if not assigned
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} a dictionary of ~@link https://docs.ccxt.com/#/?id=$ticker-structure $ticker structures~
+         */
         $this->load_markets();
         $tickers = $this->publicGetTickers24hr ();
         //
@@ -318,7 +416,15 @@ class wazirx extends Exchange {
         return $result;
     }
 
-    public function fetch_trades($symbol, $since = null, $limit = null, $params = array ()) {
+    public function fetch_trades(string $symbol, ?int $since = null, ?int $limit = null, $params = array ()) {
+        /**
+         * get the list of most recent trades for a particular $symbol
+         * @param {string} $symbol unified $symbol of the $market to fetch trades for
+         * @param {int|null} $since timestamp in ms of the earliest trade to fetch
+         * @param {int|null} $limit the maximum amount of trades to fetch
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {[array]} a list of ~@link https://docs.ccxt.com/en/latest/manual.html?#public-trades trade structures~
+         */
         $this->load_markets();
         $market = $this->market($symbol);
         $request = array(
@@ -380,20 +486,34 @@ class wazirx extends Exchange {
     }
 
     public function fetch_status($params = array ()) {
+        /**
+         * the latest known information on the availability of the exchange API
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} a ~@link https://docs.ccxt.com/#/?id=exchange-$status-structure $status structure~
+         */
         $response = $this->publicGetSystemStatus ($params);
         //
-        //  array( "status":"normal","message":"System is running normally." )
+        //     {
+        //         "status":"normal", // normal, system maintenance
+        //         "message":"System is running normally."
+        //     }
         //
         $status = $this->safe_string($response, 'status');
-        $status = ($status === 'normal') ? 'ok' : 'maintenance';
-        $this->status = array_merge($this->status, array(
-            'status' => $status,
-            'updated' => $this->milliseconds(),
-        ));
-        return $this->status;
+        return array(
+            'status' => ($status === 'normal') ? 'ok' : 'maintenance',
+            'updated' => null,
+            'eta' => null,
+            'url' => null,
+            'info' => $response,
+        );
     }
 
     public function fetch_time($params = array ()) {
+        /**
+         * fetches the current integer timestamp in milliseconds from the exchange server
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {int} the current integer timestamp in milliseconds from the exchange server
+         */
         $response = $this->publicGetTime ($params);
         //
         //     {
@@ -429,7 +549,7 @@ class wazirx extends Exchange {
         $baseVolume = $this->safe_string($ticker, 'volume');
         $bid = $this->safe_string($ticker, 'bidPrice');
         $ask = $this->safe_string($ticker, 'askPrice');
-        $timestamp = $this->safe_string($ticker, 'at');
+        $timestamp = $this->safe_integer($ticker, 'at');
         return $this->safe_ticker(array(
             'symbol' => $symbol,
             'timestamp' => $timestamp,
@@ -451,7 +571,7 @@ class wazirx extends Exchange {
             'baseVolume' => $baseVolume,
             'quoteVolume' => null,
             'info' => $ticker,
-        ), $market, false);
+        ), $market);
     }
 
     public function parse_balance($response) {
@@ -469,6 +589,11 @@ class wazirx extends Exchange {
     }
 
     public function fetch_balance($params = array ()) {
+        /**
+         * query for balance and get the amount of funds available for trading or funds locked in orders
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} a ~@link https://docs.ccxt.com/en/latest/manual.html?#balance-structure balance structure~
+         */
         $this->load_markets();
         $response = $this->privateGetFunds ($params);
         //
@@ -483,9 +608,17 @@ class wazirx extends Exchange {
         return $this->parse_balance($response);
     }
 
-    public function fetch_orders($symbol = null, $since = null, $limit = null, $params = array ()) {
+    public function fetch_orders(?string $symbol = null, ?int $since = null, ?int $limit = null, $params = array ()) {
+        /**
+         * fetches information on multiple $orders made by the user
+         * @param {string} $symbol unified $market $symbol of the $market $orders were made in
+         * @param {int|null} $since the earliest time in ms to fetch $orders for
+         * @param {int|null} $limit the maximum number of  orde structures to retrieve
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {[array]} a list of ~@link https://docs.ccxt.com/#/?id=order-structure order structures~
+         */
         if ($symbol === null) {
-            throw new ArgumentsRequired($this->id . ' fetchOrders requires a `$symbol` argument');
+            throw new ArgumentsRequired($this->id . ' fetchOrders() requires a `$symbol` argument');
         }
         $this->load_markets();
         $market = $this->market($symbol);
@@ -499,39 +632,49 @@ class wazirx extends Exchange {
             $request['limit'] = $limit;
         }
         $response = $this->privateGetAllOrders (array_merge($request, $params));
-        // array(
-        //     array(
-        //         "id" => 28,
-        //         "symbol" => "wrxinr",
-        //         "price" => "9293.0",
-        //         "origQty" => "10.0",
-        //         "executedQty" => "8.2",
-        //         "status" => "cancel",
-        //         "type" => "limit",
-        //         "side" => "sell",
-        //         "createdTime" => 1499827319559,
-        //         "updatedTime" => 1499827319559
-        //     ),
-        //     {
-        //         "id" => 30,
-        //         "symbol" => "wrxinr",
-        //         "price" => "9293.0",
-        //         "stopPrice" => "9200.0",
-        //         "origQty" => "10.0",
-        //         "executedQty" => "0.0",
-        //         "status" => "cancel",
-        //         "type" => "stop_limit",
-        //         "side" => "sell",
-        //         "createdTime" => 1499827319559,
-        //         "updatedTime" => 1507725176595
-        //     }
-        // )
+        //
+        //   array(
+        //       array(
+        //           "id" => 28,
+        //           "symbol" => "wrxinr",
+        //           "price" => "9293.0",
+        //           "origQty" => "10.0",
+        //           "executedQty" => "8.2",
+        //           "status" => "cancel",
+        //           "type" => "limit",
+        //           "side" => "sell",
+        //           "createdTime" => 1499827319559,
+        //           "updatedTime" => 1499827319559
+        //       ),
+        //       {
+        //           "id" => 30,
+        //           "symbol" => "wrxinr",
+        //           "price" => "9293.0",
+        //           "stopPrice" => "9200.0",
+        //           "origQty" => "10.0",
+        //           "executedQty" => "0.0",
+        //           "status" => "cancel",
+        //           "type" => "stop_limit",
+        //           "side" => "sell",
+        //           "createdTime" => 1499827319559,
+        //           "updatedTime" => 1507725176595
+        //       }
+        //   )
+        //
         $orders = $this->parse_orders($response, $market, $since, $limit);
         $orders = $this->filter_by($orders, 'symbol', $symbol);
         return $orders;
     }
 
-    public function fetch_open_orders($symbol = null, $since = null, $limit = null, $params = array ()) {
+    public function fetch_open_orders(?string $symbol = null, ?int $since = null, ?int $limit = null, $params = array ()) {
+        /**
+         * fetch all unfilled currently open $orders
+         * @param {string|null} $symbol unified $market $symbol
+         * @param {int|null} $since the earliest time in ms to fetch open $orders for
+         * @param {int|null} $limit the maximum number of  open $orders structures to retrieve
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {[array]} a list of ~@link https://docs.ccxt.com/#/?id=order-structure order structures~
+         */
         $this->load_markets();
         $request = array();
         $market = null;
@@ -571,9 +714,15 @@ class wazirx extends Exchange {
         return $orders;
     }
 
-    public function cancel_all_orders($symbol = null, $params = array ()) {
+    public function cancel_all_orders(?string $symbol = null, $params = array ()) {
+        /**
+         * cancel all open orders in a $market
+         * @param {string} $symbol unified $market $symbol of the $market to cancel orders in
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {[array]} a list of ~@link https://docs.ccxt.com/#/?id=order-structure order structures~
+         */
         if ($symbol === null) {
-            throw new ArgumentsRequired($this->id . ' cancelAllOrders requires a `$symbol` argument');
+            throw new ArgumentsRequired($this->id . ' cancelAllOrders() requires a `$symbol` argument');
         }
         $this->load_markets();
         $market = $this->market($symbol);
@@ -583,9 +732,16 @@ class wazirx extends Exchange {
         return $this->privateDeleteOpenOrders (array_merge($request, $params));
     }
 
-    public function cancel_order($id, $symbol = null, $params = array ()) {
+    public function cancel_order(string $id, ?string $symbol = null, $params = array ()) {
+        /**
+         * cancels an open order
+         * @param {string} $id order $id
+         * @param {string} $symbol unified $symbol of the $market the order was made in
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} An ~@link https://docs.ccxt.com/#/?$id=order-structure order structure~
+         */
         if ($symbol === null) {
-            throw new ArgumentsRequired($this->id . ' cancelOrder requires a `$symbol` argument');
+            throw new ArgumentsRequired($this->id . ' cancelOrder() requires a `$symbol` argument');
         }
         $this->load_markets();
         $market = $this->market($symbol);
@@ -597,7 +753,17 @@ class wazirx extends Exchange {
         return $this->parse_order($response);
     }
 
-    public function create_order($symbol, $type, $side, $amount, $price = null, $params = array ()) {
+    public function create_order(string $symbol, $type, $side, $amount, $price = null, $params = array ()) {
+        /**
+         * create a trade order
+         * @param {string} $symbol unified $symbol of the $market to create an order in
+         * @param {string} $type 'market' or 'limit'
+         * @param {string} $side 'buy' or 'sell'
+         * @param {float} $amount how much of currency you want to trade in units of base currency
+         * @param {float|null} $price the $price at which the order is to be fullfilled, in units of the quote currency, ignored in $market orders
+         * @param {array} $params extra parameters specific to the wazirx api endpoint
+         * @return {array} an ~@link https://docs.ccxt.com/#/?id=order-structure order structure~
+         */
         $type = strtolower($type);
         if (($type !== 'limit') && ($type !== 'stop_limit')) {
             throw new ExchangeError($this->id . ' createOrder() supports limit and stop_limit orders only');
@@ -692,7 +858,7 @@ class wazirx extends Exchange {
     }
 
     public function sign($path, $api = 'public', $method = 'GET', $params = array (), $headers = null, $body = null) {
-        $url = $this->urls['api'] . '/' . $path;
+        $url = $this->urls['api']['rest'] . '/' . $path;
         if ($api === 'public') {
             if ($params) {
                 $url .= '?' . $this->urlencode($params);
@@ -705,7 +871,7 @@ class wazirx extends Exchange {
             $data = $this->keysort($data);
             $signature = $this->hmac($this->encode($this->urlencode($data)), $this->encode($this->secret), 'sha256');
             $url .= '?' . $this->urlencode($data);
-            $url .= '&$signature=' . $signature;
+            $url .= '&' . 'signature=' . $signature;
             $headers = array(
                 'Content-Type' => 'application/x-www-form-urlencoded',
                 'X-Api-Key' => $this->apiKey,

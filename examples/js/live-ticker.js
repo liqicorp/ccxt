@@ -1,9 +1,11 @@
-"use strict";
 
-const asTable   = require ('as-table')
-    , log       = require ('ololog').noLocate
-    , ansi      = require ('ansicolor').nice
-    , ccxt      = require ('../../ccxt.js')
+
+import asTable from 'as-table';
+import { noLocate as log } from 'ololog';
+import ansicolor from 'ansicolor';
+import ccxt from '../../ccxt.js';
+
+ansicolor.nice
 
 let printSupportedExchanges = function () {
     log ('Supported exchanges:', ccxt.exchanges.join (', ').green)
@@ -23,7 +25,7 @@ let printTicker = async (id, symbol, rateLimit = undefined) => {
         log ('Instantiating', id.green, 'exchange')
 
         // instantiate the exchange by id
-        let exchange = new ccxt[id] ({ enableRateLimit: true,  })
+        let exchange = new ccxt[id] ()
 
         exchange.rateLimit = rateLimit ? rateLimit : exchange.rateLimit
 
