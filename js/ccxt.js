@@ -124,6 +124,7 @@ import lbank from './src/lbank.js';
 import lbank2 from './src/lbank2.js';
 import luno from './src/luno.js';
 import lykke from './src/lykke.js';
+import liqi from './src/liqi.js';
 import mercado from './src/mercado.js';
 import mexc from './src/mexc.js';
 import mexc3 from './src/mexc3.js';
@@ -294,6 +295,7 @@ const exchanges = {
     'lbank2': lbank2,
     'luno': luno,
     'lykke': lykke,
+    'liqi': liqi,
     'mercado': mercado,
     'mexc': mexc,
     'mexc3': mexc3,
