@@ -2846,6 +2846,8 @@ export default class Exchange {
         throw new NotSupported(this.id + ' fetchOrder() is not supported yet');
     }
     async fetchOrderStatus(id, symbol = undefined, params = {}) {
+        // TODO: TypeScript: change method signature by replacing
+        // Promise<string> with Promise<Order['status']>.
         const order = await this.fetchOrder(id, symbol, params);
         return order['status'];
     }

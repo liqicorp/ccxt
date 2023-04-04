@@ -94,7 +94,7 @@ export default class kucoin extends kucoinRest {
         this.options['requestId'] = requestId;
         return requestId;
     }
-    async subscribe(url, messageHash, subscriptionHash, subscription, params = {}) {
+    async subscribe(url, messageHash, subscriptionHash, params = {}, subscription = undefined) {
         const requestId = this.requestId().toString();
         const request = {
             'id': requestId,
@@ -103,14 +103,9 @@ export default class kucoin extends kucoinRest {
             'response': true,
         };
         const message = this.extend(request, params);
-        const subscriptionRequest = {
-            'id': requestId,
-        };
-        if (subscription === undefined) {
-            subscription = subscriptionRequest;
-        }
-        else {
-            subscription = this.extend(subscriptionRequest, subscription);
+        const client = this.client(url);
+        if (!(subscriptionHash in client.subscriptions)) {
+            client.subscriptions[requestId] = subscriptionHash;
         }
         return await this.watch(url, messageHash, message, subscriptionHash, subscription);
     }
@@ -130,7 +125,7 @@ export default class kucoin extends kucoinRest {
         const [method, query] = this.handleOptionAndParams(params, 'watchTicker', 'method', '/market/snapshot');
         const topic = method + ':' + market['id'];
         const messageHash = 'ticker:' + symbol;
-        return await this.subscribe(url, messageHash, topic, undefined, query);
+        return await this.subscribe(url, messageHash, topic, query);
     }
     handleTicker(client, message) {
         //
@@ -221,7 +216,7 @@ export default class kucoin extends kucoinRest {
         const period = this.safeString(this.timeframes, timeframe, timeframe);
         const topic = '/market/candles:' + market['id'] + '_' + period;
         const messageHash = 'candles:' + symbol + ':' + timeframe;
-        const ohlcv = await this.subscribe(url, messageHash, topic, undefined, params);
+        const ohlcv = await this.subscribe(url, messageHash, topic, params);
         if (this.newUpdates) {
             limit = ohlcv.getLimit(symbol, limit);
         }
@@ -287,7 +282,7 @@ export default class kucoin extends kucoinRest {
         symbol = market['symbol'];
         const topic = '/market/match:' + market['id'];
         const messageHash = 'trades:' + symbol;
-        const trades = await this.subscribe(url, messageHash, topic, undefined, params);
+        const trades = await this.subscribe(url, messageHash, topic, params);
         if (this.newUpdates) {
             limit = trades.getLimit(symbol, limit);
         }
@@ -367,7 +362,7 @@ export default class kucoin extends kucoinRest {
             'symbol': symbol,
             'limit': limit,
         };
-        const orderbook = await this.subscribe(url, messageHash, topic, subscription, params);
+        const orderbook = await this.subscribe(url, messageHash, topic, params, subscription);
         return orderbook.limit();
     }
     handleOrderBook(client, message) {
@@ -468,13 +463,13 @@ export default class kucoin extends kucoinRest {
         //     }
         //
         const id = this.safeString(message, 'id');
-        const subscriptionsById = this.indexBy(client.subscriptions, 'id');
-        const subscription = this.safeValue(subscriptionsById, id, {});
+        const subscriptionHash = this.safeString(client.subscriptions, id);
+        const subscription = this.safeValue(client.subscriptions, subscriptionHash);
+        delete client.subscriptions[id];
         const method = this.safeValue(subscription, 'method');
         if (method !== undefined) {
             method.call(this, client, message, subscription);
         }
-        return message;
     }
     handleSystemStatus(client, message) {
         //
@@ -512,7 +507,7 @@ export default class kucoin extends kucoinRest {
             symbol = market['symbol'];
             messageHash = messageHash + ':' + symbol;
         }
-        const orders = await this.subscribe(url, messageHash, topic, undefined, this.extend(request, params));
+        const orders = await this.subscribe(url, messageHash, topic, this.extend(request, params));
         if (this.newUpdates) {
             limit = orders.getLimit(symbol, limit);
         }
@@ -635,7 +630,7 @@ export default class kucoin extends kucoinRest {
             symbol = market['symbol'];
             messageHash = messageHash + ':' + market['symbol'];
         }
-        const trades = await this.subscribe(url, messageHash, topic, undefined, this.extend(request, params));
+        const trades = await this.subscribe(url, messageHash, topic, this.extend(request, params));
         if (this.newUpdates) {
             limit = trades.getLimit(symbol, limit);
         }
@@ -720,7 +715,7 @@ export default class kucoin extends kucoinRest {
             'privateChannel': true,
         };
         const messageHash = 'balance';
-        return await this.subscribe(url, messageHash, topic, undefined, this.extend(request, params));
+        return await this.subscribe(url, messageHash, topic, this.extend(request, params));
     }
     handleBalance(client, message) {
         //

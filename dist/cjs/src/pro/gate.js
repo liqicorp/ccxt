@@ -193,7 +193,7 @@ class gate extends gate$1 {
             const waitAmount = isSpot ? snapshotDelay : 0;
             if (cacheLength === waitAmount) {
                 // max limit is 100
-                const subscription = client.subscriptions[channel];
+                const subscription = client.subscriptions[messageHash];
                 const limit = this.safeInteger(subscription, 'limit');
                 this.spawn(this.loadOrderBook, client, messageHash, symbol, limit);
             }
@@ -520,7 +520,7 @@ class gate extends gate$1 {
         await this.loadMarkets();
         let subType = undefined;
         let type = undefined;
-        let marketId = '!all';
+        let marketId = '!' + 'all';
         let market = undefined;
         if (symbol !== undefined) {
             market = this.market(symbol);
@@ -744,7 +744,7 @@ class gate extends gate$1 {
         });
         const channel = typeId + '.orders';
         let messageHash = 'orders';
-        let payload = ['!all'];
+        let payload = ['!' + 'all'];
         if (symbol !== undefined) {
             messageHash += ':' + market['id'];
             payload = [market['id']];
@@ -879,7 +879,7 @@ class gate extends gate$1 {
             'spot.order_book_update': this.handleOrderBookSubscription,
             'futures.order_book_update': this.handleOrderBookSubscription,
         };
-        const id = this.safeInteger(message, 'id');
+        const id = this.safeString(message, 'id');
         if (channel in methods) {
             const subscriptionHash = this.safeString(client.subscriptions, id);
             const subscription = this.safeValue(client.subscriptions, subscriptionHash);

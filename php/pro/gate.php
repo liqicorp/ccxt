@@ -200,7 +200,7 @@ class gate extends \ccxt\async\gate {
             $waitAmount = $isSpot ? $snapshotDelay : 0;
             if ($cacheLength === $waitAmount) {
                 // max $limit is 100
-                $subscription = $client->subscriptions[$channel];
+                $subscription = $client->subscriptions[$messageHash];
                 $limit = $this->safe_integer($subscription, 'limit');
                 $this->spawn(array($this, 'load_order_book'), $client, $messageHash, $symbol, $limit);
             }
@@ -532,7 +532,7 @@ class gate extends \ccxt\async\gate {
             Async\await($this->load_markets());
             $subType = null;
             $type = null;
-            $marketId = '!all';
+            $marketId = '!' . 'all';
             $market = null;
             if ($symbol !== null) {
                 $market = $this->market($symbol);
@@ -760,7 +760,7 @@ class gate extends \ccxt\async\gate {
             ));
             $channel = $typeId . '.orders';
             $messageHash = 'orders';
-            $payload = array( '!all' );
+            $payload = array( '!' . 'all' );
             if ($symbol !== null) {
                 $messageHash .= ':' . $market['id'];
                 $payload = [ $market['id'] ];
@@ -898,7 +898,7 @@ class gate extends \ccxt\async\gate {
             'spot.order_book_update' => array($this, 'handle_order_book_subscription'),
             'futures.order_book_update' => array($this, 'handle_order_book_subscription'),
         );
-        $id = $this->safe_integer($message, 'id');
+        $id = $this->safe_string($message, 'id');
         if (is_array($methods) && array_key_exists($channel, $methods)) {
             $subscriptionHash = $this->safe_string($client->subscriptions, $id);
             $subscription = $this->safe_value($client->subscriptions, $subscriptionHash);

@@ -7067,6 +7067,9 @@ export default class binance extends Exchange {
                     response = { 'code': -4046, 'msg': 'No need to change margin type.' };
                 }
             }
+            else {
+                throw e;
+            }
         }
         return response;
     }
