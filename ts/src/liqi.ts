@@ -175,9 +175,9 @@ export default class liqi extends Exchange {
                         'fetchTrades': 500,
                     },
                     'post': {
-                        'createOrder': 1,
-                        'cancelOrder': 1,
-                        'cancelAllOrders': 1,
+                        'createOrder': 0,
+                        'cancelOrder': 0,
+                        'cancelAllOrders': 0,
                     },
                 },
             },

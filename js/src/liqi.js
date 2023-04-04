@@ -20,12 +20,12 @@ export default class liqi extends Exchange {
             'has': {
                 'CORS': undefined,
                 'spot': true,
-                'margin': true,
-                'swap': true,
-                'future': true,
+                'margin': false,
+                'swap': false,
+                'future': false,
                 'option': undefined,
                 'addMargin': true,
-                'cancelAllOrders': true,
+                'cancelAllOrders': false,
                 'cancelOrder': true,
                 'cancelOrders': false,
                 'createDepositAddress': false,
@@ -149,9 +149,9 @@ export default class liqi extends Exchange {
                         'fetchTrades': 500,
                     },
                     'post': {
-                        'createOrder': 1,
-                        'cancelOrder': 1,
-                        'cancelAllOrders': 1,
+                        'createOrder': 0,
+                        'cancelOrder': 0,
+                        'cancelAllOrders': 0,
                     },
                 },
             },
@@ -693,8 +693,7 @@ export default class liqi extends Exchange {
             'price': price,
             'quoteAmount': quoteAmount,
         };
-        const method = 'privatePostCreateOrder';
-        const response = await this[method](this.extend(request, params));
+        const response = await this['privatePostCreateOrder'](this.extend(request, params));
         return response;
     }
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
@@ -725,8 +724,6 @@ export default class liqi extends Exchange {
         if (symbol === undefined) {
             throw new ArgumentsRequired(this.id + ' cancelAllOrders () requires a symbol argument');
         }
-        // await this.loadMarkets ();
-        // const market = this.market (symbol);
         const request = {
             'symbol': symbol,
         };

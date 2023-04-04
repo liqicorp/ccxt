@@ -52,4 +52,49 @@ abstract class liqi extends \ccxt\Exchange {
     public function private_post_cancelallorders($params = array()) {
         return $this->request('cancelAllOrders', 'private', 'POST', $params);
     }
+    public function publicGetFetchMarket($params = array()) {
+        return $this->request('fetchMarket', 'public', 'GET', $params);
+    }
+    public function publicGetFetchMarkets($params = array()) {
+        return $this->request('fetchMarkets', 'public', 'GET', $params);
+    }
+    public function publicGetFetchCurrencies($params = array()) {
+        return $this->request('fetchCurrencies', 'public', 'GET', $params);
+    }
+    public function publicGetFetchTickers($params = array()) {
+        return $this->request('fetchTickers', 'public', 'GET', $params);
+    }
+    public function publicGetFetchTicker($params = array()) {
+        return $this->request('fetchTicker', 'public', 'GET', $params);
+    }
+    public function publicGetFetchOrderBook($params = array()) {
+        return $this->request('fetchOrderBook', 'public', 'GET', $params);
+    }
+    public function publicGetFetchOHLCV($params = array()) {
+        return $this->request('fetchOHLCV', 'public', 'GET', $params);
+    }
+    public function privateGetFetchBalance($params = array()) {
+        return $this->request('fetchBalance', 'private', 'GET', $params);
+    }
+    public function privateGetFetchOrders($params = array()) {
+        return $this->request('fetchOrders', 'private', 'GET', $params);
+    }
+    public function privateGetFetchOpenOrders($params = array()) {
+        return $this->request('fetchOpenOrders', 'private', 'GET', $params);
+    }
+    public function privateGetFetchOrder($params = array()) {
+        return $this->request('fetchOrder', 'private', 'GET', $params);
+    }
+    public function privateGetFetchTrades($params = array()) {
+        return $this->request('fetchTrades', 'private', 'GET', $params);
+    }
+    public function privatePostCreateOrder($params = array()) {
+        return $this->request('createOrder', 'private', 'POST', $params);
+    }
+    public function privatePostCancelOrder($params = array()) {
+        return $this->request('cancelOrder', 'private', 'POST', $params);
+    }
+    public function privatePostCancelAllOrders($params = array()) {
+        return $this->request('cancelAllOrders', 'private', 'POST', $params);
+    }
 }
