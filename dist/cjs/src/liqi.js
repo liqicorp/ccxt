@@ -1,12 +1,15 @@
 'use strict';
 
+var elliptic = require('elliptic');
 var liqi$1 = require('./abstract/liqi.js');
 var errors = require('./base/errors.js');
 var Precise = require('./base/Precise.js');
 var number = require('./base/functions/number.js');
 var sha256 = require('./static_dependencies/noble-hashes/sha256.js');
-var ed25519 = require('./static_dependencies/noble-curves/ed25519.js');
-var utils = require('./static_dependencies/qs/utils.cjs.js');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var elliptic__default = /*#__PURE__*/_interopDefaultLegacy(elliptic);
 
 /* eslint-disable no-bitwise */
 //  ---------------------------------------------------------------------------
@@ -151,9 +154,9 @@ class liqi extends liqi$1 {
                         'fetchTrades': 500,
                     },
                     'post': {
-                        'createOrder': 0,
-                        'cancelOrder': 0,
-                        'cancelAllOrders': 0,
+                        'createOrder': 1,
+                        'cancelOrder': 1,
+                        'cancelAllOrders': 1,
                     },
                 },
             },
@@ -749,71 +752,15 @@ class liqi extends liqi$1 {
         };
         return await this.fetchMyTrades(symbol, since, limit, this.extend(request, params));
     }
-    signEcdsa(request, secret) {
-        const signature = ed25519.ed25519.sign(request, secret);
-        const signatureStr = this.toDER(signature, 'hex');
-        return signatureStr;
-    }
-    toDER(signature, enc) {
-        let r = signature.r.toArray();
-        let s = signature.s.toArray();
-        // Pad values
-        if (r[0] & 0x80) {
-            r = [0].concat(r);
-        }
-        // Pad values
-        if (s[0] & 0x80) {
-            s = [0].concat(s);
-        }
-        r = this.rmPadding(r);
-        s = this.rmPadding(s);
-        while (!s[0] && !(s[1] & 0x80)) {
-            s = s.slice(1);
-        }
-        let arr = [0x02];
-        this.constructLength(arr, r.length);
-        arr = arr.concat(r);
-        arr.push(0x02);
-        this.constructLength(arr, s.length);
-        const backHalf = arr.concat(s);
-        let res = [0x30];
-        this.constructLength(res, backHalf.length);
-        res = res.concat(backHalf);
-        return utils.encode(res, enc);
-    }
-    unsignedRightShift(value, shift) {
-        return Math.floor(value / Math.pow(2, shift));
-    }
-    leftShift(value, shift) {
-        return Math.floor(value * Math.pow(2, shift));
-    }
-    bitwiseOr(a, b) {
-        return a | b;
-    }
-    constructLength(arr, len) {
-        if (len < 0x80) {
-            arr.push(len);
-        }
-        else {
-            const octets = 1
-                + this.unsignedRightShift(Math.floor(Math.log(len) / Math.LN2), 3);
-            arr.push(this.bitwiseOr(octets, 0x80));
-            for (let i = octets - 1; i > 0; i--) {
-                arr.push(this.bitwiseOr(this.unsignedRightShift(len, this.leftShift(i, 3)), 0xff));
-            }
-            arr.push(len);
-        }
-    }
-    rmPadding(buf) {
-        let i = 0;
-        const len = buf.length - 1;
-        while (!buf[i] && !(buf[i + 1] & 0x80) && i < len) {
-            i++;
-        }
-        if (i === 0) {
-            return buf;
-        }
-        return buf.slice(i);
+    signEddsa(message) {
+        const hash = this.hash(message, sha256.sha256, 'hex');
+        // const signature = eddsa (hash, this.secret, ed25519);
+        // return signature;
+        const EC = elliptic__default["default"].ec;
+        const algorithm = new EC('ed25519');
+        const clientFromPriv = algorithm.keyFromPrivate('0130e25b9f324bc46ce2201edf6240574b2b87ef0acbb09f5534761d0c890bc4', 'hex');
+        const clientSignature = clientFromPriv.sign(hash).toDER('hex');
+        return clientSignature;
     }
     sign(path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined) {
         let url = this.urls['api'][api] + '/' + this.implodeParams(path, params);
@@ -828,8 +775,7 @@ class liqi extends liqi$1 {
                 'recvWindow': recvWindow,
             }, params);
             query = this.urlencode(extendedParams);
-            const hash = this.hash(query, sha256.sha256, 'hex');
-            const signature = this.signEcdsa(hash, this.secret);
+            const signature = this.signEddsa(query);
             headers = {
                 'signature': signature,
                 'X-MBX-APIKEY': this.apiKey,

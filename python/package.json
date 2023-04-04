@@ -99,6 +99,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.3",
     "@rollup/plugin-json": "^4.1.0",
+    "@types/elliptic": "^6.4.14",
     "@types/node": "^18.11.0",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
@@ -218,6 +219,7 @@
   },
   "ethereum": "0x26a3CB49578F07000575405a57888681249c35Fd",
   "dependencies": {
+    "elliptic": "^6.5.4",
     "ws": "^8.8.1"
   }
 }

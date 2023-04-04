@@ -22,13 +22,7 @@ export default class liqi extends Exchange {
     cancelOrder(id: any, params?: {}): Promise<any>;
     cancelAllOrders(symbol?: any, params?: {}): Promise<any>;
     fetchOrderTrades(id: any, symbol?: any, since?: any, limit?: any, params?: {}): Promise<import("./base/types.js").Trade[]>;
-    signEcdsa(request: any, secret: any): any;
-    toDER(signature: any, enc: any): any;
-    unsignedRightShift(value: any, shift: any): number;
-    leftShift(value: any, shift: any): number;
-    bitwiseOr(a: any, b: any): number;
-    constructLength(arr: any, len: any): void;
-    rmPadding(buf: any): any;
+    signEddsa(message: any): string;
     sign(path: any, api?: string, method?: string, params?: {}, headers?: any, body?: any): {
         url: string;
         method: string;
