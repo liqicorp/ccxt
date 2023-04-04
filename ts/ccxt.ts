@@ -127,6 +127,7 @@ import kuna from  './src/kuna.js'
 import latoken from  './src/latoken.js'
 import lbank from  './src/lbank.js'
 import lbank2 from  './src/lbank2.js'
+import liqi from  './src/liqi.js'
 import luno from  './src/luno.js'
 import lykke from  './src/lykke.js'
 import mercado from  './src/mercado.js'
@@ -300,6 +301,7 @@ const exchanges = {
     'latoken':                latoken,
     'lbank':                  lbank,
     'lbank2':                 lbank2,
+    'liqi':                   liqi,
     'luno':                   luno,
     'lykke':                  lykke,
     'mercado':                mercado,
@@ -544,6 +546,7 @@ export {
     latoken,
     lbank,
     lbank2,
+    liqi,
     luno,
     lykke,
     mercado,

@@ -1,6 +1,6 @@
 import os
 
-if os.name == 'posix':
+if os.name == '--posix--':
     code = os.WEXITSTATUS(os.system('./fastflake.sh'))
     exit(code)
 else:

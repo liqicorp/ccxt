@@ -93,6 +93,7 @@ var kuna = require('./src/kuna.js');
 var latoken = require('./src/latoken.js');
 var lbank = require('./src/lbank.js');
 var lbank2 = require('./src/lbank2.js');
+var liqi = require('./src/liqi.js');
 var luno = require('./src/luno.js');
 var lykke = require('./src/lykke.js');
 var mercado = require('./src/mercado.js');
@@ -267,6 +268,7 @@ const exchanges = {
     'latoken': latoken,
     'lbank': lbank,
     'lbank2': lbank2,
+    'liqi': liqi,
     'luno': luno,
     'lykke': lykke,
     'mercado': mercado,
@@ -478,6 +480,7 @@ exports.kuna = kuna;
 exports.latoken = latoken;
 exports.lbank = lbank;
 exports.lbank2 = lbank2;
+exports.liqi = liqi;
 exports.luno = luno;
 exports.lykke = lykke;
 exports.mercado = mercado;

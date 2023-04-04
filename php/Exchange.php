@@ -413,6 +413,7 @@ class Exchange {
         'latoken',
         'lbank',
         'lbank2',
+        'liqi',
         'luno',
         'lykke',
         'mercado',
