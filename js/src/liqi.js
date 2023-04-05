@@ -705,7 +705,8 @@ export default class liqi extends Exchange {
             'price': price,
             'quoteAmount': quoteAmount,
         };
-        const response = await this['privatePostCreateOrder'](this.extend(request, params));
+        let response = await this['privatePostCreateOrder'](this.extend(request, params));
+        response = this.parseOrder(response);
         return response;
     }
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
