@@ -615,15 +615,42 @@ class liqi extends liqi$1 {
         return response;
     }
     parseOrder(order) {
-        order.status = this.safeString(order, 'status', 'open');
-        order.timestamp = this.safeInteger(order, 'timestamp', 0);
-        order.price = this.safeFloat(order, 'price', 0);
-        order.amount = this.safeFloat(order, 'amount', 0);
-        order.filled = this.safeFloat(order, 'filled', 0);
-        order.remaining = this.safeFloat(order, 'remaining', 0);
-        order.cost = this.safeFloat(order, 'cost', 0);
-        order.average = this.safeFloat(order, 'average');
-        return order;
+        const status = this.safeString(order, 'status', 'open');
+        const symbol = this.safeString(order, 'symbol');
+        const timestamp = this.safeInteger(order, 'timestamp', 0);
+        const price = this.safeFloat(order, 'price', 0);
+        const amount = this.safeFloat(order, 'amount', 0);
+        const filled = this.safeFloat(order, 'filled', 0);
+        const remaining = this.safeFloat(order, 'remaining', 0);
+        const cost = this.safeFloat(order, 'cost', 0);
+        const type = this.safeString(order, 'type', '');
+        const side = this.safeString(order, 'side', '');
+        const id = this.safeString(order, 'id');
+        const average = this.safeFloat(order, 'average', 0);
+        const clientOrderId = this.safeString(order, 'clientOrderId', '');
+        const timeInForce = this.safeString(order, 'timeInForce', '');
+        const trades = this.safeValue(order, 'trades', []);
+        return {
+            'info': order,
+            'id': id,
+            'clientOrderId': clientOrderId,
+            'timestamp': timestamp,
+            'datetime': this.iso8601(timestamp),
+            'lastTradeTimestamp': undefined,
+            'symbol': symbol,
+            'type': type,
+            'timeInForce': timeInForce,
+            'side': side,
+            'price': price,
+            'cost': cost,
+            'average': average,
+            'amount': amount,
+            'filled': filled,
+            'remaining': remaining,
+            'status': status,
+            'fee': undefined,
+            'trades': trades,
+        };
     }
     async fetchBalance(params = {}) {
         const method = 'privateGetFetchBalance';
@@ -703,9 +730,9 @@ class liqi extends liqi$1 {
             'price': price,
             'quoteAmount': quoteAmount,
         };
-        let response = await this['privatePostCreateOrder'](this.extend(request, params));
-        response = this.parseOrder(response);
-        return response;
+        const method = 'privatePostCreateOrder';
+        const response = await this[method](this.extend(request, params));
+        return this.parseOrder(response);
     }
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         if (symbol === undefined) {
