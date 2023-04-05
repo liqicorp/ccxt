@@ -617,7 +617,6 @@ export default class liqi extends Exchange {
         order.remaining = this.safeFloat(order, 'remaining', 0);
         order.cost = this.safeFloat(order, 'cost', 0);
         order.average = this.safeFloat(order, 'average');
-        order.info = order;
         return order;
     }
     async fetchBalance(params = {}) {
