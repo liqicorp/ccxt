@@ -685,6 +685,10 @@ class liqi extends liqi$1 {
         ticker.average = this.safeFloat(ticker.average, 8);
         ticker.change = this.safeFloat(ticker.change, 8);
         ticker.last = this.safeFloat(ticker.last, 8);
+        ticker.askVolume = this.safeFloat(ticker.askVolume, 8);
+        ticker.bidVolume = this.safeFloat(ticker.bidVolume, 8);
+        ticker.baseVolume = this.safeFloat(ticker.baseVolume, 8);
+        ticker.quoteVolume = this.safeFloat(ticker.quoteVolume, 8);
         return ticker;
     }
     async fetchOHLCV(symbol, internal = '1m', limit = 500, params = {}) {

@@ -737,7 +737,7 @@ export default class liqi extends Exchange {
         return response;
     }
 
-    parseTicker (ticker: any) : Ticker {
+    parseTicker (ticker: Ticker) : Ticker {
         ticker.timestamp = this.safeInteger (ticker.timestamp, 0);
         ticker.ask = this.safeFloat (ticker.ask, 8);
         ticker.bid = this.safeFloat (ticker.bid, 8);
@@ -748,6 +748,10 @@ export default class liqi extends Exchange {
         ticker.average = this.safeFloat (ticker.average, 8);
         ticker.change = this.safeFloat (ticker.change, 8);
         ticker.last = this.safeFloat (ticker.last, 8);
+        ticker.askVolume = this.safeFloat (ticker.askVolume, 8);
+        ticker.bidVolume = this.safeFloat (ticker.bidVolume, 8);
+        ticker.baseVolume = this.safeFloat (ticker.baseVolume, 8);
+        ticker.quoteVolume = this.safeFloat (ticker.quoteVolume, 8);
         return ticker;
     }
 
