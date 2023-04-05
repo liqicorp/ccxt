@@ -1,5 +1,5 @@
 import Exchange from './abstract/liqi.js';
-import { Ticker } from '../ccxt.js';
+import { Ticker, Order } from '../ccxt.js';
 export default class liqi extends Exchange {
     describe(): any;
     costToPrecision(symbol: any, cost: any): any;
@@ -11,6 +11,7 @@ export default class liqi extends Exchange {
     fetchMarkets(params?: {}): Promise<any>;
     fetchOrder(id: any, params?: {}): Promise<any>;
     fetchOrders(symbol: any, limit: any, since?: any, params?: {}): Promise<any>;
+    parseOrder(order: Order): Order;
     fetchBalance(params?: {}): Promise<any>;
     fetchOrderBook(symbol: any, limit?: any, params?: {}): Promise<any>;
     fetchTicker(symbol: any, params?: {}): Promise<any>;

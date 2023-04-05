@@ -310,38 +310,7 @@ export default class liqi extends Exchange {
                     'TRX': { 'TRC20': 'TRX' },
                 },
                 'legalMoney': {
-                    'MXN': true,
-                    'UGX': true,
-                    'SEK': true,
-                    'CHF': true,
-                    'VND': true,
-                    'AED': true,
-                    'DKK': true,
-                    'KZT': true,
-                    'HUF': true,
-                    'PEN': true,
-                    'PHP': true,
-                    'USD': true,
-                    'TRY': true,
-                    'EUR': true,
-                    'NGN': true,
-                    'PLN': true,
                     'BRL': true,
-                    'ZAR': true,
-                    'KES': true,
-                    'ARS': true,
-                    'RUB': true,
-                    'AUD': true,
-                    'NOK': true,
-                    'CZK': true,
-                    'GBP': true,
-                    'UAH': true,
-                    'GHS': true,
-                    'HKD': true,
-                    'CAD': true,
-                    'INR': true,
-                    'JPY': true,
-                    'NZD': true,
                 },
             },
             // https://liqi-docs.github.io/apidocs/spot/en/#error-codes-2
@@ -620,7 +589,8 @@ export default class liqi extends Exchange {
             'id': id,
         };
         const method = 'privateGetFetchOrder';
-        const response = await this[method](this.extend(request));
+        let response = await this[method](this.extend(request));
+        response = this.parseOrder(response);
         return response;
     }
     async fetchOrders(symbol, limit, since = undefined, params = {}) {
@@ -633,7 +603,48 @@ export default class liqi extends Exchange {
         };
         const method = 'privateGetFetchOrders';
         const response = await this[method](this.extend(request, params));
+        for (let i = 0; i < response.length; i++) {
+            response[i] = this.parseOrder(response[i]);
+        }
         return response;
+    }
+    parseOrder(order) {
+        const status = this.safeString(order, 'status');
+        const symbol = this.safeString(order, 'symbol');
+        const timestamp = this.safeInteger(order, 'timestamp');
+        const price = this.safeFloat(order, 'price');
+        const amount = this.safeFloat(order, 'amount');
+        const filled = this.safeFloat(order, 'filled');
+        const remaining = this.safeFloat(order, 'remaining');
+        const cost = this.safeFloat(order, 'cost');
+        const type = this.safeString(order, 'type');
+        const side = this.safeString(order, 'side');
+        const id = this.safeString(order, 'id');
+        const average = this.safeFloat(order, 'average');
+        const clientOrderId = this.safeString(order, 'clientOrderId');
+        const timeInForce = this.safeString(order, 'timeInForce');
+        const trades = this.safeValue(order, 'trades');
+        return {
+            'info': order,
+            'id': id,
+            'clientOrderId': clientOrderId,
+            'timestamp': timestamp,
+            'datetime': this.iso8601(timestamp),
+            'lastTradeTimestamp': undefined,
+            'symbol': symbol,
+            'type': type,
+            'timeInForce': timeInForce,
+            'side': side,
+            'price': price,
+            'cost': cost,
+            'average': average,
+            'amount': amount,
+            'filled': filled,
+            'remaining': remaining,
+            'status': status,
+            'fee': undefined,
+            'trades': trades,
+        };
     }
     async fetchBalance(params = {}) {
         const method = 'privateGetFetchBalance';
