@@ -609,21 +609,14 @@ export default class liqi extends Exchange {
         return response;
     }
     parseOrder(order) {
-        order.status = this.safeString(order, 'status');
-        order.symbol = this.safeString(order, 'symbol');
-        order.timestamp = this.safeInteger(order, 'timestamp');
-        order.price = this.safeFloat(order, 'price');
-        order.amount = this.safeFloat(order, 'amount');
-        order.filled = this.safeFloat(order, 'filled');
-        order.remaining = this.safeFloat(order, 'remaining');
-        order.cost = this.safeFloat(order, 'cost');
-        order.type = this.safeString(order, 'type');
-        order.side = this.safeString(order, 'side');
-        order.id = this.safeString(order, 'id');
+        order.status = this.safeString(order, 'status', 'open');
+        order.timestamp = this.safeInteger(order, 'timestamp', 0);
+        order.price = this.safeFloat(order, 'price', 0);
+        order.amount = this.safeFloat(order, 'amount', 0);
+        order.filled = this.safeFloat(order, 'filled', 0);
+        order.remaining = this.safeFloat(order, 'remaining', 0);
+        order.cost = this.safeFloat(order, 'cost', 0);
         order.average = this.safeFloat(order, 'average');
-        order.clientOrderId = this.safeString(order, 'clientOrderId');
-        order.timeInForce = this.safeString(order, 'timeInForce');
-        order.trades = this.safeValue(order, 'trades');
         order.info = order;
         return order;
     }
