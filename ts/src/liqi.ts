@@ -720,7 +720,8 @@ export default class liqi extends Exchange {
             'symbol': symbol,
         };
         const method = 'publicGetFetchTicker';
-        const response = await this[method] (this.extend (request, params));
+        let response = await this[method] (this.extend (request, params));
+        response = this.parseTicker (response);
         return response;
     }
 
@@ -731,19 +732,23 @@ export default class liqi extends Exchange {
         const method = 'publicGetFetchTickers';
         const response = await this[method] (this.extend (request, params));
         for (let index = 0; index < response.length; index++) {
-            const ticker = response[index] as Ticker;
-            ticker.timestamp = this.safeInteger (ticker.timestamp, 0);
-            ticker.ask = this.safeFloat (ticker.ask, 8);
-            ticker.bid = this.safeFloat (ticker.bid, 8);
-            ticker.open = this.safeFloat (ticker.open, 8);
-            ticker.close = this.safeFloat (ticker.close, 8);
-            ticker.high = this.safeFloat (ticker.high, 8);
-            ticker.low = this.safeFloat (ticker.low, 8);
-            ticker.average = this.safeFloat (ticker.average, 8);
-            ticker.change = this.safeFloat (ticker.change, 8);
-            ticker.last = this.safeFloat (ticker.last, 8);
+            response[index] = this.parseTicker (response[index]);
         }
         return response;
+    }
+
+    parseTicker (ticker: any) : Ticker {
+        ticker.timestamp = this.safeInteger (ticker.timestamp, 0);
+        ticker.ask = this.safeFloat (ticker.ask, 8);
+        ticker.bid = this.safeFloat (ticker.bid, 8);
+        ticker.open = this.safeFloat (ticker.open, 8);
+        ticker.close = this.safeFloat (ticker.close, 8);
+        ticker.high = this.safeFloat (ticker.high, 8);
+        ticker.low = this.safeFloat (ticker.low, 8);
+        ticker.average = this.safeFloat (ticker.average, 8);
+        ticker.change = this.safeFloat (ticker.change, 8);
+        ticker.last = this.safeFloat (ticker.last, 8);
+        return ticker;
     }
 
     async fetchOHLCV (symbol, internal = '1m', limit = 500, params = {}) {
