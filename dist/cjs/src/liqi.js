@@ -739,6 +739,7 @@ class liqi extends liqi$1 {
             throw new errors.ArgumentsRequired(' fetchOpenOrders () precisa do symbol como parâmetro');
         }
         const request = {
+            'since': since,
             'symbol': symbol,
             'limit': limit || 50,
         };

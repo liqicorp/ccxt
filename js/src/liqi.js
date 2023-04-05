@@ -733,6 +733,7 @@ export default class liqi extends Exchange {
             throw new ArgumentsRequired(' fetchOpenOrders () precisa do symbol como parâmetro');
         }
         const request = {
+            'since': since,
             'symbol': symbol,
             'limit': limit || 50,
         };
