@@ -31,6 +31,7 @@ import { Precise } from './base/Precise.js';
 import { TRUNCATE } from './base/functions/number.js';
 import { sha256 } from './static_dependencies/noble-hashes/sha256.js';
 import { Ticker, Order } from '../ccxt.js';
+import { Int } from './base/types.js';
 
 //  ---------------------------------------------------------------------------
 
@@ -655,7 +656,7 @@ export default class liqi extends Exchange {
         return response;
     }
 
-    async fetchOrders (symbol, limit, since = undefined, params = {}) {
+    async fetchOrders (symbol: string = undefined, since: Int = undefined, limit: Int = undefined, params = {}) {
         if (symbol === undefined) {
             throw new ArgumentsRequired (
                 ' fetchOrders () precisa do symbol como parâmetro'
@@ -819,12 +820,7 @@ export default class liqi extends Exchange {
         return this.parseOrder (response);
     }
 
-    async fetchOpenOrders (
-        symbol = undefined,
-        since = undefined,
-        limit = 300,
-        params = {}
-    ) {
+    async fetchOpenOrders (symbol: string = undefined, since: Int = undefined, limit: Int = undefined, params = {}) {
         if (symbol === undefined) {
             throw new ArgumentsRequired (
                 ' fetchOpenOrders () precisa do symbol como parâmetro'
@@ -840,12 +836,7 @@ export default class liqi extends Exchange {
         return response;
     }
 
-    async fetchClosedOrders (
-        symbol = undefined,
-        since = undefined,
-        limit = 300,
-        params = {}
-    ) {
+    async fetchClosedOrders (symbol: string = undefined, since: Int = undefined, limit: Int = undefined, params = {}) {
         const orders = await this.fetchOrders (symbol, since, limit || 300, params);
         return this.filterBy (orders, 'status', 'closed');
     }

@@ -1,5 +1,6 @@
 import Exchange from './abstract/liqi.js';
 import { Ticker, Order } from '../ccxt.js';
+import { Int } from './base/types.js';
 export default class liqi extends Exchange {
     describe(): any;
     costToPrecision(symbol: any, cost: any): any;
@@ -10,7 +11,7 @@ export default class liqi extends Exchange {
     fetchMarket(symbol: any, params?: {}): Promise<any>;
     fetchMarkets(params?: {}): Promise<any>;
     fetchOrder(id: any, params?: {}): Promise<any>;
-    fetchOrders(symbol: any, limit: any, since?: any, params?: {}): Promise<any>;
+    fetchOrders(symbol?: string, since?: Int, limit?: Int, params?: {}): Promise<any>;
     parseOrder(order: Order): Order;
     fetchBalance(params?: {}): Promise<any>;
     fetchOrderBook(symbol: any, limit?: any, params?: {}): Promise<any>;
@@ -20,8 +21,8 @@ export default class liqi extends Exchange {
     fetchOHLCV(symbol: any, internal?: string, limit?: number, params?: {}): Promise<any>;
     fetchTrades(symbol: any, limit?: any, params?: {}): Promise<any>;
     createOrder(symbol: any, type: any, side: any, amount?: any, price?: any, quoteAmount?: any, params?: {}): Promise<Order>;
-    fetchOpenOrders(symbol?: any, since?: any, limit?: number, params?: {}): Promise<any>;
-    fetchClosedOrders(symbol?: any, since?: any, limit?: number, params?: {}): Promise<any[]>;
+    fetchOpenOrders(symbol?: string, since?: Int, limit?: Int, params?: {}): Promise<any>;
+    fetchClosedOrders(symbol?: string, since?: Int, limit?: Int, params?: {}): Promise<any[]>;
     cancelOrder(id: any, params?: {}): Promise<any>;
     cancelAllOrders(symbol?: any, params?: {}): Promise<any>;
     fetchOrderTrades(id: any, symbol?: any, since?: any, limit?: any, params?: {}): Promise<import("./base/types.js").Trade[]>;
