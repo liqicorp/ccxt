@@ -169,7 +169,7 @@ export default class liqi extends Exchange {
                 'private': {
                     'get': {
                         'fetchBalance': 1,
-                        'fetchOrders': 100,
+                        'fetchOrders': 1000,
                         'fetchOpenOrders': 100,
                         'fetchOrder': 1,
                         'fetchTrades': 500,
@@ -664,6 +664,7 @@ export default class liqi extends Exchange {
         const request = {
             'symbol': symbol,
             'limit': limit || 50,
+            'since': since || undefined,
         };
         const method = 'privateGetFetchOrders';
         const response = await this[method] (this.extend (request, params));
