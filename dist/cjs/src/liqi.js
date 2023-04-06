@@ -605,7 +605,7 @@ class liqi extends liqi$1 {
         }
         const request = {
             'symbol': symbol,
-            'limit': limit || params['limit'] || 50,
+            'limit': limit || 300,
             'since': since || undefined,
         };
         const method = 'privateGetFetchOrders';
@@ -743,21 +743,21 @@ class liqi extends liqi$1 {
         const response = await this[method](this.extend(request, params));
         return this.parseOrder(response);
     }
-    async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
+    async fetchOpenOrders(symbol = undefined, since = undefined, limit = 300, params = {}) {
         if (symbol === undefined) {
             throw new errors.ArgumentsRequired(' fetchOpenOrders () precisa do symbol como parâmetro');
         }
         const request = {
             'since': since,
             'symbol': symbol,
-            'limit': limit || 50,
+            'limit': limit || 300,
         };
         const method = 'privateGetFetchOpenOrders';
         const response = await this[method](this.extend(request, params));
         return response;
     }
-    async fetchClosedOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        const orders = await this.fetchOrders(symbol, since, limit, params);
+    async fetchClosedOrders(symbol = undefined, since = undefined, limit = 300, params = {}) {
+        const orders = await this.fetchOrders(symbol, since, limit || 300, params);
         return this.filterBy(orders, 'status', 'closed');
     }
     async cancelOrder(id, params = {}) {

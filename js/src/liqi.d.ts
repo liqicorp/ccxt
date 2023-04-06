@@ -20,8 +20,8 @@ export default class liqi extends Exchange {
     fetchOHLCV(symbol: any, internal?: string, limit?: number, params?: {}): Promise<any>;
     fetchTrades(symbol: any, limit?: any, params?: {}): Promise<any>;
     createOrder(symbol: any, type: any, side: any, amount?: any, price?: any, quoteAmount?: any, params?: {}): Promise<Order>;
-    fetchOpenOrders(symbol?: any, since?: any, limit?: any, params?: {}): Promise<any>;
-    fetchClosedOrders(symbol?: any, since?: any, limit?: any, params?: {}): Promise<any[]>;
+    fetchOpenOrders(symbol?: any, since?: any, limit?: number, params?: {}): Promise<any>;
+    fetchClosedOrders(symbol?: any, since?: any, limit?: number, params?: {}): Promise<any[]>;
     cancelOrder(id: any, params?: {}): Promise<any>;
     cancelAllOrders(symbol?: any, params?: {}): Promise<any>;
     fetchOrderTrades(id: any, symbol?: any, since?: any, limit?: any, params?: {}): Promise<import("./base/types.js").Trade[]>;
