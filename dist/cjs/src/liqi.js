@@ -635,6 +635,9 @@ class liqi extends liqi$1 {
             const trade = trades[index];
             trade.price = this.safeFloat(trade, 'price', 0);
             trade.amount = this.safeFloat(trade, 'amount', 0);
+            if (trade.fee) {
+                trade.fee.cost = this.safeFloat(trade, 'cost', 0);
+            }
         }
         return {
             'info': order,
