@@ -663,7 +663,7 @@ export default class liqi extends Exchange {
         }
         const request = {
             'symbol': symbol,
-            'limit': limit || 50,
+            'limit': limit || params['limit'] || 50,
             'since': since || undefined,
         };
         const method = 'privateGetFetchOrders';
@@ -690,6 +690,11 @@ export default class liqi extends Exchange {
         const clientOrderId = this.safeString (order, 'clientOrderId', '');
         const timeInForce = this.safeString (order, 'timeInForce', '');
         const trades = this.safeValue (order, 'trades', []);
+        for (let index = 0; index < trades.length; index++) {
+            const trade = trades[index];
+            trade.price = this.safeFloat (trade, 'price', 0);
+            trade.amount = this.safeFloat (trade, 'amount', 0);
+        }
         return {
             'info': order,
             'id': id,
