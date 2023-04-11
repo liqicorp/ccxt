@@ -665,7 +665,7 @@ export default class liqi extends Exchange {
         }
         const request = {
             'symbol': symbol,
-            'limit': limit || 300,
+            'take': limit || 300,
             'since': since || undefined,
         };
         const method = 'privateGetFetchMyOrders';
@@ -848,7 +848,7 @@ export default class liqi extends Exchange {
         const request = {
             'since': since,
             'symbol': symbol,
-            'limit': limit || 300,
+            'rangeLimit': limit || 300,
         };
         const method = 'privateGetFetchOpenOrders';
         const response = await this[method] (this.extend (request, params));
@@ -856,8 +856,19 @@ export default class liqi extends Exchange {
     }
 
     async fetchClosedOrders (symbol: string = undefined, since: Int = undefined, limit: Int = undefined, params = {}) {
-        const orders = await this.fetchOrders (symbol, since, limit || 300, params);
-        return this.filterBy (orders, 'status', 'closed');
+        if (symbol === undefined) {
+            throw new ArgumentsRequired (
+                ' fetchOpenOrders () precisa do symbol como parâmetro'
+            );
+        }
+        const request = {
+            'since': since,
+            'symbol': symbol,
+            'rangeLimit': limit || 300,
+        };
+        const method = 'privateGetFetchClosedOrders';
+        const response = await this[method] (this.extend (request, params));
+        return response;
     }
 
     async cancelOrder (id, params = {}) {

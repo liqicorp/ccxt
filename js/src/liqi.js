@@ -600,7 +600,7 @@ export default class liqi extends Exchange {
         }
         const request = {
             'symbol': symbol,
-            'limit': limit || 300,
+            'take': limit || 300,
             'since': since || undefined,
         };
         const method = 'privateGetFetchMyOrders';

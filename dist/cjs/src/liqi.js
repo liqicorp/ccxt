@@ -606,7 +606,7 @@ class liqi extends liqi$1 {
         }
         const request = {
             'symbol': symbol,
-            'limit': limit || 300,
+            'take': limit || 300,
             'since': since || undefined,
         };
         const method = 'privateGetFetchMyOrders';
