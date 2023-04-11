@@ -9,6 +9,7 @@ interface Exchange {
     publicGetFetchOrderBook(params?: {}): Promise<implicitReturnType>;
     publicGetFetchOHLCV(params?: {}): Promise<implicitReturnType>;
     privateGetFetchBalance(params?: {}): Promise<implicitReturnType>;
+    privateGetFetchMyOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOpenOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOrder(params?: {}): Promise<implicitReturnType>;

@@ -142,7 +142,8 @@ export default class liqi extends Exchange {
                 'private': {
                     'get': {
                         'fetchBalance': 1,
-                        'fetchOrders': 1000,
+                        'fetchMyOrders': 100,
+                        'fetchOrders': 100,
                         'fetchOpenOrders': 100,
                         'fetchOrder': 1,
                         'fetchTrades': 500,
@@ -602,7 +603,7 @@ export default class liqi extends Exchange {
             'limit': limit || 300,
             'since': since || undefined,
         };
-        const method = 'privateGetFetchOrders';
+        const method = 'privateGetFetchMyOrders';
         const response = await this[method](this.extend(request, params));
         for (let i = 0; i < response.length; i++) {
             response[i] = this.parseOrder(response[i]);
@@ -610,7 +611,25 @@ export default class liqi extends Exchange {
         return response;
     }
     parseOrder(order) {
-        const status = this.safeString(order, 'status', 'open');
+        let status = this.safeString(order, 'status', 'open');
+        switch (status) {
+            case 'pending':
+            case 'partial':
+                status = 'open';
+                break;
+            case 'cancelled':
+                status = 'canceled';
+                break;
+            case 'completed':
+            case 'concluded':
+                status = 'closed';
+                break;
+            case 'error':
+                status = 'rejected';
+                break;
+            default:
+                break;
+        }
         const symbol = this.safeString(order, 'symbol');
         const timestamp = this.safeInteger(order, 'timestamp', 0);
         const price = this.safeFloat(order, 'price', 0);

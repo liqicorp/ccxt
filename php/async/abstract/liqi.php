@@ -31,6 +31,9 @@ abstract class liqi extends \ccxt\async\Exchange {
     public function private_get_fetchbalance($params = array()) {
         return $this->request('fetchBalance', 'private', 'GET', $params);
     }
+    public function private_get_fetchmyorders($params = array()) {
+        return $this->request('fetchMyOrders', 'private', 'GET', $params);
+    }
     public function private_get_fetchorders($params = array()) {
         return $this->request('fetchOrders', 'private', 'GET', $params);
     }
@@ -75,6 +78,9 @@ abstract class liqi extends \ccxt\async\Exchange {
     }
     public function privateGetFetchBalance($params = array()) {
         return $this->request('fetchBalance', 'private', 'GET', $params);
+    }
+    public function privateGetFetchMyOrders($params = array()) {
+        return $this->request('fetchMyOrders', 'private', 'GET', $params);
     }
     public function privateGetFetchOrders($params = array()) {
         return $this->request('fetchOrders', 'private', 'GET', $params);
