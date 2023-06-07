@@ -1,5 +1,5 @@
 // -------------------------------------------------------------------------------
-import _coinbasepro from '../coinbasepro.js';
-class coinbasepro extends _coinbasepro {
+import { Exchange as _Exchange } from '../base/Exchange.js';
+class Exchange extends _Exchange {
 }
-export default coinbasepro;
+export default Exchange;

@@ -8,99 +8,99 @@ namespace ccxt\async\abstract;
 
 abstract class liqi extends \ccxt\async\Exchange {
     public function public_get_fetchmarket($params = array()) {
-        return $this->request('fetchMarket', 'public', 'GET', $params);
+        return $this->request('fetchMarket', 'public', 'GET', $params, null, null, array("cost" => 1));
     }
     public function public_get_fetchmarkets($params = array()) {
-        return $this->request('fetchMarkets', 'public', 'GET', $params);
+        return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function public_get_fetchcurrencies($params = array()) {
-        return $this->request('fetchCurrencies', 'public', 'GET', $params);
+        return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function public_get_fetchtickers($params = array()) {
-        return $this->request('fetchTickers', 'public', 'GET', $params);
+        return $this->request('fetchTickers', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function public_get_fetchticker($params = array()) {
-        return $this->request('fetchTicker', 'public', 'GET', $params);
+        return $this->request('fetchTicker', 'public', 'GET', $params, null, null, array("cost" => 1));
     }
     public function public_get_fetchorderbook($params = array()) {
-        return $this->request('fetchOrderBook', 'public', 'GET', $params);
+        return $this->request('fetchOrderBook', 'public', 'GET', $params, null, null, array("cost" => 100));
     }
     public function public_get_fetchohlcv($params = array()) {
-        return $this->request('fetchOHLCV', 'public', 'GET', $params);
+        return $this->request('fetchOHLCV', 'public', 'GET', $params, null, null, array("cost" => 1000));
     }
     public function private_get_fetchbalance($params = array()) {
-        return $this->request('fetchBalance', 'private', 'GET', $params);
+        return $this->request('fetchBalance', 'private', 'GET', $params, null, null, array("cost" => 1));
     }
     public function private_get_fetchmyorders($params = array()) {
-        return $this->request('fetchMyOrders', 'private', 'GET', $params);
+        return $this->request('fetchMyOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function private_get_fetchorders($params = array()) {
-        return $this->request('fetchOrders', 'private', 'GET', $params);
+        return $this->request('fetchOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function private_get_fetchopenorders($params = array()) {
-        return $this->request('fetchOpenOrders', 'private', 'GET', $params);
+        return $this->request('fetchOpenOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function private_get_fetchorder($params = array()) {
-        return $this->request('fetchOrder', 'private', 'GET', $params);
+        return $this->request('fetchOrder', 'private', 'GET', $params, null, null, array("cost" => 1));
     }
     public function private_get_fetchtrades($params = array()) {
-        return $this->request('fetchTrades', 'private', 'GET', $params);
+        return $this->request('fetchTrades', 'private', 'GET', $params, null, null, array("cost" => 500));
     }
     public function private_post_createorder($params = array()) {
-        return $this->request('createOrder', 'private', 'POST', $params);
+        return $this->request('createOrder', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
     public function private_post_cancelorder($params = array()) {
-        return $this->request('cancelOrder', 'private', 'POST', $params);
+        return $this->request('cancelOrder', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
     public function private_post_cancelallorders($params = array()) {
-        return $this->request('cancelAllOrders', 'private', 'POST', $params);
+        return $this->request('cancelAllOrders', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
     public function publicGetFetchMarket($params = array()) {
-        return $this->request('fetchMarket', 'public', 'GET', $params);
+        return $this->request('fetchMarket', 'public', 'GET', $params, null, null, array("cost" => 1));
     }
     public function publicGetFetchMarkets($params = array()) {
-        return $this->request('fetchMarkets', 'public', 'GET', $params);
+        return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function publicGetFetchCurrencies($params = array()) {
-        return $this->request('fetchCurrencies', 'public', 'GET', $params);
+        return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function publicGetFetchTickers($params = array()) {
-        return $this->request('fetchTickers', 'public', 'GET', $params);
+        return $this->request('fetchTickers', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
     public function publicGetFetchTicker($params = array()) {
-        return $this->request('fetchTicker', 'public', 'GET', $params);
+        return $this->request('fetchTicker', 'public', 'GET', $params, null, null, array("cost" => 1));
     }
     public function publicGetFetchOrderBook($params = array()) {
-        return $this->request('fetchOrderBook', 'public', 'GET', $params);
+        return $this->request('fetchOrderBook', 'public', 'GET', $params, null, null, array("cost" => 100));
     }
     public function publicGetFetchOHLCV($params = array()) {
-        return $this->request('fetchOHLCV', 'public', 'GET', $params);
+        return $this->request('fetchOHLCV', 'public', 'GET', $params, null, null, array("cost" => 1000));
     }
     public function privateGetFetchBalance($params = array()) {
-        return $this->request('fetchBalance', 'private', 'GET', $params);
+        return $this->request('fetchBalance', 'private', 'GET', $params, null, null, array("cost" => 1));
     }
     public function privateGetFetchMyOrders($params = array()) {
-        return $this->request('fetchMyOrders', 'private', 'GET', $params);
+        return $this->request('fetchMyOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function privateGetFetchOrders($params = array()) {
-        return $this->request('fetchOrders', 'private', 'GET', $params);
+        return $this->request('fetchOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function privateGetFetchOpenOrders($params = array()) {
-        return $this->request('fetchOpenOrders', 'private', 'GET', $params);
+        return $this->request('fetchOpenOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
     }
     public function privateGetFetchOrder($params = array()) {
-        return $this->request('fetchOrder', 'private', 'GET', $params);
+        return $this->request('fetchOrder', 'private', 'GET', $params, null, null, array("cost" => 1));
     }
     public function privateGetFetchTrades($params = array()) {
-        return $this->request('fetchTrades', 'private', 'GET', $params);
+        return $this->request('fetchTrades', 'private', 'GET', $params, null, null, array("cost" => 500));
     }
     public function privatePostCreateOrder($params = array()) {
-        return $this->request('createOrder', 'private', 'POST', $params);
+        return $this->request('createOrder', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
     public function privatePostCancelOrder($params = array()) {
-        return $this->request('cancelOrder', 'private', 'POST', $params);
+        return $this->request('cancelOrder', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
     public function privatePostCancelAllOrders($params = array()) {
-        return $this->request('cancelAllOrders', 'private', 'POST', $params);
+        return $this->request('cancelAllOrders', 'private', 'POST', $params, null, null, array("cost" => 1));
     }
 }

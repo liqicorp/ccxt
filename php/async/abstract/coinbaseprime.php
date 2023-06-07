@@ -6,7 +6,7 @@ namespace ccxt\async\abstract;
 // https://github.com/ccxt/ccxt/blob/master/CONTRIBUTING.md#how-to-contribute-code
 
 
-abstract class coinbaseprime extends \ccxt\async\coinbasepro {
+abstract class coinbaseprime extends \ccxt\async\Exchange {
     public function public_get_currencies($params = array()) {
         return $this->request('currencies', 'public', 'GET', $params, null, null, array());
     }
@@ -36,6 +36,24 @@ abstract class coinbaseprime extends \ccxt\async\coinbasepro {
     }
     public function public_get_products_spark_lines($params = array()) {
         return $this->request('products/spark-lines', 'public', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios($params = array()) {
+        return $this->request('v1/portfolios', 'private', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios_portfolio_id($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}', 'private', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios_portfolio_id_balances($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/balances', 'private', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios_portfolio_id_open_orders($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/open_orders', 'private', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios_portfolio_id_orders($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders', 'private', 'GET', $params, null, null, array());
+    }
+    public function private_get_v1_portfolios_portfolio_id_orders_order_id($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}', 'private', 'GET', $params, null, null, array());
     }
     public function private_get_accounts($params = array()) {
         return $this->request('accounts', 'private', 'GET', $params, null, null, array());
@@ -139,6 +157,12 @@ abstract class coinbaseprime extends \ccxt\async\coinbasepro {
     public function private_get_conversions_conversion_id($params = array()) {
         return $this->request('conversions/{conversion_id}', 'private', 'GET', $params, null, null, array());
     }
+    public function private_post_v1_portfolios_portfolio_id_order($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/order', 'private', 'POST', $params, null, null, array());
+    }
+    public function private_post_v1_portfolios_portfolio_id_orders_order_id_cancel($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}/cancel', 'private', 'POST', $params, null, null, array());
+    }
     public function private_post_conversions($params = array()) {
         return $this->request('conversions', 'private', 'POST', $params, null, null, array());
     }
@@ -219,6 +243,24 @@ abstract class coinbaseprime extends \ccxt\async\coinbasepro {
     }
     public function publicGetProductsSparkLines($params = array()) {
         return $this->request('products/spark-lines', 'public', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1Portfolios($params = array()) {
+        return $this->request('v1/portfolios', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioId($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioIdBalances($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/balances', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioIdOpenOrders($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/open_orders', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioIdOrders($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioIdOrdersOrderId($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}', 'private', 'GET', $params, null, null, array());
     }
     public function privateGetAccounts($params = array()) {
         return $this->request('accounts', 'private', 'GET', $params, null, null, array());
@@ -321,6 +363,12 @@ abstract class coinbaseprime extends \ccxt\async\coinbasepro {
     }
     public function privateGetConversionsConversionId($params = array()) {
         return $this->request('conversions/{conversion_id}', 'private', 'GET', $params, null, null, array());
+    }
+    public function privatePostV1PortfoliosPortfolioIdOrder($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/order', 'private', 'POST', $params, null, null, array());
+    }
+    public function privatePostV1PortfoliosPortfolioIdOrdersOrderIdCancel($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}/cancel', 'private', 'POST', $params, null, null, array());
     }
     public function privatePostConversions($params = array()) {
         return $this->request('conversions', 'private', 'POST', $params, null, null, array());

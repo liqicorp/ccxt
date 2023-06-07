@@ -1116,8 +1116,7 @@ export default class liqi extends Exchange {
             params,
             headers,
             body,
-            config,
-            context
+            config
         );
         // a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
         if (api === 'private' || api === 'wapi') {

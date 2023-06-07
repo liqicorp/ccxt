@@ -1,6 +1,6 @@
 import { implicitReturnType } from '../base/types.js';
-import _coinbasepro from '../coinbasepro.js';
-interface coinbasepro {
+import { Exchange as _Exchange } from '../base/Exchange.js';
+interface Exchange {
     publicGetCurrencies(params?: {}): Promise<implicitReturnType>;
     publicGetProducts(params?: {}): Promise<implicitReturnType>;
     publicGetProductsId(params?: {}): Promise<implicitReturnType>;
@@ -11,6 +11,12 @@ interface coinbasepro {
     publicGetProductsIdTrades(params?: {}): Promise<implicitReturnType>;
     publicGetTime(params?: {}): Promise<implicitReturnType>;
     publicGetProductsSparkLines(params?: {}): Promise<implicitReturnType>;
+    privateGetV1Portfolios(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioId(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioIdBalances(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioIdOpenOrders(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioIdOrders(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioIdOrdersOrderId(params?: {}): Promise<implicitReturnType>;
     privateGetAccounts(params?: {}): Promise<implicitReturnType>;
     privateGetAccountsId(params?: {}): Promise<implicitReturnType>;
     privateGetAccountsIdHolds(params?: {}): Promise<implicitReturnType>;
@@ -45,6 +51,8 @@ interface coinbasepro {
     privateGetUsersSelfTrailingVolume(params?: {}): Promise<implicitReturnType>;
     privateGetWithdrawalsFeeEstimate(params?: {}): Promise<implicitReturnType>;
     privateGetConversionsConversionId(params?: {}): Promise<implicitReturnType>;
+    privatePostV1PortfoliosPortfolioIdOrder(params?: {}): Promise<implicitReturnType>;
+    privatePostV1PortfoliosPortfolioIdOrdersOrderIdCancel(params?: {}): Promise<implicitReturnType>;
     privatePostConversions(params?: {}): Promise<implicitReturnType>;
     privatePostDepositsCoinbaseAccount(params?: {}): Promise<implicitReturnType>;
     privatePostDepositsPaymentMethod(params?: {}): Promise<implicitReturnType>;
@@ -63,6 +71,6 @@ interface coinbasepro {
     privateDeleteOrdersClientClientOid(params?: {}): Promise<implicitReturnType>;
     privateDeleteOrdersId(params?: {}): Promise<implicitReturnType>;
 }
-declare abstract class coinbasepro extends _coinbasepro {
+declare abstract class Exchange extends _Exchange {
 }
-export default coinbasepro;
+export default Exchange;
