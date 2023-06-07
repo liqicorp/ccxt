@@ -133,7 +133,7 @@ class bitmart extends bitmart$1 {
         if (this.newUpdates) {
             limit = orders.getLimit(symbol, limit);
         }
-        return this.filterBySymbolSinceLimit(orders, symbol, since, limit, true);
+        return this.filterBySymbolSinceLimit(orders, symbol, since, limit);
     }
     handleOrders(client, message) {
         //
@@ -363,7 +363,7 @@ class bitmart extends bitmart$1 {
             const market = this.safeMarket(marketId);
             const symbol = market['symbol'];
             const parsed = this.parseOHLCV(candle, market);
-            parsed[0] = parseInt((parsed[0] / durationInMs).toString()) * durationInMs;
+            parsed[0] = this.parseToInt(parsed[0] / durationInMs) * durationInMs;
             this.ohlcvs[symbol] = this.safeValue(this.ohlcvs, symbol, {});
             let stored = this.safeValue(this.ohlcvs[symbol], timeframe);
             if (stored === undefined) {

@@ -110,20 +110,26 @@ class bitstamp extends bitstamp$1 {
                     'get': {
                         'ohlc/{pair}/': 1,
                         'order_book/{pair}/': 1,
+                        'ticker/': 1,
                         'ticker_hour/{pair}/': 1,
                         'ticker/{pair}/': 1,
                         'transactions/{pair}/': 1,
                         'trading-pairs-info/': 1,
+                        'currencies/': 1,
+                        'eur_usd/': 1,
                     },
                 },
                 'private': {
                     'post': {
+                        'account_balances/': 1,
+                        'account_balances/{currency}/': 1,
                         'balance/': 1,
                         'balance/{pair}/': 1,
                         'bch_withdrawal/': 1,
                         'bch_address/': 1,
                         'user_transactions/': 1,
                         'user_transactions/{pair}/': 1,
+                        'crypto-transactions/': 1,
                         'open_orders/all/': 1,
                         'open_orders/{pair}/': 1,
                         'order_status/': 1,
@@ -138,6 +144,10 @@ class bitstamp extends bitstamp$1 {
                         'sell/instant/{pair}/': 1,
                         'transfer-to-main/': 1,
                         'transfer-from-main/': 1,
+                        'my_trading_pairs/': 1,
+                        'fees/trading/': 1,
+                        'fees/withdrawal/': 1,
+                        'fees/withdrawal/{currency}/': 1,
                         'withdrawal-requests/': 1,
                         'withdrawal/open/': 1,
                         'withdrawal/status/': 1,
@@ -526,6 +536,7 @@ class bitstamp extends bitstamp$1 {
                     'max': undefined,
                 },
             },
+            'networks': {},
         };
     }
     async fetchMarketsFromCache(params = {}) {
@@ -2035,7 +2046,7 @@ class bitstamp extends bitstamp$1 {
     }
     handleErrors(httpCode, reason, url, method, headers, body, response, requestHeaders, requestBody) {
         if (response === undefined) {
-            return;
+            return undefined;
         }
         //
         //     {"error": "No permission found"} // fetchDepositAddress returns this on apiKeys that don't have the permission required
@@ -2062,12 +2073,12 @@ class bitstamp extends bitstamp$1 {
                     }
                 }
             }
-            const reason = this.safeValue(response, 'reason', {});
-            if (typeof reason === 'string') {
-                errors$1.push(reason);
+            const reasonInner = this.safeValue(response, 'reason', {});
+            if (typeof reasonInner === 'string') {
+                errors$1.push(reasonInner);
             }
             else {
-                const all = this.safeValue(reason, '__all__', []);
+                const all = this.safeValue(reasonInner, '__all__', []);
                 for (let i = 0; i < all.length; i++) {
                     errors$1.push(all[i]);
                 }
@@ -2084,6 +2095,7 @@ class bitstamp extends bitstamp$1 {
             }
             throw new errors.ExchangeError(feedback);
         }
+        return undefined;
     }
 }
 

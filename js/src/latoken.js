@@ -450,6 +450,7 @@ export default class latoken extends Exchange {
                         'max': undefined,
                     },
                 },
+                'networks': {},
             };
         }
         return result;
@@ -1558,7 +1559,7 @@ export default class latoken extends Exchange {
     }
     handleErrors(code, reason, url, method, headers, body, response, requestHeaders, requestBody) {
         if (!response) {
-            return;
+            return undefined;
         }
         //
         // {"result":false,"message":"invalid API key, signature or digest","error":"BAD_REQUEST","status":"FAILURE"}
@@ -1579,5 +1580,6 @@ export default class latoken extends Exchange {
             this.throwBroadlyMatchedException(this.exceptions['broad'], body, feedback);
             throw new ExchangeError(feedback); // unknown message
         }
+        return undefined;
     }
 }

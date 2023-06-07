@@ -241,6 +241,7 @@ export default class lykke extends Exchange {
                         'max': undefined,
                     },
                 },
+                'networks': {},
             };
         }
         return result;
@@ -1259,7 +1260,7 @@ export default class lykke extends Exchange {
     }
     handleErrors(code, reason, url, method, headers, body, response, requestHeaders, requestBody) {
         if (response === undefined) {
-            return;
+            return undefined;
         }
         const error = this.safeValue(response, 'error', {});
         const errorCode = this.safeString(error, 'code');
@@ -1270,5 +1271,6 @@ export default class lykke extends Exchange {
             this.throwBroadlyMatchedException(this.exceptions['broad'], message, feedback);
             throw new ExchangeError(feedback);
         }
+        return undefined;
     }
 }

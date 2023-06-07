@@ -1,5 +1,5 @@
 // @ts-nocheck
-export default function Future() {
+export function createFuture() {
     let resolve = undefined, reject = undefined;
     const p = new Promise((resolve_, reject_) => {
         resolve = resolve_;

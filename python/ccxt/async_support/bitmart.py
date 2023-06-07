@@ -4,7 +4,9 @@
 # https://github.com/ccxt/ccxt/blob/master/CONTRIBUTING.md#how-to-contribute-code
 
 from ccxt.async_support.base.exchange import Exchange
+from ccxt.abstract.bitmart import ImplicitAPI
 import hashlib
+from ccxt.base.types import OrderSide
 from typing import Optional
 from typing import List
 from ccxt.base.errors import ExchangeError
@@ -27,7 +29,7 @@ from ccxt.base.decimal_to_precision import TICK_SIZE
 from ccxt.base.precise import Precise
 
 
-class bitmart(Exchange):
+class bitmart(Exchange, ImplicitAPI):
 
     def describe(self):
         return self.deep_extend(super(bitmart, self).describe(), {
@@ -145,6 +147,7 @@ class bitmart(Exchange):
                         'contract/public/open-interest': 30,
                         'contract/public/funding-rate': 30,
                         'contract/public/kline': 5,
+                        'account/v1/currencies': 30,
                     },
                 },
                 'private': {
@@ -624,10 +627,15 @@ class bitmart(Exchange):
             quoteId = self.safe_string(market, 'quote_currency')
             base = self.safe_currency_code(baseId)
             quote = self.safe_currency_code(quoteId)
-            settle = 'USDT'
+            settleId = 'USDT'  # self is bitmart's ID for usdt
+            settle = self.safe_currency_code(settleId)
             symbol = base + '/' + quote + ':' + settle
-            productType = self.safe_number(market, 'product_type')
+            productType = self.safe_integer(market, 'product_type')
+            isSwap = (productType == 1)
+            isFutures = (productType == 2)
             expiry = self.safe_integer(market, 'expire_timestamp')
+            if not isFutures and (expiry == 0):
+                expiry = None
             result.append({
                 'id': id,
                 'numericId': None,
@@ -637,12 +645,12 @@ class bitmart(Exchange):
                 'settle': settle,
                 'baseId': baseId,
                 'quoteId': quoteId,
-                'settleId': None,
-                'type': 'swap',
+                'settleId': settleId,
+                'type': 'swap' if isSwap else 'future',
                 'spot': False,
                 'margin': False,
-                'swap': (productType == 1),
-                'future': (productType == 2),
+                'swap': isSwap,
+                'future': isFutures,
                 'option': False,
                 'active': True,
                 'contract': True,
@@ -1738,7 +1746,7 @@ class bitmart(Exchange):
         statuses = self.safe_value(statusesByType, type, {})
         return self.safe_string(statuses, status, status)
 
-    async def create_order(self, symbol: str, type, side, amount, price=None, params={}):
+    async def create_order(self, symbol: str, type, side: OrderSide, amount, price=None, params={}):
         """
         create a trade order
         see https://developer-pro.bitmart.com/en/spot/#place-spot-order
@@ -1758,8 +1766,11 @@ class bitmart(Exchange):
         timeInForce = self.safe_string(params, 'timeInForce')
         if timeInForce == 'FOK':
             raise InvalidOrder(self.id + ' createOrder() only accepts timeInForce parameter values of IOC or PO')
+        mode = self.safe_integer(params, 'mode')  # only for swap
         isMarketOrder = type == 'market'
-        postOnly = self.is_post_only(isMarketOrder, type == 'limit_maker', params)
+        postOnly = None
+        isExchangeSpecificPo = (type == 'limit_maker') or (mode == 4)
+        postOnly, params = self.handle_post_only(isMarketOrder, isExchangeSpecificPo, params)
         params = self.omit(params, ['timeInForce', 'postOnly'])
         ioc = ((timeInForce == 'IOC') or (type == 'ioc'))
         isLimitOrder = (type == 'limit') or postOnly or ioc
@@ -2055,10 +2066,10 @@ class bitmart(Exchange):
             defaultNetworks = self.safe_value(self.options, 'defaultNetworks')
             defaultNetwork = self.safe_string_upper(defaultNetworks, code)
             networks = self.safe_value(self.options, 'networks', {})
-            network = self.safe_string_upper(params, 'network', defaultNetwork)  # self line allows the user to specify either ERC20 or ETH
-            network = self.safe_string(networks, network, network)  # handle ERC20>ETH alias
-            if network is not None:
-                request['currency'] += '-' + network  # when network the currency need to be changed to currency + '-' + network https://developer-pro.bitmart.com/en/account/withdraw_apply.html on the end of page
+            networkInner = self.safe_string_upper(params, 'network', defaultNetwork)  # self line allows the user to specify either ERC20 or ETH
+            networkInner = self.safe_string(networks, networkInner, networkInner)  # handle ERC20>ETH alias
+            if networkInner is not None:
+                request['currency'] = request['currency'] + '-' + networkInner  # when network the currency need to be changed to currency + '-' + network https://developer-pro.bitmart.com/en/account/withdraw_apply.html on the end of page
                 params = self.omit(params, 'network')
         response = await self.privateGetAccountV1DepositAddress(self.extend(request, params))
         #
@@ -2125,7 +2136,7 @@ class bitmart(Exchange):
             network = self.safe_string_upper(params, 'network', defaultNetwork)  # self line allows the user to specify either ERC20 or ETH
             network = self.safe_string(networks, network, network)  # handle ERC20>ETH alias
             if network is not None:
-                request['currency'] += '-' + network  # when network the currency need to be changed to currency + '-' + network https://developer-pro.bitmart.com/en/account/withdraw_apply.html on the end of page
+                request['currency'] = request['currency'] + '-' + network  # when network the currency need to be changed to currency + '-' + network https://developer-pro.bitmart.com/en/account/withdraw_apply.html on the end of page
                 params = self.omit(params, 'network')
         response = await self.privatePostAccountV1WithdrawApply(self.extend(request, params))
         #
@@ -2859,7 +2870,7 @@ class bitmart(Exchange):
 
     def handle_errors(self, code, reason, url, method, headers, body, response, requestHeaders, requestBody):
         if response is None:
-            return
+            return None
         #
         # spot
         #
@@ -2881,3 +2892,4 @@ class bitmart(Exchange):
             self.throw_exactly_matched_exception(self.exceptions['exact'], message, feedback)
             self.throw_broadly_matched_exception(self.exceptions['broad'], message, feedback)
             raise ExchangeError(feedback)  # unknown message
+        return None

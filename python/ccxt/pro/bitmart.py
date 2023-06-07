@@ -129,7 +129,7 @@ class bitmart(ccxt.async_support.bitmart):
         orders = await self.subscribe_private(channel, symbol, params)
         if self.newUpdates:
             limit = orders.getLimit(symbol, limit)
-        return self.filter_by_symbol_since_limit(orders, symbol, since, limit, True)
+        return self.filter_by_symbol_since_limit(orders, symbol, since, limit)
 
     def handle_orders(self, client: Client, message):
         #
@@ -349,7 +349,7 @@ class bitmart(ccxt.async_support.bitmart):
             market = self.safe_market(marketId)
             symbol = market['symbol']
             parsed = self.parse_ohlcv(candle, market)
-            parsed[0] = int((parsed[0] / str(durationInMs))) * durationInMs
+            parsed[0] = self.parse_to_int(parsed[0] / durationInMs) * durationInMs
             self.ohlcvs[symbol] = self.safe_value(self.ohlcvs, symbol, {})
             stored = self.safe_value(self.ohlcvs[symbol], timeframe)
             if stored is None:

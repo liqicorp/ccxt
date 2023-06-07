@@ -828,10 +828,11 @@ class gate extends \ccxt\async\gate {
             // inject order status
             $info = $this->safe_value($parsed, 'info');
             $event = $this->safe_string($info, 'event');
-            if ($event === 'put') {
+            if ($event === 'put' || $event === ' update') {
                 $parsed['status'] = 'open';
             } elseif ($event === 'finish') {
-                $parsed['status'] = 'closed';
+                $left = $this->safe_number($info, 'left');
+                $parsed['status'] = ($left === 0) ? 'closed' : 'canceled';
             }
             $stored->append ($parsed);
             $symbol = $parsed['symbol'];
@@ -905,7 +906,9 @@ class gate extends \ccxt\async\gate {
             $method = $methods[$channel];
             $method($client, $message, $subscription);
         }
-        unset($client->subscriptions[$id]);
+        if (is_array($client->subscriptions) && array_key_exists($id, $client->subscriptions)) {
+            unset($client->subscriptions[$id]);
+        }
     }
 
     public function handle_message(Client $client, $message) {

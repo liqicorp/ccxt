@@ -212,7 +212,7 @@ export default class bittrex extends bittrexRest {
         if (this.newUpdates) {
             limit = orders.getLimit(symbol, limit);
         }
-        return this.filterBySymbolSinceLimit(orders, symbol, since, limit, true);
+        return this.filterBySymbolSinceLimit(orders, symbol, since, limit);
     }
     async subscribeToOrders(authentication, params = {}) {
         const messageHash = 'order';

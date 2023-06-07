@@ -807,11 +807,12 @@ export default class gate extends gateRest {
             // inject order status
             const info = this.safeValue(parsed, 'info');
             const event = this.safeString(info, 'event');
-            if (event === 'put') {
+            if (event === 'put' || event === ' update') {
                 parsed['status'] = 'open';
             }
             else if (event === 'finish') {
-                parsed['status'] = 'closed';
+                const left = this.safeNumber(info, 'left');
+                parsed['status'] = (left === 0) ? 'closed' : 'canceled';
             }
             stored.append(parsed);
             const symbol = parsed['symbol'];
@@ -883,7 +884,9 @@ export default class gate extends gateRest {
             const method = methods[channel];
             method.call(this, client, message, subscription);
         }
-        delete client.subscriptions[id];
+        if (id in client.subscriptions) {
+            delete client.subscriptions[id];
+        }
     }
     handleMessage(client, message) {
         //

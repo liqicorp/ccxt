@@ -15,6 +15,7 @@ export default class krakenfutures extends Exchange {
             'version': 'v3',
             'userAgent': undefined,
             'rateLimit': 600,
+            'pro': true,
             'has': {
                 'CORS': undefined,
                 'spot': false,
@@ -60,8 +61,8 @@ export default class krakenfutures extends Exchange {
             },
             'urls': {
                 'test': {
-                    'public': 'https://demo-futures.kraken.com/derivatives',
-                    'private': 'https://demo-futures.kraken.com/derivatives',
+                    'public': 'https://demo-futures.kraken.com/derivatives/api/',
+                    'private': 'https://demo-futures.kraken.com/derivatives/api/',
                     'www': 'https://demo-futures.kraken.com',
                 },
                 'logo': 'https://user-images.githubusercontent.com/24300605/81436764-b22fd580-9172-11ea-9703-742783e6376d.jpg',
@@ -301,8 +302,9 @@ export default class krakenfutures extends Exchange {
             let settleId = undefined;
             const amountPrecision = this.parseNumber(this.parsePrecision(this.safeString(market, 'contractValueTradePrecision', '0')));
             const pricePrecision = this.safeNumber(market, 'tickSize');
-            const contract = (swap || future);
-            if (contract) {
+            const contract = (swap || future || index);
+            const swapOrFutures = (swap || future);
+            if (swapOrFutures) {
                 const exchangeType = this.safeString(market, 'type');
                 if (exchangeType === 'futures_inverse') {
                     settle = base;
@@ -802,17 +804,18 @@ export default class krakenfutures extends Exchange {
         type = this.safeString(params, 'orderType', type);
         const timeInForce = this.safeString(params, 'timeInForce');
         const stopPrice = this.safeString(params, 'stopPrice');
-        const postOnly = this.safeString(params, 'postOnly');
+        let postOnly = false;
+        [postOnly, params] = this.handlePostOnly(type === 'market', type === 'post', params);
         const clientOrderId = this.safeString2(params, 'clientOrderId', 'cliOrdId');
         params = this.omit(params, ['clientOrderId', 'cliOrdId']);
         if ((type === 'stp' || type === 'take_profit') && stopPrice === undefined) {
             throw new ArgumentsRequired(this.id + ' createOrder requires params.stopPrice when type is ' + type);
         }
-        if (stopPrice !== undefined) {
+        if (stopPrice !== undefined && type !== 'take_profit') {
             type = 'stp';
         }
         else if (postOnly) {
-            type = 'postOnly';
+            type = 'post';
         }
         else if (timeInForce === 'ioc') {
             type = 'ioc';
@@ -1907,7 +1910,7 @@ export default class krakenfutures extends Exchange {
         const currency = this.currency(code);
         let method = 'privatePostTransfer';
         const request = {
-            'amount': this.currencyToPrecision(code, amount),
+            'amount': amount,
         };
         if (fromAccount === 'spot') {
             throw new BadRequest(this.id + ' transfer does not yet support transfers from spot');
@@ -1940,14 +1943,14 @@ export default class krakenfutures extends Exchange {
     }
     handleErrors(code, reason, url, method, headers, body, response, requestHeaders, requestBody) {
         if (response === undefined) {
-            return;
+            return undefined;
         }
         if (code === 429) {
             throw new DDoSProtection(this.id + ' ' + body);
         }
         const message = this.safeString(response, 'error');
         if (message === undefined) {
-            return;
+            return undefined;
         }
         const feedback = this.id + ' ' + body;
         this.throwExactlyMatchedException(this.exceptions['exact'], message, feedback);
@@ -1976,7 +1979,11 @@ export default class krakenfutures extends Exchange {
         }
         const url = this.urls['api'][api] + query;
         if (api === 'private' || access === 'private') {
-            const auth = postData + '/api/' + (api === 'private' ? endpoint : api + '/' + endpoint); // 1
+            let auth = postData + '/api/';
+            if (api !== 'private') {
+                auth += api + '/';
+            }
+            auth += endpoint; // 1
             const hash = this.hash(this.encode(auth), sha256, 'binary'); // 2
             const secret = this.base64ToBinary(this.secret); // 3
             const signature = this.hmac(hash, secret, sha512, 'base64'); // 4-5

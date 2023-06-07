@@ -456,7 +456,7 @@ export default class woo extends wooRest {
         if (this.newUpdates) {
             limit = orders.getLimit(symbol, limit);
         }
-        return this.filterBySymbolSinceLimit(orders, symbol, since, limit, true);
+        return this.filterBySymbolSinceLimit(orders, symbol, since, limit);
     }
     parseWsOrder(order, market = undefined) {
         //
@@ -489,16 +489,19 @@ export default class woo extends wooRest {
         market = this.market(marketId);
         const symbol = market['symbol'];
         const timestamp = this.safeInteger(order, 'timestamp');
-        const cost = this.safeString(order, 'totalFee');
         const fee = {
-            'cost': cost,
+            'cost': this.safeString(order, 'totalFee'),
             'currency': this.safeString(order, 'feeAsset'),
         };
-        const price = this.safeFloat(order, 'price');
+        let price = this.safeNumber(order, 'price');
+        const avgPrice = this.safeNumber(order, 'avgPrice');
+        if ((price === 0) && (avgPrice !== undefined)) {
+            price = avgPrice;
+        }
         const amount = this.safeFloat(order, 'quantity');
         const side = this.safeStringLower(order, 'side');
         const type = this.safeStringLower(order, 'type');
-        const filled = this.safeFloat(order, 'executedQuantity');
+        const filled = this.safeNumber(order, 'totalExecutedQuantity');
         const totalExecQuantity = this.safeFloat(order, 'totalExecutedQuantity');
         let remaining = amount;
         if (amount >= totalExecQuantity) {
@@ -508,7 +511,7 @@ export default class woo extends wooRest {
         const status = this.parseOrderStatus(rawStatus);
         const trades = undefined;
         const clientOrderId = this.safeString(order, 'clientOrderId');
-        return {
+        return this.safeOrder({
             'info': order,
             'symbol': symbol,
             'id': orderId,
@@ -524,14 +527,14 @@ export default class woo extends wooRest {
             'stopPrice': undefined,
             'triggerPrice': undefined,
             'amount': amount,
-            'cost': cost,
+            'cost': undefined,
             'average': undefined,
             'filled': filled,
             'remaining': remaining,
             'status': status,
             'fee': fee,
             'trades': trades,
-        };
+        });
     }
     handleOrderUpdate(client, message) {
         //

@@ -577,6 +577,7 @@ export default class kraken extends Exchange {
                         'max': undefined,
                     },
                 },
+                'networks': {},
             };
         }
         return result;
@@ -2474,7 +2475,7 @@ export default class kraken extends Exchange {
             throw new RateLimitExceeded(this.id + ' ' + body);
         }
         if (response === undefined) {
-            return;
+            return undefined;
         }
         if (body[0] === '{') {
             if (typeof response !== 'string') {
@@ -2491,5 +2492,6 @@ export default class kraken extends Exchange {
                 }
             }
         }
+        return undefined;
     }
 }

@@ -970,6 +970,7 @@ function AsyncCmpStrm(opts, cb) {
 // zlib footer: -4 to -0 is Adler32
 /**
  * Streaming DEFLATE compression
+ * @type Class
  */
 var Deflate = /*#__PURE__*/ (function () {
     function Deflate(opts, cb) {
@@ -999,6 +1000,7 @@ var Deflate = /*#__PURE__*/ (function () {
 export { Deflate };
 /**
  * Asynchronous streaming DEFLATE compression
+ * @type Class
  */
 var AsyncDeflate = /*#__PURE__*/ (function () {
     function AsyncDeflate(opts, cb) {
@@ -1033,6 +1035,7 @@ export function deflateSync(data, opts) {
 }
 /**
  * Streaming DEFLATE decompression
+ * @type Class
  */
 var Inflate = /*#__PURE__*/ (function () {
     /**
@@ -1073,10 +1076,12 @@ var Inflate = /*#__PURE__*/ (function () {
 }());
 export { Inflate };
 /**
+ * @type Class
  * Asynchronous streaming DEFLATE decompression
  */
 var AsyncInflate = /*#__PURE__*/ (function () {
     /**
+     * @type Class
      * Creates an asynchronous inflation stream
      * @param cb The callback to call whenever data is deflated
      */
@@ -1114,6 +1119,7 @@ export function inflateSync(data, out = undefined) {
 // before you yell at me for not just using extends, my reason is that TS inheritance is hard to workerize.
 /**
  * Streaming GZIP compression
+ * @type Class
  */
 var Gzip = /*#__PURE__*/ (function () {
     function Gzip(opts, cb) {
@@ -1187,6 +1193,7 @@ export function gzipSync(data, opts) {
 }
 /**
  * Streaming GZIP decompression
+ * @type Class
  */
 var Gunzip = /*#__PURE__*/ (function () {
     /**
@@ -1223,6 +1230,7 @@ var Gunzip = /*#__PURE__*/ (function () {
 }());
 export { Gunzip };
 /**
+ * @type Class
  * Asynchronous streaming GZIP decompression
  */
 var AsyncGunzip = /*#__PURE__*/ (function () {
@@ -1265,6 +1273,7 @@ export function gunzipSync(data, out = undefined) {
     return inflt(data.subarray(gzs(data), -8), out || new u8(gzl(data)));
 }
 /**
+ * @type Class
  * Streaming Zlib compression
  */
 var Zlib = /*#__PURE__*/ (function () {
@@ -1337,6 +1346,7 @@ export function zlibSync(data, opts) {
 }
 /**
  * Streaming Zlib decompression
+ * @type Class
  */
 var Unzlib = /*#__PURE__*/ (function () {
     /**
@@ -1372,6 +1382,7 @@ var Unzlib = /*#__PURE__*/ (function () {
 }());
 export { Unzlib };
 /**
+ * @type Class
  * Asynchronous streaming Zlib decompression
  */
 var AsyncUnzlib = /*#__PURE__*/ (function () {
@@ -1418,10 +1429,12 @@ export { gzip as compress, AsyncGzip as AsyncCompress };
 // Default algorithm for compression (used because having a known output size allows faster decompression)
 export { gzipSync as compressSync, Gzip as Compress };
 /**
+ * @type Class
  * Streaming GZIP, Zlib, or raw DEFLATE decompression
  */
 var Decompress = /*#__PURE__*/ (function () {
     /**
+     * @type Class
      * Creates a decompression stream
      * @param cb The callback to call whenever data is decompressed
      */
@@ -1466,6 +1479,7 @@ var Decompress = /*#__PURE__*/ (function () {
 export { Decompress };
 /**
  * Asynchronous streaming GZIP, Zlib, or raw DEFLATE decompression
+ * @type Class
  */
 var AsyncDecompress = /*#__PURE__*/ (function () {
     /**
@@ -1558,10 +1572,12 @@ var dutf8 = function (d) {
     }
 };
 /**
+ * @type Class
  * Streaming UTF-8 decoding
  */
 var DecodeUTF8 = /*#__PURE__*/ (function () {
     /**
+     * @type Class
      * Creates a UTF-8 decoding stream
      * @param cb The callback to call whenever data is decoded
      */
@@ -1610,6 +1626,7 @@ var DecodeUTF8 = /*#__PURE__*/ (function () {
 export { DecodeUTF8 };
 /**
  * Streaming UTF-8 encoding
+ * @type Class
  */
 var EncodeUTF8 = /*#__PURE__*/ (function () {
     /**
@@ -1776,6 +1793,7 @@ var wzf = function (o, b, c, d, e) {
 };
 /**
  * A pass-through stream to keep data uncompressed in a ZIP archive.
+ * @type Class
  */
 var ZipPassThrough = /*#__PURE__*/ (function () {
     /**
@@ -1822,6 +1840,7 @@ export { ZipPassThrough };
 /**
  * Streaming DEFLATE compression for ZIP archives. Prefer using AsyncZipDeflate
  * for better performance
+ * @type Class
  */
 var ZipDeflate = /*#__PURE__*/ (function () {
     /**
@@ -1861,6 +1880,7 @@ var ZipDeflate = /*#__PURE__*/ (function () {
 export { ZipDeflate };
 /**
  * Asynchronous streaming DEFLATE compression for ZIP archives
+ * @type Class
  */
 var AsyncZipDeflate = /*#__PURE__*/ (function () {
     /**
@@ -1897,6 +1917,7 @@ export { AsyncZipDeflate };
 // TODO: Better tree shaking
 /**
  * A zippable archive to which files can incrementally be added
+ * @type Class
  */
 var Zip = /*#__PURE__*/ (function () {
     /**
@@ -2188,6 +2209,7 @@ export function zipSync(data, opts) {
 }
 /**
  * Streaming pass-through decompression for ZIP archives
+ * @type Class
  */
 var UnzipPassThrough = /*#__PURE__*/ (function () {
     function UnzipPassThrough() {
@@ -2202,6 +2224,7 @@ export { UnzipPassThrough };
 /**
  * Streaming DEFLATE decompression for ZIP archives. Prefer AsyncZipInflate for
  * better performance.
+ * @type Class
  */
 var UnzipInflate = /*#__PURE__*/ (function () {
     /**
@@ -2226,10 +2249,12 @@ var UnzipInflate = /*#__PURE__*/ (function () {
 }());
 export { UnzipInflate };
 /**
+ * @type Class
  * Asynchronous streaming DEFLATE decompression for ZIP archives
  */
 var AsyncUnzipInflate = /*#__PURE__*/ (function () {
     /**
+     * @type Class
      * Creates a DEFLATE decompression that can be used in ZIP archives
      */
     function AsyncUnzipInflate(_, sz) {
@@ -2257,6 +2282,7 @@ var AsyncUnzipInflate = /*#__PURE__*/ (function () {
 export { AsyncUnzipInflate };
 /**
  * A ZIP archive decompression stream that emits files as they are discovered
+ * @type Class
  */
 var Unzip = /*#__PURE__*/ (function () {
     /**
