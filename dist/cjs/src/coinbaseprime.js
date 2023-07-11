@@ -120,6 +120,7 @@ class coinbaseprime extends coinbaseprime$1 {
                         'v1/portfolios/{portfolio_id}/open_orders',
                         'v1/portfolios/{portfolio_id}/orders',
                         'v1/portfolios/{portfolio_id}/orders/{order_id}',
+                        'v1/portfolios/{portfolio_id}/orders/{order_id}/fills',
                         'accounts',
                         'accounts/{id}',
                         'accounts/{id}/holds',
@@ -752,36 +753,19 @@ class coinbaseprime extends coinbaseprime$1 {
         const timestamp = this.parse8601(this.safeString2(trade, 'time', 'created_at'));
         const marketId = this.safeString(trade, 'product_id');
         market = this.safeMarket(marketId, market, '-');
-        let feeRate = undefined;
-        let takerOrMaker = undefined;
-        let cost = undefined;
-        const feeCurrencyId = this.safeStringLower(market, 'quoteId');
-        if (feeCurrencyId !== undefined) {
-            const costField = feeCurrencyId + '_value';
-            cost = this.safeString(trade, costField);
-            const liquidity = this.safeString(trade, 'liquidity');
-            if (liquidity !== undefined) {
-                takerOrMaker = (liquidity === 'T') ? 'taker' : 'maker';
-                feeRate = this.safeString(market, takerOrMaker);
-            }
-        }
-        const feeCost = this.safeString2(trade, 'fill_fees', 'fee');
+        const cost = this.safeNumber2(trade, 'filled_value', 'fee');
+        const feeCost = this.safeNumber2(trade, 'commission', 'fee');
+        const feeRate = feeCost / cost;
         const fee = {
             'cost': feeCost,
             'currency': market['quote'],
             'rate': feeRate,
         };
-        const id = this.safeString(trade, 'trade_id');
-        let side = (trade['side'] === 'buy') ? 'sell' : 'buy';
+        const id = this.safeString(trade, 'id');
+        const side = trade['side'].toLowerCase();
         const orderId = this.safeString(trade, 'order_id');
-        // Coinbase Pro returns inverted side to fetchMyTrades vs fetchTrades
-        const makerOrderId = this.safeString(trade, 'maker_order_id');
-        const takerOrderId = this.safeString(trade, 'taker_order_id');
-        if ((orderId !== undefined) || ((makerOrderId !== undefined) && (takerOrderId !== undefined))) {
-            side = (trade['side'] === 'buy') ? 'buy' : 'sell';
-        }
         const price = this.safeString(trade, 'price');
-        const amount = this.safeString(trade, 'size');
+        const amount = this.safeString(trade, 'filled_quantity');
         return this.safeTrade({
             'id': id,
             'order': orderId,
@@ -789,8 +773,6 @@ class coinbaseprime extends coinbaseprime$1 {
             'timestamp': timestamp,
             'datetime': this.iso8601(timestamp),
             'symbol': market['symbol'],
-            'type': undefined,
-            'takerOrMaker': takerOrMaker,
             'side': side,
             'price': price,
             'amount': amount,
@@ -1069,8 +1051,11 @@ class coinbaseprime extends coinbaseprime$1 {
         const request = {};
         const method = 'privateGetV1PortfoliosPortfolioIdOrdersOrderId';
         request['order_id'] = id;
-        const { order } = await this[method](this.extend(request, params));
-        return this.parseOrder(order);
+        let { order } = await this[method](this.extend(request, params));
+        const trades = await this.fetchOrderTrades(order.id);
+        order = this.parseOrder(order);
+        order.trades = trades;
+        return order;
     }
     async fetchOrderTrades(id, symbol = undefined, since = undefined, limit = undefined, params = {}) {
         /**
@@ -1085,6 +1070,7 @@ class coinbaseprime extends coinbaseprime$1 {
          * @returns {[object]} a list of [trade structures]{@link https://docs.ccxt.com/#/?id=trade-structure}
          */
         await this.loadMarkets();
+        await this.loadPortfolio(params);
         let market = undefined;
         if (symbol !== undefined) {
             market = this.market(symbol);
@@ -1092,8 +1078,8 @@ class coinbaseprime extends coinbaseprime$1 {
         const request = {
             'order_id': id,
         };
-        const response = await this.privateGetFills(this.extend(request, params));
-        return this.parseTrades(response, market, since, limit);
+        const response = await this.privateGetV1PortfoliosPortfolioIdOrdersOrderIdFills(this.extend(request, params));
+        return this.parseTrades(response.fills, market, since, limit);
     }
     async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         /**

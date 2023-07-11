@@ -55,6 +55,9 @@ abstract class coinbaseprime extends \ccxt\async\Exchange {
     public function private_get_v1_portfolios_portfolio_id_orders_order_id($params = array()) {
         return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}', 'private', 'GET', $params, null, null, array());
     }
+    public function private_get_v1_portfolios_portfolio_id_orders_order_id_fills($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}/fills', 'private', 'GET', $params, null, null, array());
+    }
     public function private_get_accounts($params = array()) {
         return $this->request('accounts', 'private', 'GET', $params, null, null, array());
     }
@@ -261,6 +264,9 @@ abstract class coinbaseprime extends \ccxt\async\Exchange {
     }
     public function privateGetV1PortfoliosPortfolioIdOrdersOrderId($params = array()) {
         return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}', 'private', 'GET', $params, null, null, array());
+    }
+    public function privateGetV1PortfoliosPortfolioIdOrdersOrderIdFills($params = array()) {
+        return $this->request('v1/portfolios/{portfolio_id}/orders/{order_id}/fills', 'private', 'GET', $params, null, null, array());
     }
     public function privateGetAccounts($params = array()) {
         return $this->request('accounts', 'private', 'GET', $params, null, null, array());

@@ -18,6 +18,7 @@ class ImplicitAPI:
     private_get_v1_portfolios_portfolio_id_open_orders = privateGetV1PortfoliosPortfolioIdOpenOrders = Entry('v1/portfolios/{portfolio_id}/open_orders', 'private', 'GET', {})
     private_get_v1_portfolios_portfolio_id_orders = privateGetV1PortfoliosPortfolioIdOrders = Entry('v1/portfolios/{portfolio_id}/orders', 'private', 'GET', {})
     private_get_v1_portfolios_portfolio_id_orders_order_id = privateGetV1PortfoliosPortfolioIdOrdersOrderId = Entry('v1/portfolios/{portfolio_id}/orders/{order_id}', 'private', 'GET', {})
+    private_get_v1_portfolios_portfolio_id_orders_order_id_fills = privateGetV1PortfoliosPortfolioIdOrdersOrderIdFills = Entry('v1/portfolios/{portfolio_id}/orders/{order_id}/fills', 'private', 'GET', {})
     private_get_accounts = privateGetAccounts = Entry('accounts', 'private', 'GET', {})
     private_get_accounts_id = privateGetAccountsId = Entry('accounts/{id}', 'private', 'GET', {})
     private_get_accounts_id_holds = privateGetAccountsIdHolds = Entry('accounts/{id}/holds', 'private', 'GET', {})

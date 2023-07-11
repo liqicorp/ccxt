@@ -17,6 +17,7 @@ interface Exchange {
     privateGetV1PortfoliosPortfolioIdOpenOrders(params?: {}): Promise<implicitReturnType>;
     privateGetV1PortfoliosPortfolioIdOrders(params?: {}): Promise<implicitReturnType>;
     privateGetV1PortfoliosPortfolioIdOrdersOrderId(params?: {}): Promise<implicitReturnType>;
+    privateGetV1PortfoliosPortfolioIdOrdersOrderIdFills(params?: {}): Promise<implicitReturnType>;
     privateGetAccounts(params?: {}): Promise<implicitReturnType>;
     privateGetAccountsId(params?: {}): Promise<implicitReturnType>;
     privateGetAccountsIdHolds(params?: {}): Promise<implicitReturnType>;
