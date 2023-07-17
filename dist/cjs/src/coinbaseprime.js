@@ -992,17 +992,17 @@ class coinbaseprime extends coinbaseprime$1 {
         if ((status === 'closed') && (doneReason === 'canceled')) {
             status = 'canceled';
         }
-        const price = this.safeString(order, 'limit_price');
+        const price = this.safeString(order, 'average_filled_price');
         const filled = this.safeString(order, 'filled_quantity');
         const amount = this.safeString(order, 'base_quantity', filled);
-        const cost = this.safeString(order, 'filled_value');
-        const feeCost = this.safeNumber(order, 'exchange_fee');
+        const cost = this.safeNumber(order, 'filled_value');
+        const feeCost = this.safeNumber(order, 'commission');
         let fee = undefined;
         if (feeCost !== undefined) {
             fee = {
                 'cost': feeCost,
                 'currency': market['quote'],
-                'rate': undefined,
+                'rate': feeCost / cost,
             };
         }
         const id = this.safeString(order, 'id');
