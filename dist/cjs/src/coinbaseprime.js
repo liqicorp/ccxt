@@ -5,6 +5,10 @@ var errors = require('./base/errors.js');
 var number = require('./base/functions/number.js');
 var coinbaseprime$1 = require('./abstract/coinbaseprime.js');
 var Precise = require('./base/Precise.js');
+require('./base/functions/platform.js');
+require('./base/functions/encode.js');
+require('./base/functions/crypto.js');
+var time = require('./base/functions/time.js');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -1234,6 +1238,7 @@ class coinbaseprime extends coinbaseprime$1 {
             }
         }
         const response = await this.privatePostV1PortfoliosPortfolioIdOrder(this.extend(request, params));
+        await time.sleep(3000);
         const order = await this.fetchOrder(response['order_id'], symbol);
         //
         //     {

@@ -4,6 +4,7 @@ import { InsufficientFunds, ArgumentsRequired, ExchangeError, InvalidOrder, Inva
 import { TICK_SIZE } from './base/functions/number.js';
 import Exchange from './abstract/coinbaseprime.js';
 import Precise from './base/Precise.js';
+import { sleep } from './base/functions.js';
 // ---------------------------------------------------------------------------
 export default class coinbaseprime extends Exchange {
     constructor() {
@@ -1227,6 +1228,7 @@ export default class coinbaseprime extends Exchange {
             }
         }
         const response = await this.privatePostV1PortfoliosPortfolioIdOrder(this.extend(request, params));
+        await sleep(3000);
         const order = await this.fetchOrder(response['order_id'], symbol);
         //
         //     {
