@@ -138,7 +138,6 @@ class liqi extends liqi$1 {
                     'get': {
                         'fetchMarket': 1,
                         'fetchMarkets': 20,
-                        'fetchClosedOrders': 1000,
                         'fetchCurrencies': 20,
                         'fetchTickers': 20,
                         'fetchTicker': 1,
@@ -151,6 +150,7 @@ class liqi extends liqi$1 {
                         'fetchBalance': 1,
                         'fetchMyOrders': 100,
                         'fetchOrders': 100,
+                        'fetchClosedOrders': 1000,
                         'fetchOpenOrders': 100,
                         'fetchOrder': 1,
                         'fetchTrades': 500,

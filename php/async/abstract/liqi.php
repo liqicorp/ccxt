@@ -13,9 +13,6 @@ abstract class liqi extends \ccxt\async\Exchange {
     public function public_get_fetchmarkets($params = array()) {
         return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
-    public function public_get_fetchclosedorders($params = array()) {
-        return $this->request('fetchClosedOrders', 'public', 'GET', $params, null, null, array("cost" => 1000));
-    }
     public function public_get_fetchcurrencies($params = array()) {
         return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
@@ -39,6 +36,9 @@ abstract class liqi extends \ccxt\async\Exchange {
     }
     public function private_get_fetchorders($params = array()) {
         return $this->request('fetchOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
+    }
+    public function private_get_fetchclosedorders($params = array()) {
+        return $this->request('fetchClosedOrders', 'private', 'GET', $params, null, null, array("cost" => 1000));
     }
     public function private_get_fetchopenorders($params = array()) {
         return $this->request('fetchOpenOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
@@ -64,9 +64,6 @@ abstract class liqi extends \ccxt\async\Exchange {
     public function publicGetFetchMarkets($params = array()) {
         return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
-    public function publicGetFetchClosedOrders($params = array()) {
-        return $this->request('fetchClosedOrders', 'public', 'GET', $params, null, null, array("cost" => 1000));
-    }
     public function publicGetFetchCurrencies($params = array()) {
         return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
@@ -90,6 +87,9 @@ abstract class liqi extends \ccxt\async\Exchange {
     }
     public function privateGetFetchOrders($params = array()) {
         return $this->request('fetchOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
+    }
+    public function privateGetFetchClosedOrders($params = array()) {
+        return $this->request('fetchClosedOrders', 'private', 'GET', $params, null, null, array("cost" => 1000));
     }
     public function privateGetFetchOpenOrders($params = array()) {
         return $this->request('fetchOpenOrders', 'private', 'GET', $params, null, null, array("cost" => 100));
