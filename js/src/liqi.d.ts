@@ -17,7 +17,7 @@ export default class liqi extends Exchange {
     fetchOrderBook(symbol: any, limit?: any, params?: {}): Promise<any>;
     fetchTicker(symbol: any, params?: {}): Promise<any>;
     fetchTickers(limit: any, params?: {}): Promise<any>;
-    parseTicker(ticker: Ticker): Ticker;
+    parseTicker(ticker: any): Ticker;
     fetchOHLCV(symbol: any, internal?: string, limit?: number, params?: {}): Promise<any>;
     fetchTrades(symbol: any, limit?: any, params?: {}): Promise<any>;
     createOrder(symbol: any, type: any, side: any, amount?: any, price?: any, quoteAmount?: any, params?: {}): Promise<Order>;

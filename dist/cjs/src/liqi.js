@@ -712,20 +712,20 @@ class liqi extends liqi$1 {
         return response;
     }
     parseTicker(ticker) {
-        ticker.timestamp = this.safeInteger(ticker.timestamp, 0);
-        ticker.ask = this.safeFloat(ticker.ask, 8);
-        ticker.bid = this.safeFloat(ticker.bid, 8);
-        ticker.open = this.safeFloat(ticker.open, 8);
-        ticker.close = this.safeFloat(ticker.close, 8);
-        ticker.high = this.safeFloat(ticker.high, 8);
-        ticker.low = this.safeFloat(ticker.low, 8);
-        ticker.average = this.safeFloat(ticker.average, 8);
-        ticker.change = this.safeFloat(ticker.change, 8);
-        ticker.last = this.safeFloat(ticker.last, 8);
-        ticker.askVolume = this.safeFloat(ticker.askVolume, 8);
-        ticker.bidVolume = this.safeFloat(ticker.bidVolume, 8);
-        ticker.baseVolume = this.safeFloat(ticker.baseVolume, 8);
-        ticker.quoteVolume = this.safeFloat(ticker.quoteVolume, 8);
+        ticker.timestamp = new Date(ticker.datetime).getTime();
+        ticker.ask = parseFloat(ticker.ask);
+        ticker.bid = parseFloat(ticker.bid);
+        ticker.open = parseFloat(ticker.open);
+        ticker.close = parseFloat(ticker.close);
+        ticker.high = parseFloat(ticker.high);
+        ticker.low = parseFloat(ticker.low);
+        ticker.average = parseFloat(ticker.average);
+        ticker.change = parseFloat(ticker.change);
+        ticker.last = parseFloat(ticker.last);
+        ticker.askVolume = parseFloat(ticker.askVolume);
+        ticker.bidVolume = parseFloat(ticker.bidVolume);
+        ticker.baseVolume = parseFloat(ticker.baseVolume);
+        ticker.quoteVolume = parseFloat(ticker.quoteVolume);
         return ticker;
     }
     async fetchOHLCV(symbol, internal = '1m', limit = 500, params = {}) {
