@@ -13,6 +13,9 @@ abstract class liqi extends \ccxt\Exchange {
     public function public_get_fetchmarkets($params = array()) {
         return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
+    public function public_get_fetchclosedorders($params = array()) {
+        return $this->request('fetchClosedOrders', 'public', 'GET', $params, null, null, array("cost" => 1000));
+    }
     public function public_get_fetchcurrencies($params = array()) {
         return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));
     }
@@ -60,6 +63,9 @@ abstract class liqi extends \ccxt\Exchange {
     }
     public function publicGetFetchMarkets($params = array()) {
         return $this->request('fetchMarkets', 'public', 'GET', $params, null, null, array("cost" => 20));
+    }
+    public function publicGetFetchClosedOrders($params = array()) {
+        return $this->request('fetchClosedOrders', 'public', 'GET', $params, null, null, array("cost" => 1000));
     }
     public function publicGetFetchCurrencies($params = array()) {
         return $this->request('fetchCurrencies', 'public', 'GET', $params, null, null, array("cost" => 20));

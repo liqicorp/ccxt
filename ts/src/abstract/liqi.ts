@@ -11,6 +11,7 @@ import { Exchange as _Exchange } from '../base/Exchange.js';
 interface Exchange {
     publicGetFetchMarket (params?: {}): Promise<implicitReturnType>;
     publicGetFetchMarkets (params?: {}): Promise<implicitReturnType>;
+    publicGetFetchClosedOrders (params?: {}): Promise<implicitReturnType>;
     publicGetFetchCurrencies (params?: {}): Promise<implicitReturnType>;
     publicGetFetchTickers (params?: {}): Promise<implicitReturnType>;
     publicGetFetchTicker (params?: {}): Promise<implicitReturnType>;

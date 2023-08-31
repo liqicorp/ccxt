@@ -160,6 +160,7 @@ export default class liqi extends Exchange {
                     'get': {
                         'fetchMarket': 1,
                         'fetchMarkets': 20,
+                        'fetchClosedOrders': 1000,
                         'fetchCurrencies': 20,
                         'fetchTickers': 20,
                         'fetchTicker': 1,

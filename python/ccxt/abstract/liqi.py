@@ -4,6 +4,7 @@ from ccxt.base.types import Entry
 class ImplicitAPI:
     public_get_fetchmarket = publicGetFetchMarket = Entry('fetchMarket', 'public', 'GET', {'cost': 1})
     public_get_fetchmarkets = publicGetFetchMarkets = Entry('fetchMarkets', 'public', 'GET', {'cost': 20})
+    public_get_fetchclosedorders = publicGetFetchClosedOrders = Entry('fetchClosedOrders', 'public', 'GET', {'cost': 1000})
     public_get_fetchcurrencies = publicGetFetchCurrencies = Entry('fetchCurrencies', 'public', 'GET', {'cost': 20})
     public_get_fetchtickers = publicGetFetchTickers = Entry('fetchTickers', 'public', 'GET', {'cost': 20})
     public_get_fetchticker = publicGetFetchTicker = Entry('fetchTicker', 'public', 'GET', {'cost': 1})
