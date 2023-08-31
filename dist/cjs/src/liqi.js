@@ -612,10 +612,7 @@ class liqi extends liqi$1 {
         };
         const method = 'privateGetFetchMyOrders';
         const response = await this[method](this.extend(request, params));
-        for (let i = 0; i < response.length; i++) {
-            response[i] = this.parseOrder(response[i]);
-        }
-        return response;
+        return this.parseOrders(response);
     }
     parseOrder(order) {
         let status = this.safeString(order, 'status', 'open');
@@ -772,7 +769,7 @@ class liqi extends liqi$1 {
         };
         const method = 'privateGetFetchOpenOrders';
         const response = await this[method](this.extend(request, params));
-        return response;
+        return this.parseOrders(response);
     }
     async fetchClosedOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
         if (symbol === undefined) {
@@ -785,7 +782,7 @@ class liqi extends liqi$1 {
         };
         const method = 'privateGetFetchClosedOrders';
         const response = await this[method](this.extend(request, params));
-        return response;
+        return this.parseOrders(response);
     }
     async cancelOrder(id, params = {}) {
         const request = {
