@@ -636,7 +636,7 @@ class liqi extends liqi$1 {
                 break;
         }
         const symbol = this.safeString(order, 'symbol');
-        const timestamp = this.safeInteger(order, 'timestamp', 0);
+        const timestamp = this.safeInteger(order, 'timestamp', 0) * 1000;
         const price = this.safeFloat(order, 'price', 0);
         const amount = this.safeFloat(order, 'amount', 0);
         const filled = this.safeFloat(order, 'filled', 0);

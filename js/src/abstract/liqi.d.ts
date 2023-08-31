@@ -3,7 +3,6 @@ import { Exchange as _Exchange } from '../base/Exchange.js';
 interface Exchange {
     publicGetFetchMarket(params?: {}): Promise<implicitReturnType>;
     publicGetFetchMarkets(params?: {}): Promise<implicitReturnType>;
-    publicGetFetchClosedOrders(params?: {}): Promise<implicitReturnType>;
     publicGetFetchCurrencies(params?: {}): Promise<implicitReturnType>;
     publicGetFetchTickers(params?: {}): Promise<implicitReturnType>;
     publicGetFetchTicker(params?: {}): Promise<implicitReturnType>;
@@ -12,6 +11,7 @@ interface Exchange {
     privateGetFetchBalance(params?: {}): Promise<implicitReturnType>;
     privateGetFetchMyOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOrders(params?: {}): Promise<implicitReturnType>;
+    privateGetFetchClosedOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOpenOrders(params?: {}): Promise<implicitReturnType>;
     privateGetFetchOrder(params?: {}): Promise<implicitReturnType>;
     privateGetFetchTrades(params?: {}): Promise<implicitReturnType>;
